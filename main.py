@@ -121,30 +121,46 @@ async def proxy_request(req: ApiRequest):
 
     url = f"{req_base_url}{req.path}"
     
-    headers = {
-        "authorization": f"Bearer {token}",
-        "appkey": req_appkey,
-        "secretkey": req_secretkey,
-        "Content-Type": "application/json;charset=UTF-8"
-    }
-    
-    for k, v in req.headers.items():
-        if v:
-            headers[k] = v
+    def _do_request(current_token):
+        headers = {
+            "authorization": f"Bearer {current_token}",
+            "appkey": req_appkey,
+            "secretkey": req_secretkey,
+            "Content-Type": "application/json;charset=UTF-8"
+        }
+        
+        for k, v in req.headers.items():
+            if v:
+                headers[k] = v
 
-    try:
         if req.method.upper() == "GET":
             query_string = urllib.parse.urlencode(req.params)
-            if query_string:
-                url = f"{url}?{query_string}"
-            resp = requests.get(url, headers=headers)
+            req_url = f"{url}?{query_string}" if query_string else url
+            return requests.get(req_url, headers=headers)
         else:
-            resp = requests.post(url, headers=headers, json=req.params)
+            return requests.post(url, headers=headers, json=req.params)
+
+    try:
+        resp = _do_request(token)
+        body = resp.json() if resp.text else {}
+        
+        # 만료되거나 유효하지 않은 토큰인 경우 (예: return_code=3, 8005 에러) 자동 갱신 및 재시도
+        is_token_invalid = (
+            str(body.get("return_code")) == "3" or 
+            "인증에 실패" in str(body.get("return_msg", "")) or
+            "Token이 유효하지 않습니다" in str(body.get("return_msg", ""))
+        )
+        
+        if is_token_invalid:
+            TOKEN_CACHE.pop(req_appkey, None)
+            new_token = get_token(req_appkey, req_secretkey, req_base_url)
+            resp = _do_request(new_token)
+            body = resp.json() if resp.text else {}
             
         return {
             "status": resp.status_code,
             "headers": dict(resp.headers),
-            "body": resp.json() if resp.text else {}
+            "body": body
         }
     except Exception as e:
         return {"error": str(e), "status": 500}
