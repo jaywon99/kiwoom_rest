@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from kiwoom_client import KiwoomClient
+from kiwoom_client import KiwoomClient, KiwoomException
 
 load_dotenv()
 
@@ -89,6 +89,17 @@ async def proxy_request(req: ApiRequest):
             kwargs["json"] = req.params
             
         resp_data = client.request(req.method, req.path, headers=req.headers, **kwargs)
-        return resp_data
+        
+        return {
+            "status": 200,
+            "headers": resp_data["headers"], 
+            "body": resp_data["body"]
+        }
+    except KiwoomException as ke:
+        return {
+            "error": f"[{ke.return_code}] {ke.return_msg}",
+            "status": ke.status_code,
+            "body": {}
+        }
     except Exception as e:
-        return {"error": str(e), "status": 500}
+        return {"error": str(e), "status": 500, "body": {}}

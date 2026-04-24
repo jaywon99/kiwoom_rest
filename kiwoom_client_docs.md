@@ -8,7 +8,6 @@
 2. **High-Level API 호출 (`call` 메서드)**: `apis.json` 스펙을 참조하여 Header와 Body/Param을 개발자가 구분할 필요 없이, 파라미터만 쭉 나열하면 라이브러리가 알아서 분류하고 통신합니다.
 3. **하이픈(`-`) 키워드 자동 매핑**: 파이썬 문법상 불가능한 `cont-yn` 같은 키움증권 특유의 파라미터들을 `cont_yn`으로 입력해도 알아서 원래 스펙에 맞게 변환해 줍니다.
 4. **빈 값(Default) 자동 채움**: 키움 API 특성상 모든 파라미터를 누락 없이 보내야 합니다. 사용자가 입력하지 않은 파라미터는 스펙을 참조하여 기본값(`""`)으로 빈 공간을 꽉 채워서 전송해 줍니다.
-5. **계좌번호 자동 주입**: 인스턴스 생성 시 계좌번호를 넣어두면, `CANO`, `acntNo` 등 계좌번호가 필요한 API 호출 시 파라미터를 생략해도 알아서 내 계좌번호를 주입합니다.
 
 ---
 
@@ -33,35 +32,36 @@ client = KiwoomClient(
 가장 추천하는 사용법입니다. API ID와 필요한 값만 던지면 끝납니다.
 
 ```python
-# [예시 1] 현재가 조회 (GET 방식 파라미터)
-# - API ID : FHKST01010100
-# - 스펙상 'tr_id'는 필수 헤더지만, call()에서는 api_id를 던졌으므로 생략해도 자동 주입됩니다.
+# [예시 1] 주식기본정보 조회 (현재가 등)
+# - API ID : ka10001
+# - 스펙상 'api-id'는 필수 헤더지만, call()에서는 api_id를 던졌으므로 생략해도 자동 주입됩니다.
 res_price = client.call(
-    api_id="FHKST01010100", 
-    FID_COND_MRKT_DIV_CODE="J", 
-    FID_INPUT_ISCD="005930"      # 삼성전자
+    api_id="ka10001", 
+    stk_cd="005930"      # 삼성전자 종목코드
 )
-print(res_price["body"]["output"])
+# 응답은 HTTP 헤더와 응답 바디가 하나로 합쳐진 딕셔너리로 반환됩니다.
+import json
+print(json.dumps(res_price, indent=2, ensure_ascii=False))
 
 # [예시 2] 파이썬 친화적인 하이픈 변환 (cont_yn)
 # 스펙의 'cont-yn'을 파이썬 문법에 맞게 'cont_yn'으로 던지면 알아서 'cont-yn' Header로 변환됩니다.
 res_account = client.call(
-    api_id="ka10085",
+    api_id="kt00018",     # 계좌평가잔고내역요청
     cont_yn="N",          
     next_key="",          
-    stex_tp="0"           
+    qry_tp="1",
+    dmst_stex_tp="KRX"    
 )
 
-# [예시 3] 현금 매수 주문 (POST 방식 및 계좌번호 자동 주입)
-# - CANO 파라미터를 생략했지만, KiwoomClient 초기화 시 넘긴 acc_id("12345678")가 자동으로 주입됩니다.
-# - 생략된 나머지 파라미터들도 빈 문자열("")로 알아서 채워져 전송됩니다.
+# [예시 3] 주식 매수 주문 (POST 방식)
+# - 생략된 나머지 파라미터들은 빈 문자열("")로 알아서 채워져 전송됩니다.
 res_order = client.call(
-    api_id="TTTC0802U",  
-    ACNT_PRDT_CD="01",
-    PDNO="005930",
-    ORD_DVSN="01",       # 01: 시장가
-    ORD_QTY="10",        # 10주
-    ORD_UNPR="0"         # 시장가이므로 0원
+    api_id="kt10000",      # 주식 매수주문
+    dmst_stex_tp="KRX",    # 국내거래소구분
+    stk_cd="005930",       # 종목코드
+    ord_qty="10",          # 주문수량 (10주)
+    ord_uv="0",            # 주문단가 (시장가 0원)
+    trde_tp="3"            # 매매구분 (3: 시장가)
 )
 ```
 
@@ -74,22 +74,22 @@ res_order = client.call(
 ```python
 # GET 요청 수동 제어
 response = client.get(
-    path="/uapi/domestic-stock/v1/quotations/inquire-price",
-    headers={"tr_id": "FHKST01010100"},
-    params={"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": "005930"}
+    path="/api/dostk/stkinfo",
+    headers={"api-id": "ka10001", "cont-yn": "N"},
+    params={"stk_cd": "005930"}
 )
 
 # POST 요청 수동 제어
 response = client.post(
-    path="/uapi/domestic-stock/v1/trading/order-cash",
-    headers={"tr_id": "TTTC0802U"},
+    path="/api/dostk/ordr",
+    headers={"api-id": "kt10000"},
     json_data={
-        "CANO": "12345678",
-        "ACNT_PRDT_CD": "01",
-        "PDNO": "005930",
-        "ORD_DVSN": "01",
-        "ORD_QTY": "10",
-        "ORD_UNPR": "0"
+        "dmst_stex_tp": "KRX",
+        "stk_cd": "005930",
+        "ord_qty": "10",
+        "ord_uv": "0",
+        "trde_tp": "3",
+        "cond_uv": ""
     }
 )
 ```
@@ -98,21 +98,30 @@ response = client.post(
 
 ## 📦 응답 (Response) 포맷
 
-모든 호출 메서드(`call`, `get`, `post`, `request`)는 아래와 같이 통일된 형태의 딕셔너리를 반환합니다. 헤더에 포함된 유용한 정보(연속조회 키 등)를 쉽게 꺼내 쓸 수 있습니다.
+### High-Level `call` 메서드 사용 시
+**JSON 응답 바디 전체**와 `apis.json` 스펙에 정의된 **핵심 응답 헤더(api-id, cont-yn 등)만 필터링**되어 하나의 딕셔너리로 합쳐진(Merged) 형태로 반환됩니다. 쓰레기 HTTP 헤더들이 제거되어 깔끔합니다.
+
+> 💡 **에러(Exception) 처리 안내**
+> 서버가 정상 응답(200 OK)을 주었더라도 인증 실패나 키움증권 내부 로직 에러(예: 장 종료, 잔고 부족 등)로 인해 `return_code` 값이 `"0"`이 아닌 경우, 결괏값을 반환하지 않고 즉시 커스텀 예외인 **`KiwoomException`을 발생(raise)시킵니다.**
+> 이 예외 객체에서는 `e.return_code`와 `e.return_msg`를 속성으로 직접 꺼내어 세밀한 핸들링이 가능합니다.
 
 ```python
+from kiwoom_client import KiwoomException
+
+try:
+    res = client.call(api_id="kt10000", ...)
+except KiwoomException as e:
+    print(f"에러코드: {e.return_code}")
+    print(f"에러메시지: {e.return_msg}")
+    print(f"HTTP상태: {e.status_code}")
+```
+
+### Low-Level `request`, `get`, `post` 메서드 사용 시
+가공되지 않은 상태로 헤더 딕셔너리와 바디 딕셔너리가 분리되어 반환됩니다.
+```python
 {
-    "status": 200,                # HTTP 상태 코드 (int)
-    "headers": {                  # 응답 헤더 딕셔너리
-        "tr_id": "FHKST01010100",
-        "tr_cont": "N",
-        ...
-    },
-    "body": {                     # 파싱된 JSON 바디 (dict)
-        "rt_cd": "0",
-        "msg_cd": "MCA00000",
-        "output": { ... }
-    }
+    "headers": { ... }, # 모든 HTTP 응답 헤더 포함 (Date, Server 등)
+    "body": { ... }     # JSON 응답 바디
 }
 ```
 

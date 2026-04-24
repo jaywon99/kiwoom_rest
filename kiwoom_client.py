@@ -5,6 +5,17 @@ import urllib.parse
 from datetime import datetime
 from typing import Dict, Any, Optional
 
+class KiwoomException(Exception):
+    """
+    키움증권 API 호출 중 발생하는 예외를 처리하는 커스텀 클래스입니다.
+    HTTP 오류 뿐만 아니라 서버 내부의 비즈니스 로직(return_code != 0) 오류도 포함합니다.
+    """
+    def __init__(self, return_code: str, return_msg: str, status_code: int = 200):
+        self.return_code = return_code
+        self.return_msg = return_msg
+        self.status_code = status_code
+        super().__init__(f"[{return_code}] {return_msg} (HTTP Status: {status_code})")
+
 class KiwoomClient:
     """
     키움증권 OpenAPI (REST) 사용을 위한 파이썬 클라이언트 모듈.
@@ -44,6 +55,27 @@ class KiwoomClient:
             except Exception as e:
                 print(f"[Warn] Failed to load apis.json from {apis_spec_path}: {e}")
 
+    def _check_kiwoom_error(self, resp: requests.Response) -> Dict[str, Any]:
+        if not resp.ok:
+            raise KiwoomException(
+                return_code=f"HTTP_{resp.status_code}", 
+                return_msg=resp.text, 
+                status_code=resp.status_code
+            )
+            
+        body = resp.json() if resp.text else {}
+        return_code = str(body.get("return_code", "0"))
+        
+        if return_code != "0":
+            return_msg = body.get("return_msg", "Unknown Kiwoom Error")
+            raise KiwoomException(
+                return_code=return_code, 
+                return_msg=return_msg, 
+                status_code=resp.status_code
+            )
+            
+        return body
+
     def _get_token(self) -> str:
         """
         토큰이 없거나 만료된 경우 새로 발급받고, 유효하면 캐시된 토큰을 반환합니다.
@@ -63,14 +95,13 @@ class KiwoomClient:
                 "Accept": "application/json"
             }
         )
-        if resp.status_code == 200:
-            data = resp.json()
-            self._token = data.get("token")
-            expires_dt = data.get("expires_dt")
-            if expires_dt:
-                self._token_expires_at = datetime.strptime(expires_dt, "%Y%m%d%H%M%S")
-            return self._token
-        raise Exception(f"Failed to get token: {resp.text}")
+        
+        body = self._check_kiwoom_error(resp)
+        self._token = body.get("token")
+        expires_dt = body.get("expires_dt")
+        if expires_dt:
+            self._token_expires_at = datetime.strptime(expires_dt, "%Y%m%d%H%M%S")
+        return self._token
 
     def revoke_token(self) -> Dict[str, Any]:
         """
@@ -91,13 +122,14 @@ class KiwoomClient:
                     "Content-Type": "application/json;charset=UTF-8"
                 }
             )
+            body = self._check_kiwoom_error(resp)
             self._token = None
             self._token_expires_at = None
-            return {"status": "ok", "kiwoom_response": resp.json() if resp.text else {}}
-        except Exception as e:
+            return body
+        except Exception:
             self._token = None
             self._token_expires_at = None
-            return {"status": "error", "msg": str(e)}
+            raise
 
     def request(self, method: str, path: str, headers: Optional[Dict[str, str]] = None, **kwargs) -> Dict[str, Any]:
         """
@@ -107,18 +139,17 @@ class KiwoomClient:
         
         Returns:
             Dict: {
-                "status": HTTP Status Code (int),
                 "headers": Response Headers (dict),
                 "body": Response Body (dict)
             }
+        Raises:
+            Exception: HTTP 에러(200번대가 아님) 또는 네트워크 에러 발생 시
         """
         token = self._get_token()
         url = f"{self.base_url}{path}"
         
         req_headers = {
             "authorization": f"Bearer {token}",
-            "appkey": self.appkey,
-            "secretkey": self.secretkey,
             "Content-Type": "application/json;charset=UTF-8"
         }
         
@@ -133,12 +164,12 @@ class KiwoomClient:
 
         try:
             resp = _do_request(token)
-            body = resp.json() if resp.text else {}
             
+            body_for_check = resp.json() if resp.text else {}
             is_token_invalid = (
-                str(body.get("return_code")) == "3" or 
-                "인증에 실패" in str(body.get("return_msg", "")) or
-                "Token이 유효하지 않습니다" in str(body.get("return_msg", ""))
+                str(body_for_check.get("return_code")) == "3" or 
+                "인증에 실패" in str(body_for_check.get("return_msg", "")) or
+                "Token이 유효하지 않습니다" in str(body_for_check.get("return_msg", ""))
             )
             
             if is_token_invalid:
@@ -146,13 +177,15 @@ class KiwoomClient:
                 self._token_expires_at = None
                 new_token = self._get_token()
                 resp = _do_request(new_token)
-                body = resp.json() if resp.text else {}
                 
+            body = self._check_kiwoom_error(resp)
+            
             return {
-                "status": resp.status_code,
                 "headers": dict(resp.headers),
                 "body": body
             }
+        except KiwoomException:
+            raise
         except Exception as e:
             raise Exception(f"API request failed: {str(e)}")
 
@@ -166,10 +199,8 @@ class KiwoomClient:
 
     def call(self, api_id: str, **kwargs) -> Dict[str, Any]:
         """
-        API ID(예: FHKST01010100)와 파라미터들만 전달받아, apis.json 스펙을 참조하여 
+        API ID(예: ka10001)와 파라미터들만 전달받아, apis.json 스펙을 참조하여 
         알아서 header와 param(혹은 json)으로 분리하여 호출해주는 고수준(High-level) 메서드입니다.
-        
-        계좌번호(CANO 등)를 별도로 입력하지 않았다면, 클래스 생성 시 받은 self.acc_id로 자동 할당합니다.
         """
         if api_id not in self.apis_spec:
             raise ValueError(f"Unknown API ID: {api_id}. Please ensure apis.json is loaded properly or check the ID.")
@@ -206,18 +237,21 @@ class KiwoomClient:
             else:
                 req_params[k] = v
                 
-        is_tr_id_required_but_missing = "tr_id" in spec_header_map and "tr_id" not in [k.lower() for k in req_headers.keys()]
-        if is_tr_id_required_but_missing:
-            req_headers["tr_id"] = api_id
+        if "api-id" in spec_header_map:
+            orig_api_id_key = spec_header_map["api-id"]
+            if not req_headers.get(orig_api_id_key):
+                req_headers[orig_api_id_key] = api_id
             
-        if self.acc_id:
-            for account_key in ["cano", "acntno"]:
-                if account_key in spec_param_map:
-                    original_key = spec_param_map[account_key]
-                    if original_key not in req_params:
-                        req_params[original_key] = self.acc_id
-
         if method == "GET":
-            return self.request("GET", path, headers=req_headers, params=req_params)
+            raw_resp = self.request("GET", path, headers=req_headers, params=req_params)
         else:
-            return self.request(method, path, headers=req_headers, json=req_params)
+            raw_resp = self.request(method, path, headers=req_headers, json=req_params)
+            
+        final_res = raw_resp["body"]
+        
+        for h_key, h_val in raw_resp["headers"].items():
+            h_lower = h_key.lower()
+            if h_lower in spec_header_map:
+                final_res[spec_header_map[h_lower]] = h_val
+                
+        return final_res
