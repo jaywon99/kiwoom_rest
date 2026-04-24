@@ -6,9 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import requests
-import urllib.parse
-from datetime import datetime
+
+from kiwoom_client import KiwoomClient
 
 load_dotenv()
 
@@ -22,36 +21,17 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-TOKEN_CACHE = {}
+CLIENT_CACHE: Dict[str, KiwoomClient] = {}
 
-def get_token(appkey: str, secretkey: str, base_url: str):
-    cache = TOKEN_CACHE.get(appkey)
-    if cache and cache["token"] and cache["expires_at"]:
-        if datetime.now() < cache["expires_at"]:
-            return cache["token"]
+def get_client(appkey: str, secretkey: str, base_url: str) -> KiwoomClient:
+    if appkey not in CLIENT_CACHE:
+        CLIENT_CACHE[appkey] = KiwoomClient(appkey=appkey, secretkey=secretkey, base_url=base_url)
+    else:
+        client = CLIENT_CACHE[appkey]
+        if client.secretkey != secretkey or client.base_url != base_url.rstrip("/"):
+            CLIENT_CACHE[appkey] = KiwoomClient(appkey=appkey, secretkey=secretkey, base_url=base_url)
             
-    resp = requests.post(
-        f"{base_url}/oauth2/token",
-        json={
-            "grant_type": "client_credentials",
-            "appkey": appkey,
-            "secretkey": secretkey
-        },
-        headers={
-            "Content-Type": "application/json;charset=UTF-8",
-            "Accept": "application/json"
-        }
-    )
-    if resp.status_code == 200:
-        data = resp.json()
-        token = data.get("token")
-        expires_dt = data.get("expires_dt")
-        expires_at = None
-        if expires_dt:
-            expires_at = datetime.strptime(expires_dt, "%Y%m%d%H%M%S")
-        TOKEN_CACHE[appkey] = {"token": token, "expires_at": expires_at}
-        return token
-    raise Exception(f"Failed to get token: {resp.text}")
+    return CLIENT_CACHE[appkey]
 
 class ApiRequest(BaseModel):
     api_id: str
@@ -82,26 +62,11 @@ async def logout(req: LogoutRequest):
     if not req_appkey or not req_secretkey:
         return {"status": "ok", "msg": "No keys provided to logout"}
         
-    cache = TOKEN_CACHE.get(req_appkey)
-    if cache and cache.get("token"):
-        token = cache["token"]
-        try:
-            resp = requests.post(
-                f"{req_base_url}/oauth2/revoke",
-                json={
-                    "appkey": req_appkey,
-                    "secretkey": req_secretkey,
-                    "token": token
-                },
-                headers={
-                    "Content-Type": "application/json;charset=UTF-8"
-                }
-            )
-            TOKEN_CACHE.pop(req_appkey, None)
-            return {"status": "ok", "kiwoom_response": resp.json() if resp.text else {}}
-        except Exception as e:
-            TOKEN_CACHE.pop(req_appkey, None)
-            return {"status": "error", "msg": str(e)}
+    if req_appkey in CLIENT_CACHE:
+        client = CLIENT_CACHE[req_appkey]
+        res = client.revoke_token()
+        CLIENT_CACHE.pop(req_appkey, None)
+        return res
     
     return {"status": "ok", "msg": "No active token found"}
 
@@ -115,52 +80,15 @@ async def proxy_request(req: ApiRequest):
         return {"error": "App Key and Secret Key are required (either in Settings or .env)", "status": 401}
 
     try:
-        token = get_token(req_appkey, req_secretkey, req_base_url)
-    except Exception as e:
-        return {"error": str(e), "status": 500}
-
-    url = f"{req_base_url}{req.path}"
-    
-    def _do_request(current_token):
-        headers = {
-            "authorization": f"Bearer {current_token}",
-            "appkey": req_appkey,
-            "secretkey": req_secretkey,
-            "Content-Type": "application/json;charset=UTF-8"
-        }
+        client = get_client(req_appkey, req_secretkey, req_base_url)
         
-        for k, v in req.headers.items():
-            if v:
-                headers[k] = v
-
+        kwargs = {}
         if req.method.upper() == "GET":
-            query_string = urllib.parse.urlencode(req.params)
-            req_url = f"{url}?{query_string}" if query_string else url
-            return requests.get(req_url, headers=headers)
+            kwargs["params"] = req.params
         else:
-            return requests.post(url, headers=headers, json=req.params)
-
-    try:
-        resp = _do_request(token)
-        body = resp.json() if resp.text else {}
-        
-        # 만료되거나 유효하지 않은 토큰인 경우 (예: return_code=3, 8005 에러) 자동 갱신 및 재시도
-        is_token_invalid = (
-            str(body.get("return_code")) == "3" or 
-            "인증에 실패" in str(body.get("return_msg", "")) or
-            "Token이 유효하지 않습니다" in str(body.get("return_msg", ""))
-        )
-        
-        if is_token_invalid:
-            TOKEN_CACHE.pop(req_appkey, None)
-            new_token = get_token(req_appkey, req_secretkey, req_base_url)
-            resp = _do_request(new_token)
-            body = resp.json() if resp.text else {}
+            kwargs["json"] = req.params
             
-        return {
-            "status": resp.status_code,
-            "headers": dict(resp.headers),
-            "body": body
-        }
+        resp_data = client.request(req.method, req.path, headers=req.headers, **kwargs)
+        return resp_data
     except Exception as e:
         return {"error": str(e), "status": 500}
