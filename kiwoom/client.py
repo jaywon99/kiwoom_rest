@@ -1,5 +1,7 @@
 import os
 import json
+import time
+import threading
 import requests
 import urllib.parse
 from datetime import datetime
@@ -30,8 +32,27 @@ class KiwoomClient:
         self._token: Optional[str] = None
         self._token_expires_at: Optional[datetime] = None
         
+        # API 호출 빈도 제한 (Rate Limit) 설정
+        self._lock = threading.Lock()
+        self._last_call_time = 0.0
+        
+        # 모의투자(vts)는 초당 1회 미만 (안전하게 1.2초), 실전투자는 초당 5회 미만 (안전하게 0.25초)
+        if "vts" in self.base_url.lower():
+            self._call_delay = 1.2
+        else:
+            self._call_delay = 0.25
+            
         self.apis_spec = {}
         self._load_apis_spec(apis_spec_path)
+
+    def _wait_for_rate_limit(self):
+        """키움증권 API 호출 빈도 제한을 준수하기 위해 대기합니다."""
+        with self._lock:
+            now = time.time()
+            elapsed = now - self._last_call_time
+            if elapsed < self._call_delay:
+                time.sleep(self._call_delay - elapsed)
+            self._last_call_time = time.time()
 
     def _load_apis_spec(self, apis_spec_path: Optional[str]):
         if not apis_spec_path:
@@ -83,6 +104,7 @@ class KiwoomClient:
         if self._token and self._token_expires_at and datetime.now() < self._token_expires_at:
             return self._token
             
+        self._wait_for_rate_limit()
         resp = requests.post(
             f"{self.base_url}/oauth2/token",
             json={
@@ -111,6 +133,7 @@ class KiwoomClient:
             return {"status": "ok", "msg": "No active token found"}
             
         try:
+            self._wait_for_rate_limit()
             resp = requests.post(
                 f"{self.base_url}/oauth2/revoke",
                 json={
@@ -160,6 +183,7 @@ class KiwoomClient:
                     
         def _do_request(current_token):
             req_headers["authorization"] = f"Bearer {current_token}"
+            self._wait_for_rate_limit()
             return requests.request(method=method, url=url, headers=req_headers, **kwargs)
 
         try:
