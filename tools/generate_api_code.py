@@ -26,9 +26,26 @@ with open(APIS_JSON_PATH, 'r', encoding='utf-8') as f:
     apis = json.load(f)
 
 out = [
-    "from pydantic import BaseModel, Field, ConfigDict", 
-    "from typing import Optional, Dict, Any, List, Type", 
+    "from pydantic import BaseModel, Field, ConfigDict, BeforeValidator", 
+    "from typing import Optional, Dict, Any, List, Type, Annotated", 
     "from .client import KiwoomClient",
+    "",
+    "# ====================================================================",
+    "# 0. Type Validators (키움증권 예외 타입 처리기)",
+    "# ====================================================================",
+    "def _force_str(v: Any) -> str:",
+    "    if v == [] or v is None:",
+    '        return ""',
+    "    return str(v)",
+    "",
+    "def _force_list(v: Any) -> Any:",
+    '    if v == "" or v is None:',
+    "        return []",
+    "    if not isinstance(v, list):",
+    "        return [v]",
+    "    return v",
+    "",
+    "SafeStr = Annotated[str, BeforeValidator(_force_str)]",
     "",
     "# ====================================================================",
     "# 1. API Models (입력 및 출력 모델)",
@@ -63,9 +80,9 @@ def generate_sub_models(api, items, parent_class_name):
                 sub_model_classes.extend(sub_fields)
             sub_model_classes.append("")
             
-            field_declarations.append(f'    {py_key}: Optional[List[{sub_class_name}]] = Field(default=None{alias_str}, description="{desc}")')
+            field_declarations.append(f'    {py_key}: Annotated[List[{sub_class_name}], BeforeValidator(_force_list)] = Field(default_factory=list{alias_str}, description="{desc}")')
         else:
-            field_declarations.append(f'    {py_key}: Optional[Any] = Field(default=None{alias_str}, description="{desc}")')
+            field_declarations.append(f'    {py_key}: SafeStr = Field(default=""{alias_str}, description="{desc}")')
             
     return sub_model_classes, field_declarations
 
