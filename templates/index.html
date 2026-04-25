@@ -121,7 +121,7 @@
 <script>
     let apis = [];
 
-    fetch('/static/apis.json')
+    fetch('/api/apis_spec')
         .then(res => res.json())
         .then(data => {
             // OAuth 인증은 백엔드에서 자동 처리되므로 UI에서 제외
