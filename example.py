@@ -1,4 +1,3 @@
-import sys
 import os
 import json
 from dotenv import load_dotenv
@@ -13,6 +12,7 @@ load_dotenv()
 APP_KEY = os.getenv("KIWOOM_APP_KEY")
 SECRET_KEY = os.getenv("KIWOOM_SECRET_KEY")
 ACC_ID = os.getenv("KIWOOM_ACC_ID", "") 
+# 실전투자: https://api.kiwoom.com / 모의투자: https://mockapi.kiwoom.com
 BASE_URL = os.getenv("KIWOOM_BASE_URL", "https://api.kiwoom.com")
 
 if not APP_KEY or not SECRET_KEY:
@@ -48,7 +48,7 @@ try:
             )
     
     res_price = typed_client.stock_daily_chart_inquiry_request(req)
-    print(f"✅ 성공! 정보 조회 완료")
+    print("✅ 성공! 정보 조회 완료")
     print(res_price.stk_dt_pole_chart_qry[0].cur_prc)
     print(json.dumps(res_price.model_dump(), indent=2, ensure_ascii=False))
         

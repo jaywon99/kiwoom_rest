@@ -30,7 +30,7 @@ from kiwoom.typed_api import KiwoomTypedClient
 raw_client = KiwoomClient(
     appkey="본인의_APP_KEY", 
     secretkey="본인의_SECRET_KEY",
-    base_url="https://api.kiwoom.com"  # 실전투자 URL
+    base_url="https://api.kiwoom.com"  # 실전투자 URL (모의투자는 https://mockapi.kiwoom.com)
 )
 
 # 2. 타입 보장을 담당하는 Typed Client 래핑 (선택사항)

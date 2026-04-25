@@ -36,8 +36,8 @@ class KiwoomClient:
         self._lock = threading.Lock()
         self._last_call_time = 0.0
         
-        # 모의투자(vts)는 초당 1회 미만 (안전하게 1.2초), 실전투자는 초당 5회 미만 (안전하게 0.25초)
-        if "vts" in self.base_url.lower():
+        # 모의투자(mock)는 초당 1회 미만 (안전하게 1.2초), 실전투자는 초당 5회 미만 (안전하게 0.25초)
+        if "mock" in self.base_url.lower():
             self._call_delay = 1.2
         else:
             self._call_delay = 0.25
