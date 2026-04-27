@@ -5,10 +5,11 @@
 ![Kiwoom API Playground](https://img.shields.io/badge/Kiwoom-REST_API-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.128.8-009688)
 ![Pydantic](https://img.shields.io/badge/Pydantic-v2-e92063)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ## 🌟 주요 기능 (Features)
 
-### 1. 🛡️ 완벽한 타입 보장 Python SDK (`kiwoom/` 패키지)
+### 1. 🛡️ 완벽한 타입 보장 Python SDK (`kiwoom_rest/` 패키지)
 - **Pydantic 기반 객체화**: 200여 개의 모든 키움 API 요청/응답 스펙이 순수 파이썬 객체로 정의되어 있습니다. IDE의 자동완성(`.`)을 통해 개발 속도를 압도적으로 단축시킵니다.
 - **다중 계층(Nested Tree) 자동 파싱**: 키움 API 특유의 까다로운 응답 배열 구조(예: 일봉차트, 거래내역)를 완벽하게 분석해 하위 리스트(List) 객체로 매핑해 줍니다.
 - **스마트한 타입 예외 처리**: 키움증권 서버가 스펙과 다르게 빈 문자열(`""`)이나 빈 배열(`[]`)을 내려보내도 에러 없이 처리하는 자체 방어 로직(`BeforeValidator`)이 탑재되어 있습니다.
@@ -56,12 +57,12 @@ kiwoom-playground
 
 ## 💻 Python SDK 사용법 (예제)
 
-웹 서버를 띄우지 않고, 봇이나 데이터 수집 파이프라인에서 `kiwoom` 패키지만 단독으로 떼어다 사용할 수 있습니다.
-자세한 사용법은 [kiwoom/docs.md](kiwoom/docs.md) 가이드 문서를 참고하세요.
+웹 서버를 띄우지 않고, 봇이나 데이터 수집 파이프라인에서 `kiwoom_rest` 패키지만 단독으로 떼어다 사용할 수 있습니다.
+자세한 사용법은 [kiwoom_rest/docs.md](kiwoom_rest/docs.md) 가이드 문서를 참고하세요.
 
 ```python
-from kiwoom.client import KiwoomClient
-from kiwoom.typed_api import KiwoomTypedClient, StockDailyChartInquiryRequestRequest
+from kiwoom_rest.client import KiwoomClient
+from kiwoom_rest.typed_api import KiwoomTypedClient, StockDailyChartInquiryRequestRequest
 
 # 1. 저수준 통신을 담당하는 Raw Client 초기화
 raw_client = KiwoomClient(
@@ -119,6 +120,6 @@ for chart_data in res.stk_dt_pole_chart_qry:
 # 1. 키움증권 공식 가이드라인 문서를 긁어와 apis.json에 계층 구조로 저장합니다 (약 5분 소요).
 python tools/scrape_apis.py
 
-# 2. 새로 파싱된 apis.json을 바탕으로 kiwoom/typed_api.py 파일을 재생성합니다.
+# 2. 새로 파싱된 apis.json을 바탕으로 kiwoom_rest/typed_api.py 파일을 재생성합니다.
 python tools/generate_api_code.py
 ```

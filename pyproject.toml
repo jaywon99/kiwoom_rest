@@ -8,6 +8,15 @@ dynamic = ["version"]
 description = "Kiwoom REST and WebSocket API SDK with an optional Web Playground"
 readme = "README.md"
 requires-python = ">=3.9"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
 dependencies = [
     "requests>=2.32.0",
     "websockets>=12.0",
