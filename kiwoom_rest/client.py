@@ -177,7 +177,12 @@ class KiwoomClient:
                     
                     # [신규 추가] 서버의 PING(생존 확인) 메시지 자동 에코 응답
                     if data.get("trnm") == "PING":
-                        asyncio.create_task(self.send_ws(data))
+                        async def reply_ping():
+                            try:
+                                await self.send_ws(data)
+                            except Exception:
+                                pass
+                        asyncio.create_task(reply_ping())
                         
                     if asyncio.iscoroutinefunction(self._on_message_callback):
                         await self._on_message_callback(data)
@@ -193,7 +198,11 @@ class KiwoomClient:
         if not self._is_ws_connected or not self._ws:
             raise Exception("WebSocket is not connected")
             
-        await self._ws.send(json.dumps(payload))
+        try:
+            await self._ws.send(json.dumps(payload))
+        except websockets.exceptions.ConnectionClosed:
+            self._is_ws_connected = False
+            raise Exception("WebSocket connection was closed.")
 
     async def disconnect_ws(self):
         if self._ws:

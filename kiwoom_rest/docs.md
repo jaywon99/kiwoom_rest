@@ -143,13 +143,16 @@ async def main():
 
     # 3. 웹소켓 연결
     await typed_client.connect_ws(on_message=on_event)
+    
+    # 웹소켓 내부 로그인 완료를 위해 잠시 대기 (필수)
+    await asyncio.sleep(1.0)
 
     # 4. 타입이 보장된 Pydantic 모델로 구독(REG) 요청 전송
     req = OrderExecutionRequest(
         trnm="REG",
         grp_no="g123",
         refresh="1",
-        data=[{"item": "005930", "type": "00"}]
+        data=[{"item": ["005930"], "type": ["00"]}]
     )
     
     await typed_client.order_execution(req)

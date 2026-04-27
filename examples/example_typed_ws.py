@@ -1,0 +1,99 @@
+import os
+import asyncio
+from dotenv import load_dotenv
+from kiwoom_rest.client import KiwoomClient, KiwoomException
+from kiwoom_rest.typed_api import (
+    KiwoomTypedClient, 
+    API_ID_TO_RES_MODEL,
+    StockSigningRequest,
+    StockSigningRequest_Data
+)
+
+# ==============================================================================
+# 1. 환경 설정 로드
+# ==============================================================================
+load_dotenv()
+APP_KEY = os.getenv("KIWOOM_APP_KEY")
+SECRET_KEY = os.getenv("KIWOOM_SECRET_KEY")
+BASE_URL = os.getenv("KIWOOM_BASE_URL", "https://api.kiwoom.com")
+
+if not APP_KEY or not SECRET_KEY:
+    print("❌ 오류: .env 파일에 KIWOOM_APP_KEY 와 KIWOOM_SECRET_KEY 를 설정해주세요.")
+    exit(1)
+
+
+async def main():
+    # ==============================================================================
+    # 2. Typed Client 초기화
+    # ==============================================================================
+    print("🚀 KiwoomTypedClient 초기화 중...")
+    client = KiwoomClient(appkey=APP_KEY, secretkey=SECRET_KEY, base_url=BASE_URL)
+    
+    # KiwoomTypedClient로 감싸면 IDE의 강력한 자동완성 기능을 사용할 수 있습니다.
+    typed_client = KiwoomTypedClient(client)
+
+    # ==============================================================================
+    # 3. 실시간 데이터 수신 콜백 (자동 타입 캐스팅 패턴)
+    # ==============================================================================
+    async def on_event(raw_data: dict):
+        """
+        수신된 원시 JSON 딕셔너리를 자동으로 Pydantic 객체로 변환하여 출력하는 마법의 함수입니다.
+        """
+        data_list = raw_data.get("data", [])
+        if not data_list:
+            return
+            
+        # 1. 메시지의 종류(TR 명)를 파악합니다. (예: "0B" -> 주식체결)
+        tr_type = data_list[0].get("type")
+        
+        # 2. 동적 레지스트리(API_ID_TO_RES_MODEL)에서 해당 TR에 맞는 Pydantic 응답 클래스를 찾습니다.
+        ResponseClass = API_ID_TO_RES_MODEL.get(tr_type)
+        
+        if ResponseClass:
+            # 3. 딕셔너리를 해당 클래스로 언패킹하여 객체화합니다.
+            res_obj = ResponseClass(**raw_data)
+            print(f"\n[자동 파싱 완료 - TR: {tr_type}]")
+            
+            # 이후에는 res_obj.data[0].values.n_10 (현재가) 처럼 안전하게 접근할 수 있습니다.
+            print(res_obj)
+        else:
+            print("\n[알 수 없는 타입]", raw_data)
+
+    # ==============================================================================
+    # 4. 웹소켓 연결 및 서버 로그인 대기
+    # ==============================================================================
+    print("\n🔗 웹소켓 연결 중...")
+    await typed_client.connect_ws(on_message=on_event)
+    print("✅ 웹소켓 연결 완료! (서버 로그인 처리 대기 중...)")
+    
+    # [중요] 연결 직후 서버 인증 시간을 위해 반드시 1초 이상 대기합니다.
+    await asyncio.sleep(1.0)
+
+    # ==============================================================================
+    # 5. 타입 안전(Type-Safe)한 실시간 구독 요청 전송
+    # ==============================================================================
+    # 실수로 문자열("0B")을 넣어도 Pydantic이 리스트(["0B"])로 안전하게 감싸서 전송합니다.
+    req = StockSigningRequest(
+        trnm="REG",
+        grp_no="g123",
+        refresh="1",
+        data=[
+            StockSigningRequest_Data(item=["005930"], type=["0B"])
+        ]
+    )
+    
+    print("\n📡 구독 요청 전송 중...")
+    # dict 직렬화 없이 Pydantic 객체를 그대로 전송 가능합니다!
+    await typed_client.stock_signing(req)
+    print("✅ 전송 완료! 실시간 수신 대기 중... (10초 후 자동 종료됩니다)")
+    
+    # ==============================================================================
+    # 6. 메인 루프 유지 및 종료
+    # ==============================================================================
+    await asyncio.sleep(10)
+    
+    print("👋 웹소켓 연결을 종료합니다.")
+    await typed_client.disconnect_ws()
+
+if __name__ == "__main__":
+    asyncio.run(main())

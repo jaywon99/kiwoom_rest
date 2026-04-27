@@ -47,7 +47,17 @@ out = [
     "        return [v]",
     "    return v",
     "",
+    "def _force_int(v: Any) -> int:",
+    '    if v == "" or v is None:',
+    "        return 0",
+    "    try:",
+    "        return int(v)",
+    "    except ValueError:",
+    "        return 0",
+    "",
     "SafeStr = Annotated[str, BeforeValidator(_force_str)]",
+    "SafeInt = Annotated[int, BeforeValidator(_force_int)]",
+    "SafeListStr = Annotated[List[str], BeforeValidator(_force_list)]",
     "",
     "# ====================================================================",
     "# 1. API Models (입력 및 출력 모델)",
@@ -84,8 +94,11 @@ def generate_sub_models(api, items, parent_class_name):
             
             field_declarations.append(f'    {py_key}: Annotated[List[{sub_class_name}], BeforeValidator(_force_list)] = Field(default_factory=list{alias_str}, description="{desc}")')
         else:
-            if py_key == "item":
-                field_declarations.append(f'    {py_key}: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list{alias_str}, description="{desc}")')
+            ktype = item.get("type", "").replace(" ", "")
+            if ktype == "String[]":
+                field_declarations.append(f'    {py_key}: SafeListStr = Field(default_factory=list{alias_str}, description="{desc}")')
+            elif ktype == "int":
+                field_declarations.append(f'    {py_key}: SafeInt = Field(default=0{alias_str}, description="{desc}")')
             else:
                 field_declarations.append(f'    {py_key}: SafeStr = Field(default=""{alias_str}, description="{desc}")')
             

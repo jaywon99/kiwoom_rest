@@ -19,7 +19,17 @@ def _force_list(v: Any) -> Any:
         return [v]
     return v
 
+def _force_int(v: Any) -> int:
+    if v == "" or v is None:
+        return 0
+    try:
+        return int(v)
+    except ValueError:
+        return 0
+
 SafeStr = Annotated[str, BeforeValidator(_force_str)]
+SafeInt = Annotated[int, BeforeValidator(_force_int)]
+SafeListStr = Annotated[List[str], BeforeValidator(_force_list)]
 
 # ====================================================================
 # 1. API Models (입력 및 출력 모델)
@@ -3575,8 +3585,8 @@ class CreditCancellationOrderResponse(BaseModel):
 
 class OrderExecutionRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class OrderExecutionRequest(BaseModel):
     """[00] 주문체결 요청 모델"""
@@ -3628,21 +3638,21 @@ class OrderExecutionResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[OrderExecutionResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class OrderExecutionResponse(BaseModel):
     """[00] 주문체결 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[OrderExecutionResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class BalanceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class BalanceRequest(BaseModel):
     """[04] 잔고 요청 모델"""
@@ -3686,21 +3696,21 @@ class BalanceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[BalanceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class BalanceResponse(BaseModel):
     """[04] 잔고 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[BalanceResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockMomentumRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockMomentumRequest(BaseModel):
     """[0A] 주식기세 요청 모델"""
@@ -3736,21 +3746,21 @@ class StockMomentumResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockMomentumResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockMomentumResponse(BaseModel):
     """[0A] 주식기세 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지(등록,해지시에만 값 전송,데이터 실시간 수신시 미전송)")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockMomentumResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockSigningRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockSigningRequest(BaseModel):
     """[0B] 주식체결 요청 모델"""
@@ -3810,21 +3820,21 @@ class StockSigningResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0B,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockSigningResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockSigningResponse(BaseModel):
     """[0B] 주식체결 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockSigningResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockPreferredPriceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockPreferredPriceRequest(BaseModel):
     """[0C] 주식우선호가 요청 모델"""
@@ -3843,21 +3853,21 @@ class StockPreferredPriceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockPreferredPriceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockPreferredPriceResponse(BaseModel):
     """[0C] 주식우선호가 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockPreferredPriceResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockQuoteBalanceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockQuoteBalanceRequest(BaseModel):
     """[0D] 주식호가잔량 요청 모델"""
@@ -4037,21 +4047,21 @@ class StockQuoteBalanceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockQuoteBalanceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockQuoteBalanceResponse(BaseModel):
     """[0D] 주식호가잔량 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockQuoteBalanceResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockAfterHoursQuoteRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockAfterHoursQuoteRequest(BaseModel):
     """[0E] 주식시간외호가 요청 모델"""
@@ -4073,21 +4083,21 @@ class StockAfterHoursQuoteResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     values: Annotated[List[StockAfterHoursQuoteResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockAfterHoursQuoteResponse(BaseModel):
     """[0E] 주식시간외호가 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockAfterHoursQuoteResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockDayTraderRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockDayTraderRequest(BaseModel):
     """[0F] 주식당일거래원 요청 모델"""
@@ -4161,21 +4171,21 @@ class StockDayTraderResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockDayTraderResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockDayTraderResponse(BaseModel):
     """[0F] 주식당일거래원 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockDayTraderResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class EtfNavRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class EtfNavRequest(BaseModel):
     """[0G] ETF NAV 요청 모델"""
@@ -4207,21 +4217,21 @@ class EtfNavResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[EtfNavResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class EtfNavResponse(BaseModel):
     """[0G] ETF NAV 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[EtfNavResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockExpectedExecutionRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockExpectedExecutionRequest(BaseModel):
     """[0H] 주식예상체결 요청 모델"""
@@ -4245,21 +4255,21 @@ class StockExpectedExecutionResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockExpectedExecutionResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockExpectedExecutionResponse(BaseModel):
     """[0H] 주식예상체결 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockExpectedExecutionResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class InternationalGoldConversionPriceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 MGD: 원/g, MGU: $/온스,소수점2자리")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 MGD: 원/g, MGU: $/온스,소수점2자리")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class InternationalGoldConversionPriceRequest(BaseModel):
     """[0I] 국제금환산가격 요청 모델"""
@@ -4280,7 +4290,7 @@ class InternationalGoldConversionPriceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0B,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[InternationalGoldConversionPriceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class InternationalGoldConversionPriceResponse(BaseModel):
@@ -4292,8 +4302,8 @@ class InternationalGoldConversionPriceResponse(BaseModel):
 
 class SectorIndexRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class SectorIndexRequest(BaseModel):
     """[0J] 업종지수 요청 모델"""
@@ -4322,21 +4332,21 @@ class SectorIndexResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[SectorIndexResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class SectorIndexResponse(BaseModel):
     """[0J] 업종지수 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[SectorIndexResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class IndustryFluctuationsRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class IndustryFluctuationsRequest(BaseModel):
     """[0U] 업종등락 요청 모델"""
@@ -4367,21 +4377,21 @@ class IndustryFluctuationsResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[IndustryFluctuationsResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class IndustryFluctuationsResponse(BaseModel):
     """[0U] 업종등락 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[IndustryFluctuationsResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockItemInformationRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockItemInformationRequest(BaseModel):
     """[0g] 주식종목정보 요청 모델"""
@@ -4408,21 +4418,21 @@ class StockItemInformationResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockItemInformationResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockItemInformationResponse(BaseModel):
     """[0g] 주식종목정보 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockItemInformationResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class ElwTheoristRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class ElwTheoristRequest(BaseModel):
     """[0m] ELW 이론가 요청 모델"""
@@ -4449,21 +4459,21 @@ class ElwTheoristResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[ElwTheoristResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class ElwTheoristResponse(BaseModel):
     """[0m] ELW 이론가 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[ElwTheoristResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class LongStartTimeRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class LongStartTimeRequest(BaseModel):
     """[0s] 장시작시간 요청 모델"""
@@ -4483,21 +4493,21 @@ class LongStartTimeResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[LongStartTimeResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class LongStartTimeResponse(BaseModel):
     """[0s] 장시작시간 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[LongStartTimeResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class ElwIndicatorRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class ElwIndicatorRequest(BaseModel):
     """[0u] ELW 지표 요청 모델"""
@@ -4520,21 +4530,21 @@ class ElwIndicatorResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[ElwIndicatorResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class ElwIndicatorResponse(BaseModel):
     """[0u] ELW 지표 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[ElwIndicatorResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class StockProgramTradingRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class StockProgramTradingRequest(BaseModel):
     """[0w] 종목프로그램매매 요청 모델"""
@@ -4568,21 +4578,21 @@ class StockProgramTradingResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockProgramTradingResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockProgramTradingResponse(BaseModel):
     """[0w] 종목프로그램매매 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[StockProgramTradingResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
 
 class ActivateDisableViRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
+    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
 class ActivateDisableViRequest(BaseModel):
     """[1h] VI발동/해제 요청 모델"""
@@ -4618,13 +4628,13 @@ class ActivateDisableViResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
+    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
     values: Annotated[List[ActivateDisableViResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class ActivateDisableViResponse(BaseModel):
     """[1h] VI발동/해제 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
     data: Annotated[List[ActivateDisableViResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
@@ -4869,7 +4879,7 @@ class ConditionSearchListInquiryResponse_Data(BaseModel):
 class ConditionSearchListInquiryResponse(BaseModel):
     """[ka10171] 조건검색 목록조회 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 정상 : 0")
+    return_code: SafeInt = Field(default=0, description="결과코드 정상 : 0")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
     trnm: SafeStr = Field(default="", description="서비스명 CNSRLST 고정값")
     data: Annotated[List[ConditionSearchListInquiryResponse_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="조건검색식 목록")
@@ -4900,7 +4910,7 @@ class ConditionalSearchRequestGeneralResponse_Data(BaseModel):
 class ConditionalSearchRequestGeneralResponse(BaseModel):
     """[ka10172] 조건검색 요청 일반 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 정상:0 나머지:에러")
+    return_code: SafeInt = Field(default=0, description="결과코드 정상:0 나머지:에러")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
     trnm: SafeStr = Field(default="", description="서비스명 CNSRREQ")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
@@ -4923,7 +4933,7 @@ class RealTimeConditionalSearchRequestResponse_Data(BaseModel):
 class RealTimeConditionalSearchRequestResponse(BaseModel):
     """[ka10173] 조건검색 요청 실시간 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 정상:0 나머지:에러")
+    return_code: SafeInt = Field(default=0, description="결과코드 정상:0 나머지:에러")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
     trnm: SafeStr = Field(default="", description="서비스명 CNSRREQ")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
@@ -4938,7 +4948,7 @@ class ConditionalSearchRealTimeCancellationRequest(BaseModel):
 class ConditionalSearchRealTimeCancellationResponse(BaseModel):
     """[ka10174] 조건검색 실시간 해제 응답 모델"""
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeStr = Field(default="", description="결과코드 정상:0 나머지:에러")
+    return_code: SafeInt = Field(default=0, description="결과코드 정상:0 나머지:에러")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
     trnm: SafeStr = Field(default="", description="서비스명 CNSRCLR 고정값")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")

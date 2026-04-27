@@ -34,10 +34,12 @@ def process_table_rows(tbody, is_request):
                 clean_name = raw_name
                 
             el_desc_kor = tds[1].text.strip()
+            field_type = tds[2].text.strip()
             el_desc = tds[5].text.strip()
             
             item = {
                 "key": clean_name,
+                "type": field_type,
                 "desc": f"{el_desc_kor} {el_desc}".strip(),
                 "default": "",
                 "children": []
