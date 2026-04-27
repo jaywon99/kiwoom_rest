@@ -23,15 +23,29 @@ def clean_api_key(key):
     return real_key, py_key
 
 def clean_base_name(name: str) -> str:
-    """
-    불필요한 번역투 영어 단어(Request, Inquiry, For, Of 등)를 제거하여
-    깔끔한 명사형 데이터 모델 이름을 추출합니다.
-    """
-    # 1. 보기 싫은 전치사와 접미사 삭제
-    name = re.sub(r'RequestFor|Request|Inquiry|For|Of|Status|Details', '', name, flags=re.IGNORECASE)
-    # 2. And, Or 등 불필요한 접속사 삭제 (선택적)
-    name = re.sub(r'And|Or', '', name)
-    return name or "Api" # 모두 지워졌을 경우 방어코드
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    snake = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    words = snake.split('_')
+    
+    stopwords = {
+        'request', 'for', 'of', 'inquiry', 'status', 
+        'and', 'or', 'to', 'view', 'the', 'on', 'in', 'at', 'a', 'an', 's'
+    }
+    filtered_words = [w for w in words if w not in stopwords and w]
+    
+    if not filtered_words:
+        return "Api"
+        
+    cleaned = ''.join(w.capitalize() for w in filtered_words)
+    
+    cleaned = cleaned.replace("EachAccount", "ByAccount")
+    
+    overrides = {
+        "AccessTokenIssuance": "IssueAccessToken",
+        "DiscardAccessToken": "RevokeAccessToken",
+        "DetailsOrderDetailsByAccount": "OrderDetailsByAccount",
+    }
+    return overrides.get(cleaned, cleaned)
 
 with open(APIS_JSON_PATH, 'r', encoding='utf-8') as f:
     apis = json.load(f)

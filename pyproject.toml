@@ -43,3 +43,4 @@ kiwoom_playground = ["templates/*.html"]
 
 [tool.setuptools_scm]
 write_to = "kiwoom_rest/_version.py"
+fallback_version = "0.0.0"
