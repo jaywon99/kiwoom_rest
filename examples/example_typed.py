@@ -56,18 +56,17 @@ except Exception as e:
 # ==========================================
 # print(f"\n💰 [예제 2] 주식 매수 주문 테스트 중...")
 # try:
-#     req_order = StockPurchaseOrderRequest(
+#     res_order = client.stock_purchase_order(
 #         dmst_stex_tp="KRX",    
 #         stk_cd="005930",       
 #         ord_qty="10",          
 #         ord_uv="0",            
 #         trde_tp="3"            
 #     )
-#     res_order = typed_client.stock_purchase_order(req_order)
-    
+#     
 #     print(f"✅ 성공! 주문 결과 확인")
 #     print(res_order.model_dump())
-        
+#         
 # except KiwoomException as ke:
 #     print(f"❌ 키움증권 에러 발생: [{ke.return_code}] {ke.return_msg}")
 # except Exception as e:
