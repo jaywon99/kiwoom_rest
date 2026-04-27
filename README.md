@@ -33,13 +33,13 @@
 
 **A. 봇 개발자 (순수 SDK만 필요한 경우)**
 ```bash
-pip install .
+pip install kiwoom-playground
 ```
 웹 관련 라이브러리가 제외된 가벼운 코어 통신 모듈만 설치됩니다.
 
 **B. 테스터 및 입문자 (웹 플레이그라운드가 필요한 경우)**
 ```bash
-pip install ".[playground]"
+pip install "kiwoom-playground[playground]"
 ```
 API를 브라우저에서 테스트할 수 있도록 FastAPI 및 로컬 웹 서버 환경이 함께 설치됩니다.
 

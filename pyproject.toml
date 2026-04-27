@@ -23,6 +23,10 @@ dependencies = [
     "pydantic>=2.13.0"
 ]
 
+[project.urls]
+Homepage = "https://github.com/jaywon99/kiwoom_rest"
+Repository = "https://github.com/jaywon99/kiwoom_rest"
+
 [project.optional-dependencies]
 playground = [
     "fastapi>=0.100.0",
