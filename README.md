@@ -13,9 +13,10 @@
 - **다중 계층(Nested Tree) 자동 파싱**: 키움 API 특유의 까다로운 응답 배열 구조(예: 일봉차트, 거래내역)를 완벽하게 분석해 하위 리스트(List) 객체로 매핑해 줍니다.
 - **스마트한 타입 예외 처리**: 키움증권 서버가 스펙과 다르게 빈 문자열(`""`)이나 빈 배열(`[]`)을 내려보내도 에러 없이 처리하는 자체 방어 로직(`BeforeValidator`)이 탑재되어 있습니다.
 
-### 2. 🚦 통신 안정성 (Auto-Token & Rate Limit)
+### 2. 🚦 통신 안정성 및 WebSocket 실시간 지원
 - **토큰 자동 갱신**: 첫 호출 시 Access Token을 발급받고, 만료 시 백그라운드에서 자동으로 갱신(Renew)하여 요청을 이어나갑니다.
 - **API 호출 빈도 제한(Rate Limiting)**: 실전투자(초당 5회 미만), 모의투자(초당 1회 미만) 제약에 걸리지 않도록 내부적으로 `Lock`과 `Sleep`을 통해 호출 속도를 안전하게 조절해 줍니다.
+- **WebSocket 실시간 연동 지원**: REST API 뿐만 아니라 `websockets` 기반의 비동기 클라이언트(`KiwoomWsClient`)를 내장하여, 실시간 시세 및 조건검색 데이터를 Pydantic 타입으로 안전하게 구독하고 수신할 수 있습니다.
 
 ### 3. 🖥️ 웹 기반 API 플레이그라운드
 - **자동 폼(Form) 생성**: API를 선택하면 해당 API에 필요한 **요청 파라미터**와 **헤더** 입력 창이 알아서 렌더링됩니다.
@@ -25,29 +26,30 @@
 
 ## 🚀 시작하기 (How to run)
 
-### 1. 요구 사항
-- Python 3.9 이상
-- 키움증권 OpenAPI App Key 및 Secret Key (키움증권 개발자 포털에서 발급)
+### 1. 패키지 설치
 
-### 2. 설치 및 실행
+용도에 따라 두 가지 방식으로 설치할 수 있습니다.
 
+**A. 봇 개발자 (순수 SDK만 필요한 경우)**
 ```bash
-# 1. 저장소 클론 및 이동
-git clone <repository-url>
-cd kiwoom-playground
+pip install .
+```
+웹 관련 라이브러리가 제외된 가벼운 코어 통신 모듈만 설치됩니다.
 
-# 2. 파이썬 가상환경 생성 및 활성화
-python3 -m venv .venv
-source .venv/bin/activate  # Windows의 경우: .venv\Scripts\activate
+**B. 테스터 및 입문자 (웹 플레이그라운드가 필요한 경우)**
+```bash
+pip install ".[playground]"
+```
+API를 브라우저에서 테스트할 수 있도록 FastAPI 및 로컬 웹 서버 환경이 함께 설치됩니다.
 
-# 3. 의존성 패키지 설치
-pip install -r requirements.txt
+### 2. 웹 플레이그라운드 구동 (B 옵션 설치 시)
 
-# 4. 서버 실행 (플레이그라운드 구동 시)
-./run.sh
+터미널에 아래 명령어를 입력하면 로컬 서버가 시작됩니다.
+```bash
+kiwoom-playground
+# 또는 ./run.sh 실행
 ```
 
-### 3. 웹 플레이그라운드 접속
 브라우저를 열고 `http://localhost:8000` 에 접속합니다. 좌측 하단의 **⚙️ 환경 설정 (OAuth 로그인)** 버튼을 눌러 본인의 키움증권 Key를 입력한 뒤 실험해 보세요!
 
 ---
@@ -91,19 +93,20 @@ for chart_data in res.stk_dt_pole_chart_qry:
 
 ```text
 .
-├── 📂 kiwoom/                 # 💎 핵심 파이썬 SDK 패키지 (이것만 복사해 사용 가능)
-│   ├── client.py              # 통신, 토큰 갱신, 빈도 제한 제어
-│   ├── typed_api.py           # 207개 API의 Pydantic 입출력 객체 및 Client
-│   ├── apis.json              # 크롤링된 API 명세 데이터베이스
-│   └── docs.md                # SDK 상세 사용 가이드
+├── 📂 kiwoom_rest/            # 💎 핵심 파이썬 SDK 코어 패키지
+│   ├── client.py              # 통신, 토큰 갱신, 웹소켓 등 코어
+│   ├── typed_api.py           # 207개 API의 Pydantic 객체 모음
+│   └── apis.json              # 크롤링된 API 명세 데이터베이스
 │
-├── 📂 tools/                  # 🛠️ 개발 도구 (업데이트용)
-│   ├── scrape_apis.py         # 키움증권 가이드 페이지 크롤러
-│   └── generate_api_code.py   # apis.json을 바탕으로 typed_api.py 코드를 찍어내는 제너레이터
+├── 📂 kiwoom_playground/      # 🖥️ 웹 서버 & CLI 패키지 (Optional)
+│   ├── cli.py                 # kiwoom-playground CLI 진입점
+│   ├── server.py              # 플레이그라운드 구동 FastAPI 백엔드
+│   └── 📂 templates/          # 프론트엔드 UI 화면
 │
-├── 📂 templates/              # 플레이그라운드 프론트엔드 UI 화면
-├── main.py                    # 플레이그라운드를 구동하기 위한 FastAPI 서버
-└── example.py                 # SDK 사용 예제 스크립트
+├── 📂 tools/                  # 🛠️ 스펙 크롤링 및 제너레이터 (업데이트용)
+├── 📂 examples/               # 💡 SDK 사용 예제 스크립트 모음
+├── pyproject.toml             # 패키지 설정 파일
+└── run.sh                     # 간편 실행 쉘 스크립트
 ```
 
 ---

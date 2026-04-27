@@ -1,8 +1,8 @@
 import os
 import json
 from dotenv import load_dotenv
-from kiwoom.client import KiwoomClient, KiwoomException
-from kiwoom.typed_api import KiwoomTypedClient, RequestForBasicStockInformationRequest, StockPurchaseOrderRequest, StockDailyChartInquiryRequestRequest
+from kiwoom_rest.client import KiwoomClient, KiwoomException
+from kiwoom_rest.typed_api import KiwoomTypedClient, RequestForBasicStockInformationRequest, StockPurchaseOrderRequest, StockDailyChartInquiryRequestRequest
 
 # ==========================================
 # 1. 환경변수(.env) 로드 및 설정

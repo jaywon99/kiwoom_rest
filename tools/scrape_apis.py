@@ -185,9 +185,9 @@ for group in groups:
 import os
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, "../kiwoom/apis.json")
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, "../kiwoom_rest/apis.json")
 
 with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
     json.dump(all_apis, f, ensure_ascii=False, indent=2)
 
-print("Saved to kiwoom/apis.json with nested response models included.")
+print("Saved to kiwoom_rest/apis.json with nested response models included.")

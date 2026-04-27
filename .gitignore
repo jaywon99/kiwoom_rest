@@ -12,3 +12,9 @@ env/
 
 # OS
 .DS_Store
+
+# Build & Versioning
+build/
+dist/
+*.egg-info/
+kiwoom_rest/_version.py

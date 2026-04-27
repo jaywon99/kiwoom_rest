@@ -89,6 +89,10 @@
                 <option value="https://api.kiwoom.com">실전투자 (https://api.kiwoom.com)</option>
             </select>
         </div>
+        <div class="form-group">
+            <label>WebSocket URL (Optional)</label>
+            <input type="text" id="setting-wsurl" placeholder="예: wss://api.kiwoom.com:10000 (기본값)">
+        </div>
         <div class="modal-buttons">
             <button class="btn-danger" id="clear-settings-btn" style="margin-right: auto;">로그아웃 (초기화)</button>
             <button class="btn-cancel" id="close-settings-btn">취소</button>
@@ -135,6 +139,7 @@
 
     let currentApi = null;
     let lastResponseData = null;
+    let ws = null;
 
     const apiItemsContainer = document.getElementById("api-items");
     const currentApiTitle = document.getElementById("current-api-title");
@@ -144,6 +149,55 @@
     const executeBtn = document.getElementById("execute-btn");
     const responseOutput = document.getElementById("response-output");
     const downloadBtn = document.getElementById("download-btn");
+
+    function appendResponse(data) {
+        if (!responseOutput.textContent || responseOutput.textContent === "결과가 여기에 표시됩니다." || responseOutput.textContent === "Loading...") {
+            responseOutput.textContent = "";
+        }
+        const prefix = `\n[${new Date().toLocaleTimeString()}] `;
+        responseOutput.textContent += prefix + JSON.stringify(data, null, 2) + "\n";
+        responseOutput.scrollTop = responseOutput.scrollHeight;
+    }
+
+    function ensureWebSocket() {
+        return new Promise((resolve, reject) => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                resolve(ws);
+                return;
+            }
+            
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            ws = new WebSocket(`${protocol}//${window.location.host}/api/ws_proxy`);
+            
+            ws.onopen = () => {
+                ws.send(JSON.stringify({
+                    appkey: safeGetItem("kiwoom_appkey") || null,
+                    secretkey: safeGetItem("kiwoom_secretkey") || null,
+                    base_url: safeGetItem("kiwoom_baseurl") || null,
+                    ws_url: safeGetItem("kiwoom_wsurl") || null
+                }));
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.status === "connected") {
+                    resolve(ws);
+                } else if (data.error && data.error.includes("Kiwoom WS connect failed")) {
+                    reject(new Error(data.error));
+                } else {
+                    appendResponse(data);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                reject(error);
+            };
+            
+            ws.onclose = () => {
+                ws = null;
+            };
+        });
+    }
 
     // Settings Modal Logic
     const settingsModal = document.getElementById("settings-modal");
@@ -172,6 +226,7 @@
         document.getElementById("setting-secretkey").value = safeGetItem("kiwoom_secretkey");
         document.getElementById("setting-accid").value = safeGetItem("kiwoom_accid");
         document.getElementById("setting-baseurl").value = safeGetItem("kiwoom_baseurl") || "https://mockapi.kiwoom.com";
+        document.getElementById("setting-wsurl").value = safeGetItem("kiwoom_wsurl");
     }
 
     openSettingsBtn.onclick = () => {
@@ -188,6 +243,7 @@
         safeSetItem("kiwoom_secretkey", document.getElementById("setting-secretkey").value);
         safeSetItem("kiwoom_accid", document.getElementById("setting-accid").value);
         safeSetItem("kiwoom_baseurl", document.getElementById("setting-baseurl").value);
+        safeSetItem("kiwoom_wsurl", document.getElementById("setting-wsurl").value);
         settingsModal.style.display = "none";
         alert("설정이 안전하게 난독화되어 저장되었습니다.");
     };
@@ -217,6 +273,7 @@
             localStorage.removeItem("kiwoom_secretkey");
             localStorage.removeItem("kiwoom_accid");
             localStorage.removeItem("kiwoom_baseurl");
+            localStorage.removeItem("kiwoom_wsurl");
             loadSettings();
             
             clearSettingsBtn.disabled = false;
@@ -339,7 +396,10 @@
         
         executeBtn.disabled = true;
         executeBtn.textContent = "실행 중...";
-        responseOutput.textContent = "Loading...";
+        
+        if (currentApi.path !== "/api/dostk/websocket") {
+            responseOutput.textContent = "Loading...";
+        }
         
         const headers = {};
         currentApi.headers.forEach(h => {
@@ -350,11 +410,40 @@
         const params = {};
         currentApi.params.forEach(p => {
             const el = document.getElementById(`param-${p.key}`);
-            if (el && el.value) params[p.key] = el.value;
+            if (el && el.value) {
+                let val = el.value;
+                if ((val.startsWith('[') && val.endsWith(']')) || (val.startsWith('{') && val.endsWith('}'))) {
+                    try { val = JSON.parse(val); } catch(e) {}
+                }
+                params[p.key] = val;
+            }
         });
         
-        // Add api-id to headers as required by Kiwoom
         headers["api-id"] = currentApi.id;
+        
+        if (currentApi.path === "/api/dostk/websocket") {
+            try {
+                executeBtn.textContent = "연결 중...";
+                await ensureWebSocket();
+                
+                if (responseOutput.textContent === "결과가 여기에 표시됩니다." || responseOutput.textContent === "Loading...") {
+                    responseOutput.textContent = "=== WebSocket Connected ===\n";
+                }
+                
+                ws.send(JSON.stringify({
+                    action: "send",
+                    data: params
+                }));
+                
+                appendResponse({ request_sent: params });
+            } catch (err) {
+                appendResponse({ error: "WebSocket Error: " + err.message });
+            } finally {
+                executeBtn.disabled = false;
+                executeBtn.textContent = "실행 (Execute)";
+            }
+            return;
+        }
         
         try {
             const payload = {

@@ -3,8 +3,8 @@ import re
 import os
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-APIS_JSON_PATH = os.path.join(SCRIPT_DIR, '../kiwoom/apis.json')
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, '../kiwoom/typed_api.py')
+APIS_JSON_PATH = os.path.join(SCRIPT_DIR, '../kiwoom_rest/apis.json')
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, '../kiwoom_rest/typed_api.py')
 
 def to_snake_case(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -27,7 +27,7 @@ with open(APIS_JSON_PATH, 'r', encoding='utf-8') as f:
 
 out = [
     "from pydantic import BaseModel, Field, ConfigDict, BeforeValidator", 
-    "from typing import Optional, Dict, Any, List, Type, Annotated", 
+    "from typing import Optional, Dict, Any, List, Type, Annotated, Callable, Union", 
     "from .client import KiwoomClient",
     "",
     "# ====================================================================",
@@ -36,6 +36,8 @@ out = [
     "def _force_str(v: Any) -> str:",
     "    if v == [] or v is None:",
     '        return ""',
+    "    if isinstance(v, list):",
+    '        return ",".join(str(x) for x in v)',
     "    return str(v)",
     "",
     "def _force_list(v: Any) -> Any:",
@@ -82,7 +84,10 @@ def generate_sub_models(api, items, parent_class_name):
             
             field_declarations.append(f'    {py_key}: Annotated[List[{sub_class_name}], BeforeValidator(_force_list)] = Field(default_factory=list{alias_str}, description="{desc}")')
         else:
-            field_declarations.append(f'    {py_key}: SafeStr = Field(default=""{alias_str}, description="{desc}")')
+            if py_key == "item":
+                field_declarations.append(f'    {py_key}: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list{alias_str}, description="{desc}")')
+            else:
+                field_declarations.append(f'    {py_key}: SafeStr = Field(default=""{alias_str}, description="{desc}")')
             
     return sub_model_classes, field_declarations
 
@@ -139,6 +144,12 @@ out.extend([
     '    """',
     "    def __init__(self, client: KiwoomClient):",
     "        self.client = client",
+    "",
+    "    async def connect_ws(self, on_message: Callable[[Dict[str, Any]], Any]):",
+    "        await self.client.connect_ws(on_message)",
+    "",
+    "    async def disconnect_ws(self):",
+    "        await self.client.disconnect_ws()",
     ""
 ])
 
@@ -150,12 +161,17 @@ for api in apis:
     if method_name in ["import", "class", "def", "pass", "return", "yield"]:
         method_name += "_api"
         
-    out.append(f"    def {method_name}(self, req: {req_class_name}) -> {res_class_name}:")
-    out.append(f'        """[{api["id"]}] {api["name"]} ({api["group"]} - {api["category"]})"""')
-    out.append(f'        raw_response = self.client.call("{api["id"]}", **req.model_dump(by_alias=True, exclude_none=True))')
-    out.append(f'        return {res_class_name}(**raw_response)')
-    out.append("")
-
+    if api.get("path") == "/api/dostk/websocket":
+        out.append(f"    async def {method_name}(self, req: {req_class_name}):")
+        out.append(f'        """[{api["id"]}] {api["name"]} ({api["group"]} - {api["category"]})"""')
+        out.append(f'        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))')
+        out.append("")
+    else:
+        out.append(f"    def {method_name}(self, req: {req_class_name}) -> {res_class_name}:")
+        out.append(f'        """[{api["id"]}] {api["name"]} ({api["group"]} - {api["category"]})"""')
+        out.append(f'        raw_response = self.client.call("{api["id"]}", **req.model_dump(by_alias=True, exclude_none=True))')
+        out.append(f'        return {res_class_name}(**raw_response)')
+        out.append("")
 
 out.extend([
     "# ====================================================================",
@@ -179,7 +195,14 @@ for api in apis:
 out.append("}")
 out.append("")
 
+out.append("API_ID_TO_RES_MODEL: Dict[str, Type[BaseModel]] = {")
+for api in apis:
+    res_class_name = f"{api['class_name']}Response"
+    out.append(f'    "{api["id"]}": {res_class_name},')
+out.append("}")
+out.append("")
+
 with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
     f.write('\n'.join(out))
 
-print("✅ kiwoom/typed_api.py generated with Request AND Response models!")
+print("✅ kiwoom_rest/typed_api.py generated with Request AND Response models!")

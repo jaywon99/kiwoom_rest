@@ -23,8 +23,8 @@
 
 ### 공통: 클라이언트 초기화
 ```python
-from kiwoom.client import KiwoomClient, KiwoomException
-from kiwoom.typed_api import KiwoomTypedClient
+from kiwoom_rest.client import KiwoomClient, KiwoomException
+from kiwoom_rest.typed_api import KiwoomTypedClient
 
 # 1. 저수준 통신을 담당하는 Raw Client 초기화
 raw_client = KiwoomClient(
@@ -43,7 +43,7 @@ typed_client = KiwoomTypedClient(raw_client)
 IDE의 자동완성과 오타 방지 기능을 극대화하고 싶을 때 사용하는 최신 방식입니다.
 
 ```python
-from kiwoom.typed_api import RequestForBasicStockInformationRequest
+from kiwoom_rest.typed_api import RequestForBasicStockInformationRequest
 
 try:
     # 1. Pydantic 요청 모델 생성 (자동완성 지원)
@@ -65,7 +65,7 @@ except KiwoomException as e:
 #### 중첩 배열(List) 데이터 다루기
 키움증권이 반환하는 복잡한 차트 배열 등은 리스트 내부의 객체 구조까지 타입이 힌팅됩니다.
 ```python
-from kiwoom.typed_api import StockDailyChartInquiryRequestRequest
+from kiwoom_rest.typed_api import StockDailyChartInquiryRequestRequest
 
 req_chart = StockDailyChartInquiryRequestRequest(stk_cd="005930", base_dt="20240425")
 res_chart = typed_client.stock_daily_chart_inquiry_request(req_chart)
@@ -99,7 +99,7 @@ except KiwoomException as e:
 #### 동적 라우팅 (API ID 기반 객체 변환)
 만약 `**kwargs` 방식의 동적 장점과 Pydantic의 검증 장점을 섞고 싶다면 제공되는 레지스트리를 활용할 수 있습니다.
 ```python
-from kiwoom.typed_api import API_ID_TO_METHOD, API_ID_TO_REQ_MODEL
+from kiwoom_rest.typed_api import API_ID_TO_METHOD, API_ID_TO_REQ_MODEL
 
 api_id = "ka10081"
 method_name = API_ID_TO_METHOD[api_id]
@@ -108,6 +108,57 @@ RequestModelClass = API_ID_TO_REQ_MODEL[api_id]
 # 딕셔너리 데이터를 Pydantic으로 자동 캐스팅 & 검증
 req_model = RequestModelClass(**my_dynamic_json_dict)
 response_model = getattr(typed_client, method_name)(req_model)
+```
+
+### 방식 C: [신규] WebSocket 비동기 실시간 통신 (실시간 시세 및 조건검색)
+실시간 체결가, 호가잔량, 조건검색 실시간 편입/편출 등의 데이터를 구독할 때 사용합니다. Pydantic 모델을 활용하여 요청과 응답의 타입 안정성을 확보할 수 있습니다.
+
+```python
+import asyncio
+from kiwoom_rest.client import KiwoomClient
+from kiwoom_rest.typed_api import KiwoomTypedClient, OrderExecutionRequest, API_ID_TO_RES_MODEL
+
+async def main():
+    # 1. 클라이언트 초기화 (웹소켓 URL 기본 내장)
+    raw_client = KiwoomClient(appkey="...", secretkey="...", base_url="https://api.kiwoom.com")
+    typed_client = KiwoomTypedClient(raw_client)
+
+    # 2. 콜백 함수 정의: 동적 레지스트리를 활용한 자동 타입 캐스팅!
+    async def on_event(raw_data: dict):
+        data_list = raw_data.get("data", [])
+        if not data_list:
+            return
+            
+        tr_type = data_list[0].get("type")  # 예: "00" (주문체결)
+        
+        # TR 명(type)으로 알맞은 Response Pydantic 클래스를 찾아 캐스팅
+        ResponseClass = API_ID_TO_RES_MODEL.get(tr_type)
+        if ResponseClass:
+            res_obj = ResponseClass(**raw_data)
+            # res_obj 타입이 BaseResponse 수준으로 인식되므로, isinstance 검사를 하거나
+            # 제네릭 타입 힌트를 통해 해당 객체의 자동완성을 완벽하게 쓸 수 있습니다.
+            print(f"[{tr_type}] 자동 파싱 완료!", res_obj)
+        else:
+            print("매핑되는 클래스가 없습니다:", raw_data)
+
+    # 3. 웹소켓 연결
+    await typed_client.connect_ws(on_message=on_event)
+
+    # 4. 타입이 보장된 Pydantic 모델로 구독(REG) 요청 전송
+    req = OrderExecutionRequest(
+        trnm="REG",
+        grp_no="g123",
+        refresh="1",
+        data=[{"item": "005930", "type": "00"}]
+    )
+    
+    await typed_client.order_execution(req)
+
+    # 무한 대기 (실제 애플리케이션에서는 적절한 이벤트 루프 제어 필요)
+    await asyncio.sleep(3600)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ---

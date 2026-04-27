@@ -4,3 +4,4 @@
 - [x] TASK-002: KiwoomClient 모듈 분리
 - [x] TASK-003: KiwoomClient 응답 포맷 통일 및 에러 핸들링 고도화
 - [x] TASK-004: API 응답 객체화(Pydantic) 및 패키지 구조 리팩토링
+- [x] TASK-005: WebSocket 실시간 시세 연동 및 패키지 구조 전면 개편

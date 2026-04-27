@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict, BeforeValidator
-from typing import Optional, Dict, Any, List, Type, Annotated
+from typing import Optional, Dict, Any, List, Type, Annotated, Callable, Union
 from .client import KiwoomClient
 
 # ====================================================================
@@ -8,6 +8,8 @@ from .client import KiwoomClient
 def _force_str(v: Any) -> str:
     if v == [] or v is None:
         return ""
+    if isinstance(v, list):
+        return ",".join(str(x) for x in v)
     return str(v)
 
 def _force_list(v: Any) -> Any:
@@ -3573,7 +3575,7 @@ class CreditCancellationOrderResponse(BaseModel):
 
 class OrderExecutionRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class OrderExecutionRequest(BaseModel):
@@ -3626,7 +3628,7 @@ class OrderExecutionResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[OrderExecutionResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class OrderExecutionResponse(BaseModel):
@@ -3639,7 +3641,7 @@ class OrderExecutionResponse(BaseModel):
 
 class BalanceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class BalanceRequest(BaseModel):
@@ -3684,7 +3686,7 @@ class BalanceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[BalanceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class BalanceResponse(BaseModel):
@@ -3697,7 +3699,7 @@ class BalanceResponse(BaseModel):
 
 class StockMomentumRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockMomentumRequest(BaseModel):
@@ -3734,7 +3736,7 @@ class StockMomentumResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockMomentumResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockMomentumResponse(BaseModel):
@@ -3747,7 +3749,7 @@ class StockMomentumResponse(BaseModel):
 
 class StockSigningRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockSigningRequest(BaseModel):
@@ -3808,7 +3810,7 @@ class StockSigningResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0B,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockSigningResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockSigningResponse(BaseModel):
@@ -3821,7 +3823,7 @@ class StockSigningResponse(BaseModel):
 
 class StockPreferredPriceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockPreferredPriceRequest(BaseModel):
@@ -3841,7 +3843,7 @@ class StockPreferredPriceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockPreferredPriceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockPreferredPriceResponse(BaseModel):
@@ -3854,7 +3856,7 @@ class StockPreferredPriceResponse(BaseModel):
 
 class StockQuoteBalanceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockQuoteBalanceRequest(BaseModel):
@@ -4035,7 +4037,7 @@ class StockQuoteBalanceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockQuoteBalanceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockQuoteBalanceResponse(BaseModel):
@@ -4048,7 +4050,7 @@ class StockQuoteBalanceResponse(BaseModel):
 
 class StockAfterHoursQuoteRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockAfterHoursQuoteRequest(BaseModel):
@@ -4071,7 +4073,7 @@ class StockAfterHoursQuoteResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     values: Annotated[List[StockAfterHoursQuoteResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockAfterHoursQuoteResponse(BaseModel):
@@ -4084,7 +4086,7 @@ class StockAfterHoursQuoteResponse(BaseModel):
 
 class StockDayTraderRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockDayTraderRequest(BaseModel):
@@ -4159,7 +4161,7 @@ class StockDayTraderResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockDayTraderResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockDayTraderResponse(BaseModel):
@@ -4172,7 +4174,7 @@ class StockDayTraderResponse(BaseModel):
 
 class EtfNavRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class EtfNavRequest(BaseModel):
@@ -4205,7 +4207,7 @@ class EtfNavResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[EtfNavResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class EtfNavResponse(BaseModel):
@@ -4218,7 +4220,7 @@ class EtfNavResponse(BaseModel):
 
 class StockExpectedExecutionRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockExpectedExecutionRequest(BaseModel):
@@ -4243,7 +4245,7 @@ class StockExpectedExecutionResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockExpectedExecutionResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockExpectedExecutionResponse(BaseModel):
@@ -4256,7 +4258,7 @@ class StockExpectedExecutionResponse(BaseModel):
 
 class InternationalGoldConversionPriceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 MGD: 원/g, MGU: $/온스,소수점2자리")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 MGD: 원/g, MGU: $/온스,소수점2자리")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class InternationalGoldConversionPriceRequest(BaseModel):
@@ -4278,7 +4280,7 @@ class InternationalGoldConversionPriceResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0B,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[InternationalGoldConversionPriceResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class InternationalGoldConversionPriceResponse(BaseModel):
@@ -4290,7 +4292,7 @@ class InternationalGoldConversionPriceResponse(BaseModel):
 
 class SectorIndexRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class SectorIndexRequest(BaseModel):
@@ -4320,7 +4322,7 @@ class SectorIndexResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[SectorIndexResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class SectorIndexResponse(BaseModel):
@@ -4333,7 +4335,7 @@ class SectorIndexResponse(BaseModel):
 
 class IndustryFluctuationsRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class IndustryFluctuationsRequest(BaseModel):
@@ -4365,7 +4367,7 @@ class IndustryFluctuationsResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[IndustryFluctuationsResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class IndustryFluctuationsResponse(BaseModel):
@@ -4378,7 +4380,7 @@ class IndustryFluctuationsResponse(BaseModel):
 
 class StockItemInformationRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockItemInformationRequest(BaseModel):
@@ -4406,7 +4408,7 @@ class StockItemInformationResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockItemInformationResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockItemInformationResponse(BaseModel):
@@ -4419,7 +4421,7 @@ class StockItemInformationResponse(BaseModel):
 
 class ElwTheoristRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class ElwTheoristRequest(BaseModel):
@@ -4447,7 +4449,7 @@ class ElwTheoristResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[ElwTheoristResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class ElwTheoristResponse(BaseModel):
@@ -4460,7 +4462,7 @@ class ElwTheoristResponse(BaseModel):
 
 class LongStartTimeRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class LongStartTimeRequest(BaseModel):
@@ -4481,7 +4483,7 @@ class LongStartTimeResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[LongStartTimeResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class LongStartTimeResponse(BaseModel):
@@ -4494,7 +4496,7 @@ class LongStartTimeResponse(BaseModel):
 
 class ElwIndicatorRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class ElwIndicatorRequest(BaseModel):
@@ -4518,7 +4520,7 @@ class ElwIndicatorResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[ElwIndicatorResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class ElwIndicatorResponse(BaseModel):
@@ -4531,7 +4533,7 @@ class ElwIndicatorResponse(BaseModel):
 
 class StockProgramTradingRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class StockProgramTradingRequest(BaseModel):
@@ -4566,7 +4568,7 @@ class StockProgramTradingResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[StockProgramTradingResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class StockProgramTradingResponse(BaseModel):
@@ -4579,7 +4581,7 @@ class StockProgramTradingResponse(BaseModel):
 
 class ActivateDisableViRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
     type: SafeStr = Field(default="", description="실시간 항목 TR 명(0A,0B....)")
 
 class ActivateDisableViRequest(BaseModel):
@@ -4616,7 +4618,7 @@ class ActivateDisableViResponse_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
+    item: Annotated[List[str], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 요소 종목코드")
     values: Annotated[List[ActivateDisableViResponse_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
 
 class ActivateDisableViResponse(BaseModel):
@@ -7506,6 +7508,12 @@ class KiwoomTypedClient:
     def __init__(self, client: KiwoomClient):
         self.client = client
 
+    async def connect_ws(self, on_message: Callable[[Dict[str, Any]], Any]):
+        await self.client.connect_ws(on_message)
+
+    async def disconnect_ws(self):
+        await self.client.disconnect_ws()
+
     def access_token_issuance(self, req: AccessTokenIssuanceRequest) -> AccessTokenIssuanceResponse:
         """[au10001] 접근토큰 발급 (OAuth 인증 - 접근토큰발급)"""
         raw_response = self.client.call("au10001", **req.model_dump(by_alias=True, exclude_none=True))
@@ -7986,100 +7994,81 @@ class KiwoomTypedClient:
         raw_response = self.client.call("kt10009", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditCancellationOrderResponse(**raw_response)
 
-    def order_execution(self, req: OrderExecutionRequest) -> OrderExecutionResponse:
+    async def order_execution(self, req: OrderExecutionRequest):
         """[00] 주문체결 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("00", **req.model_dump(by_alias=True, exclude_none=True))
-        return OrderExecutionResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def balance(self, req: BalanceRequest) -> BalanceResponse:
+    async def balance(self, req: BalanceRequest):
         """[04] 잔고 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("04", **req.model_dump(by_alias=True, exclude_none=True))
-        return BalanceResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_momentum(self, req: StockMomentumRequest) -> StockMomentumResponse:
+    async def stock_momentum(self, req: StockMomentumRequest):
         """[0A] 주식기세 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0A", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockMomentumResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_signing(self, req: StockSigningRequest) -> StockSigningResponse:
+    async def stock_signing(self, req: StockSigningRequest):
         """[0B] 주식체결 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0B", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockSigningResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_preferred_price(self, req: StockPreferredPriceRequest) -> StockPreferredPriceResponse:
+    async def stock_preferred_price(self, req: StockPreferredPriceRequest):
         """[0C] 주식우선호가 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0C", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockPreferredPriceResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_quote_balance(self, req: StockQuoteBalanceRequest) -> StockQuoteBalanceResponse:
+    async def stock_quote_balance(self, req: StockQuoteBalanceRequest):
         """[0D] 주식호가잔량 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0D", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockQuoteBalanceResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_after_hours_quote(self, req: StockAfterHoursQuoteRequest) -> StockAfterHoursQuoteResponse:
+    async def stock_after_hours_quote(self, req: StockAfterHoursQuoteRequest):
         """[0E] 주식시간외호가 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0E", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockAfterHoursQuoteResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_day_trader(self, req: StockDayTraderRequest) -> StockDayTraderResponse:
+    async def stock_day_trader(self, req: StockDayTraderRequest):
         """[0F] 주식당일거래원 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0F", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockDayTraderResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def etf_nav(self, req: EtfNavRequest) -> EtfNavResponse:
+    async def etf_nav(self, req: EtfNavRequest):
         """[0G] ETF NAV (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0G", **req.model_dump(by_alias=True, exclude_none=True))
-        return EtfNavResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_expected_execution(self, req: StockExpectedExecutionRequest) -> StockExpectedExecutionResponse:
+    async def stock_expected_execution(self, req: StockExpectedExecutionRequest):
         """[0H] 주식예상체결 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0H", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockExpectedExecutionResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def international_gold_conversion_price(self, req: InternationalGoldConversionPriceRequest) -> InternationalGoldConversionPriceResponse:
+    async def international_gold_conversion_price(self, req: InternationalGoldConversionPriceRequest):
         """[0I] 국제금환산가격 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0I", **req.model_dump(by_alias=True, exclude_none=True))
-        return InternationalGoldConversionPriceResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def sector_index(self, req: SectorIndexRequest) -> SectorIndexResponse:
+    async def sector_index(self, req: SectorIndexRequest):
         """[0J] 업종지수 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0J", **req.model_dump(by_alias=True, exclude_none=True))
-        return SectorIndexResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def industry_fluctuations(self, req: IndustryFluctuationsRequest) -> IndustryFluctuationsResponse:
+    async def industry_fluctuations(self, req: IndustryFluctuationsRequest):
         """[0U] 업종등락 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0U", **req.model_dump(by_alias=True, exclude_none=True))
-        return IndustryFluctuationsResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_item_information(self, req: StockItemInformationRequest) -> StockItemInformationResponse:
+    async def stock_item_information(self, req: StockItemInformationRequest):
         """[0g] 주식종목정보 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0g", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockItemInformationResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def elw_theorist(self, req: ElwTheoristRequest) -> ElwTheoristResponse:
+    async def elw_theorist(self, req: ElwTheoristRequest):
         """[0m] ELW 이론가 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0m", **req.model_dump(by_alias=True, exclude_none=True))
-        return ElwTheoristResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def long_start_time(self, req: LongStartTimeRequest) -> LongStartTimeResponse:
+    async def long_start_time(self, req: LongStartTimeRequest):
         """[0s] 장시작시간 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0s", **req.model_dump(by_alias=True, exclude_none=True))
-        return LongStartTimeResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def elw_indicator(self, req: ElwIndicatorRequest) -> ElwIndicatorResponse:
+    async def elw_indicator(self, req: ElwIndicatorRequest):
         """[0u] ELW 지표 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0u", **req.model_dump(by_alias=True, exclude_none=True))
-        return ElwIndicatorResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def stock_program_trading(self, req: StockProgramTradingRequest) -> StockProgramTradingResponse:
+    async def stock_program_trading(self, req: StockProgramTradingRequest):
         """[0w] 종목프로그램매매 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("0w", **req.model_dump(by_alias=True, exclude_none=True))
-        return StockProgramTradingResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def activate_disable_vi(self, req: ActivateDisableViRequest) -> ActivateDisableViResponse:
+    async def activate_disable_vi(self, req: ActivateDisableViRequest):
         """[1h] VI발동/해제 (국내주식 - 실시간시세)"""
-        raw_response = self.client.call("1h", **req.model_dump(by_alias=True, exclude_none=True))
-        return ActivateDisableViResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
     def industry_program_request(self, req: IndustryProgramRequestRequest) -> IndustryProgramRequestResponse:
         """[ka10010] 업종프로그램요청 (국내주식 - 업종)"""
@@ -8111,25 +8100,21 @@ class KiwoomTypedClient:
         raw_response = self.client.call("ka20009", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryCurrentPriceDailyRequestResponse(**raw_response)
 
-    def condition_search_list_inquiry(self, req: ConditionSearchListInquiryRequest) -> ConditionSearchListInquiryResponse:
+    async def condition_search_list_inquiry(self, req: ConditionSearchListInquiryRequest):
         """[ka10171] 조건검색 목록조회 (국내주식 - 조건검색)"""
-        raw_response = self.client.call("ka10171", **req.model_dump(by_alias=True, exclude_none=True))
-        return ConditionSearchListInquiryResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def conditional_search_request_general(self, req: ConditionalSearchRequestGeneralRequest) -> ConditionalSearchRequestGeneralResponse:
+    async def conditional_search_request_general(self, req: ConditionalSearchRequestGeneralRequest):
         """[ka10172] 조건검색 요청 일반 (국내주식 - 조건검색)"""
-        raw_response = self.client.call("ka10172", **req.model_dump(by_alias=True, exclude_none=True))
-        return ConditionalSearchRequestGeneralResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def real_time_conditional_search_request(self, req: RealTimeConditionalSearchRequestRequest) -> RealTimeConditionalSearchRequestResponse:
+    async def real_time_conditional_search_request(self, req: RealTimeConditionalSearchRequestRequest):
         """[ka10173] 조건검색 요청 실시간 (국내주식 - 조건검색)"""
-        raw_response = self.client.call("ka10173", **req.model_dump(by_alias=True, exclude_none=True))
-        return RealTimeConditionalSearchRequestResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    def conditional_search_real_time_cancellation(self, req: ConditionalSearchRealTimeCancellationRequest) -> ConditionalSearchRealTimeCancellationResponse:
+    async def conditional_search_real_time_cancellation(self, req: ConditionalSearchRealTimeCancellationRequest):
         """[ka10174] 조건검색 실시간 해제 (국내주식 - 조건검색)"""
-        raw_response = self.client.call("ka10174", **req.model_dump(by_alias=True, exclude_none=True))
-        return ConditionalSearchRealTimeCancellationResponse(**raw_response)
+        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
     def real_time_item_inquiry_ranking(self, req: RealTimeItemInquiryRankingRequest) -> RealTimeItemInquiryRankingResponse:
         """[ka00198] 실시간종목조회순위 (국내주식 - 종목정보)"""
@@ -8963,4 +8948,214 @@ API_ID_TO_REQ_MODEL: Dict[str, Type[BaseModel]] = {
     "ka40008": EtfTransactionRequestByDateRequest,
     "ka40009": EtfTradingRequestByTimeSlot1Request,
     "ka40010": EtfTimeZoneTrendRequest1Request,
+}
+
+API_ID_TO_RES_MODEL: Dict[str, Type[BaseModel]] = {
+    "au10001": AccessTokenIssuanceResponse,
+    "au10002": DiscardAccessTokenResponse,
+    "ka00001": AccountNumberInquiryResponse,
+    "ka01690": DailyBalanceReturnRateResponse,
+    "ka10072": RealizedProfitLossRequestByDateItemDateResponse,
+    "ka10073": RealizedProfitLossRequestByDateAndItemPeriodResponse,
+    "ka10074": RequestForRealizedProfitOrLossByDateResponse,
+    "ka10075": NonConfirmationRequestResponse,
+    "ka10076": ConclusionRequestResponse,
+    "ka10077": RequestForSameDayRealizedProfitAndLossResponse,
+    "ka10085": AccountYieldRequestResponse,
+    "ka10088": UnfilledSplitOrderDetailsResponse,
+    "ka10170": SameDaySalesLogRequestResponse,
+    "kt00001": RequestDetailedStatusOfDepositResponse,
+    "kt00002": DailyEstimatedDepositedAssetStatusRequestResponse,
+    "kt00003": EstimatedAssetInquiryRequestResponse,
+    "kt00004": RequestForAccountEvaluationStatusResponse,
+    "kt00005": RequestForTransactionBalanceResponse,
+    "kt00007": RequestDetailsOnOrderDetailsByAccountResponse,
+    "kt00008": RequestNextDayPaymentScheduleDetailsForEachAccountResponse,
+    "kt00009": RequestForOrderExecutionStatusByAccountResponse,
+    "kt00010": RequestForOrderWithdrawalAmountResponse,
+    "kt00011": RequestToInquiryQuantityAvailableForOrderByMarginRateResponse,
+    "kt00012": RequestToInquiryQuantityAvailableForOrderByCreditDepositRateResponse,
+    "kt00013": MarginDetailsInquiryRequestResponse,
+    "kt00015": RequestForComprehensiveConsignmentTransactionDetailsResponse,
+    "kt00016": RequestForDetailedStatusOfDailyAccountReturnsResponse,
+    "kt00017": RequestDailyStatusForEachAccountResponse,
+    "kt00018": RequestForAccountEvaluationBalanceDetailsResponse,
+    "kt50020": CheckGoldSpotBalanceResponse,
+    "kt50021": GoldSpotDepositResponse,
+    "kt50030": ViewAllGoldSpotOrdersResponse,
+    "kt50031": GoldSpotOrderExecutionInquiryResponse,
+    "kt50032": GoldSpotTransactionHistoryInquiryResponse,
+    "kt50075": GoldSpotNonTradingInquiryResponse,
+    "ka10014": ShortSellingTrendRequestResponse,
+    "ka10008": ForeignStockTradingTrendsByItemResponse,
+    "ka10009": StockInstitutionRequestResponse,
+    "ka10131": RequestForStatusOfContinuousTradingByInstitutionalForeignersResponse,
+    "ka52301": CurrentStatusOfGoldSpotInvestorsResponse,
+    "ka10068": RequestForLoanLendingTransactionTrendResponse,
+    "ka10069": RequestForTop10BorrowingStocksResponse,
+    "ka20068": RequestForLoanLendingTransactionTrendByItemResponse,
+    "ka90012": RequestForLoanTransactionDetailsResponse,
+    "ka10020": RequestForHigherQuotaBalanceResponse,
+    "ka10021": RequestForSuddenIncreaseInQuotationBalanceResponse,
+    "ka10022": RequestForSuddenIncreaseInRemainingCapacityResponse,
+    "ka10023": RequestForSuddenIncreaseInTradingVolumeResponse,
+    "ka10027": RequestForHigherFluctuationRateComparedToThePreviousDayResponse,
+    "ka10029": RequestForHigherExpectedTransactionRateResponse,
+    "ka10030": HighTransactionVolumeRequestForTheDayResponse,
+    "ka10031": RequestForThePreviousDaySHighestTradingVolumeResponse,
+    "ka10032": RequestForHigherTransactionAmountResponse,
+    "ka10033": RequestForHigherCreditRatioResponse,
+    "ka10034": ExternalTransactionTopSalesRequestByPeriodResponse,
+    "ka10035": ForeignContinuousNetSalesTopRequestResponse,
+    "ka10036": TopForeignLimitBurnoutRateIncreaseResponse,
+    "ka10037": ForeignOverTheCounterSalesRequestResponse,
+    "ka10038": RequestRankingOfSecuritiesCompaniesByStockResponse,
+    "ka10039": TopTradingRequestBySecuritiesCompanyResponse,
+    "ka10040": SameDayMajorTransactionRequestResponse,
+    "ka10042": NetBuyingTraderRankingRequestResponse,
+    "ka10053": RequestForSameDayHighWithdrawalResponse,
+    "ka10062": RequestForSameNetSalesRankingResponse,
+    "ka10065": IntradayTradingRequestByInvestorResponse,
+    "ka10098": RequestForRankingOfOutOfHoursSinglePriceFluctuationRateResponse,
+    "ka90009": ForeignInstitutionalTradingTopRequestResponse,
+    "ka10004": StockQuoteRequestResponse,
+    "ka10005": StockWeeklyMonthlyAndHourlyMinutesRequestResponse,
+    "ka10006": StockTimeRequestResponse,
+    "ka10007": RequestForPriceInformationResponse,
+    "ka10011": RequestToViewAllNewStockWarrantsResponse,
+    "ka10044": RequestForDailyInstitutionalTradingItemsResponse,
+    "ka10045": RequestForInstitutionalTradingTrendByItemResponse,
+    "ka10046": RequestForFasteningStrengthTrendByTimeResponse,
+    "ka10047": RequestForDailyTighteningStrengthTrendResponse,
+    "ka10063": IntradayInvestorSpecificTradingRequestResponse,
+    "ka10066": RequestForTradingByInvestorAfterMarketCloseResponse,
+    "ka10078": RequestForStockTradingTrendsBySecuritiesCompanyResponse,
+    "ka10086": DailyStockRequestResponse,
+    "ka10087": SingleRequestAfterHoursResponse,
+    "ka50010": GoldSpotTradingTrendResponse,
+    "ka50012": SpotGoldDailyTrendResponse,
+    "ka50087": GoldSpotExpectedTransactionResponse,
+    "ka50100": GoldSpotPriceInformationResponse,
+    "ka50101": GoldSpotQuoteResponse,
+    "ka90005": ProgramTradingTrendRequestByTimeZoneResponse,
+    "ka90006": ProgramTradingProfitBalanceTrendRequestResponse,
+    "ka90007": RequestForCumulativeProgramTradingTrendResponse,
+    "ka90008": RequestForProgramTradingTrendByItemTimeResponse,
+    "ka90010": ProgramTradingTrendRequestDateResponse,
+    "ka90013": RequestDailyProgramTradingTrendForItemsResponse,
+    "kt10006": CreditBuyOrderResponse,
+    "kt10007": CreditSellOrderResponse,
+    "kt10008": CreditCorrectionOrderResponse,
+    "kt10009": CreditCancellationOrderResponse,
+    "00": OrderExecutionResponse,
+    "04": BalanceResponse,
+    "0A": StockMomentumResponse,
+    "0B": StockSigningResponse,
+    "0C": StockPreferredPriceResponse,
+    "0D": StockQuoteBalanceResponse,
+    "0E": StockAfterHoursQuoteResponse,
+    "0F": StockDayTraderResponse,
+    "0G": EtfNavResponse,
+    "0H": StockExpectedExecutionResponse,
+    "0I": InternationalGoldConversionPriceResponse,
+    "0J": SectorIndexResponse,
+    "0U": IndustryFluctuationsResponse,
+    "0g": StockItemInformationResponse,
+    "0m": ElwTheoristResponse,
+    "0s": LongStartTimeResponse,
+    "0u": ElwIndicatorResponse,
+    "0w": StockProgramTradingResponse,
+    "1h": ActivateDisableViResponse,
+    "ka10010": IndustryProgramRequestResponse,
+    "ka10051": InvestorNetPurchaseRequestByIndustryResponse,
+    "ka20001": CurrentIndustryRequestResponse,
+    "ka20002": RequestForStocksByIndustryResponse,
+    "ka20003": RequestForAllIndustryIndicesResponse,
+    "ka20009": IndustryCurrentPriceDailyRequestResponse,
+    "ka10171": ConditionSearchListInquiryResponse,
+    "ka10172": ConditionalSearchRequestGeneralResponse,
+    "ka10173": RealTimeConditionalSearchRequestResponse,
+    "ka10174": ConditionalSearchRealTimeCancellationResponse,
+    "ka00198": RealTimeItemInquiryRankingResponse,
+    "ka10001": RequestForBasicStockInformationResponse,
+    "ka10002": StockExchangeRequestResponse,
+    "ka10003": RequestForConclusionInformationResponse,
+    "ka10013": CreditTradingTrendRequestResponse,
+    "ka10015": DailyTransactionRequestResponse,
+    "ka10016": RequestForLowReportResponse,
+    "ka10017": RequestForUpperAndLowerLimitsResponse,
+    "ka10018": HighAndLowPriceProximityRequestResponse,
+    "ka10019": RequestForSuddenPriceFluctuationResponse,
+    "ka10024": TransactionVolumeUpdateRequestResponse,
+    "ka10025": RequestForConcentrationOfPropertiesForSaleResponse,
+    "ka10026": RequestForHighAndLowPerResponse,
+    "ka10028": RequestForFluctuationRateComparedToMarketPriceResponse,
+    "ka10043": RequestForTransactionPriceAnalysisResponse,
+    "ka10052": TraderInstantaneousTradingVolumeRequestResponse,
+    "ka10054": RequestForItemsToActivateVolatilityMitigationDeviceResponse,
+    "ka10055": RequestForSettlementTheDayBeforeTheDayResponse,
+    "ka10058": RequestForDailyTradingItemsByInvestorResponse,
+    "ka10059": RequestsByItemAndInvestorInstitutionResponse,
+    "ka10061": TotalRequestByItemAndInvestorInstitutionResponse,
+    "ka10084": RequestForSettlementTheDayBeforeTheSameDayResponse,
+    "ka10095": RequestInformationOnItemsOfInterestResponse,
+    "ka10099": StockInformationListResponse,
+    "ka10100": CheckStockInformationResponse,
+    "ka10101": IndustryCodeListResponse,
+    "ka10102": MemberCompanyListResponse,
+    "ka90003": RequestForTop50ProgramNetPurchasesResponse,
+    "ka90004": RequestForProgramTradingStatusByItemResponse,
+    "kt20016": RequestForCreditLoanAvailableItemsResponse,
+    "kt20017": CreditLoanAvailabilityInquiryResponse,
+    "kt10000": StockPurchaseOrderResponse,
+    "kt10001": StockSellOrderResponse,
+    "kt10002": StockCorrectionOrderResponse,
+    "kt10003": StockCancellationOrderResponse,
+    "kt50000": GoldSpotPurchaseOrderResponse,
+    "kt50001": GoldSpotSellOrderResponse,
+    "kt50002": SpotGoldCorrectionOrderResponse,
+    "kt50003": GoldSpotCancellationOrderResponse,
+    "ka10060": ChartRequestByItemAndInvestorInstitutionResponse,
+    "ka10064": IntradayInvestorSpecificTradingChartRequestResponse,
+    "ka10079": StockTickChartInquiryRequestResponse,
+    "ka10080": RequestToViewStockChartResponse,
+    "ka10081": StockDailyChartInquiryRequestResponse,
+    "ka10082": StockWeeklyChartInquiryRequestResponse,
+    "ka10083": StockMonthlyChartInquiryRequestResponse,
+    "ka10094": StockAnnualChartInquiryRequestResponse,
+    "ka20004": IndustryTickChartInquiryRequestResponse,
+    "ka20005": IndustryDivisionInquiryRequestResponse,
+    "ka20006": IndustryDailySalaryInquiryRequestResponse,
+    "ka20007": RequestForIndustrySalaryInquiryResponse,
+    "ka20008": IndustryMonthlySalaryInquiryRequestResponse,
+    "ka20019": IndustryYearSalaryInquiryRequestResponse,
+    "ka50079": GoldSpotTickChartInquiryRequestResponse,
+    "ka50080": GoldSpotFractionalChartInquiryRequestResponse,
+    "ka50081": GoldSpotDailyChartInquiryRequestResponse,
+    "ka50082": GoldSpotWeeklyChartInquiryRequestResponse,
+    "ka50083": GoldSpotMonthlyChartInquiryRequestResponse,
+    "ka50091": GoldSpotDailyTickChartInquiryRequestResponse,
+    "ka50092": RequestToViewGoldSpotDailyChartResponse,
+    "ka90001": RequestsByThemeGroupResponse,
+    "ka90002": RequestForThemeItemsResponse,
+    "ka10048": ElwDailySensitivityIndicatorRequestResponse,
+    "ka10050": ElwSensitivityIndicatorRequestResponse,
+    "ka30001": RequestForSuddenFluctuationInElwPriceResponse,
+    "ka30002": ElwNetSalesTopRequestByTraderResponse,
+    "ka30003": RequestDailyTrendOfElwlpHoldingsResponse,
+    "ka30004": ElwDisparityRateRequestResponse,
+    "ka30005": ElwConditionSearchRequestResponse,
+    "ka30009": ElwFluctuationRateRankingRequestResponse,
+    "ka30010": ElwRemainingBalanceRankingRequestResponse,
+    "ka30011": ElwProximityRateRequestResponse,
+    "ka30012": RequestForDetailedInformationOnElwItemsResponse,
+    "ka40001": EtfReturnRateRequestResponse,
+    "ka40002": EtfItemInformationRequestResponse,
+    "ka40003": EtfDailyTrendRequestResponse,
+    "ka40004": RequestFullEtfViewResponse,
+    "ka40006": EtfTimeZoneTrendRequestResponse,
+    "ka40007": EtfTradingRequestByTimeSlotResponse,
+    "ka40008": EtfTransactionRequestByDateResponse,
+    "ka40009": EtfTradingRequestByTimeSlot1Response,
+    "ka40010": EtfTimeZoneTrendRequest1Response,
 }

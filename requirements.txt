@@ -40,3 +40,4 @@ urllib3==2.6.3
 uvicorn==0.39.0
 yarl==1.22.0
 deep-translator==1.11.4
+websockets==12.0

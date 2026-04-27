@@ -2,10 +2,12 @@ import os
 import json
 import time
 import threading
+import asyncio
 import requests
+import websockets
 import urllib.parse
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Callable
 
 class KiwoomException(Exception):
     """
@@ -23,10 +25,17 @@ class KiwoomClient:
     키움증권 OpenAPI (REST) 사용을 위한 파이썬 클라이언트 모듈.
     토큰 발급/자동 갱신 및 기본 헤더 주입을 처리하며, 재사용 가능합니다.
     """
-    def __init__(self, appkey: str, secretkey: str, base_url: str = "https://api.kiwoom.com", acc_id: str = "", apis_spec_path: str = None):
+    def __init__(self, appkey: str, secretkey: str, base_url: str = "https://api.kiwoom.com", ws_url: str = "wss://api.kiwoom.com:10000", acc_id: str = "", apis_spec_path: str = None):
         self.appkey = appkey
         self.secretkey = secretkey
         self.base_url = base_url.rstrip("/")
+        
+        custom_ws_url = ws_url.rstrip("/")
+        if custom_ws_url.endswith("/api/dostk/websocket"):
+            self.ws_url = custom_ws_url
+        else:
+            self.ws_url = f"{custom_ws_url}/api/dostk/websocket"
+            
         self.acc_id = acc_id
         
         self._token: Optional[str] = None
@@ -44,6 +53,11 @@ class KiwoomClient:
             
         self.apis_spec = {}
         self._load_apis_spec(apis_spec_path)
+        
+        self._ws = None
+        self._ws_listen_task = None
+        self._on_message_callback = None
+        self._is_ws_connected = False
 
     def _wait_for_rate_limit(self):
         """키움증권 API 호출 빈도 제한을 준수하기 위해 대기합니다."""
@@ -124,6 +138,69 @@ class KiwoomClient:
         if expires_dt:
             self._token_expires_at = datetime.strptime(expires_dt, "%Y%m%d%H%M%S")
         return self._token
+
+    async def connect_ws(self, on_message: Callable[[Dict[str, Any]], Any]):
+        if self._is_ws_connected:
+            return
+
+        self._on_message_callback = on_message
+        
+        token = self._get_token()
+        headers = {
+            "authorization": f"Bearer {token}",
+            "appkey": self.appkey,
+            "secretkey": self.secretkey
+        }
+
+        self._ws = await websockets.connect(self.ws_url, additional_headers=headers)
+        
+        # [수정] 웹소켓 접속 직후 'LOGIN' 페이로드 전송 (키움 공식 스펙 반영)
+        auth_payload = {
+            "trnm": "LOGIN",
+            "token": token
+        }
+        await self._ws.send(json.dumps(auth_payload))
+        # 인증 처리를 위한 아주 짧은 대기
+        await asyncio.sleep(0.1)
+
+        self._is_ws_connected = True
+        self._ws_listen_task = asyncio.create_task(self._listen_ws())
+
+    async def _listen_ws(self):
+        try:
+            async for message in self._ws:
+                if self._on_message_callback:
+                    try:
+                        data = json.loads(message)
+                    except json.JSONDecodeError:
+                        data = {"raw": message}
+                    
+                    # [신규 추가] 서버의 PING(생존 확인) 메시지 자동 에코 응답
+                    if data.get("trnm") == "PING":
+                        asyncio.create_task(self.send_ws(data))
+                        
+                    if asyncio.iscoroutinefunction(self._on_message_callback):
+                        await self._on_message_callback(data)
+                    else:
+                        self._on_message_callback(data)
+        except websockets.exceptions.ConnectionClosed:
+            self._is_ws_connected = False
+        except Exception as e:
+            self._is_ws_connected = False
+            print(f"WebSocket listening error: {e}")
+
+    async def send_ws(self, payload: Dict[str, Any]):
+        if not self._is_ws_connected or not self._ws:
+            raise Exception("WebSocket is not connected")
+            
+        await self._ws.send(json.dumps(payload))
+
+    async def disconnect_ws(self):
+        if self._ws:
+            await self._ws.close()
+        if self._ws_listen_task:
+            self._ws_listen_task.cancel()
+        self._is_ws_connected = False
 
     def revoke_token(self) -> Dict[str, Any]:
         """
