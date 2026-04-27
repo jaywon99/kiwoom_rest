@@ -4,7 +4,7 @@ import os
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 APIS_JSON_PATH = os.path.join(SCRIPT_DIR, '../kiwoom_rest/apis.json')
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, '../kiwoom_rest/typed_api.py')
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, '../kiwoom_rest/generated.py')
 
 def to_snake_case(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -22,13 +22,24 @@ def clean_api_key(key):
         py_key = "n_" + py_key
     return real_key, py_key
 
+def clean_base_name(name: str) -> str:
+    """
+    불필요한 번역투 영어 단어(Request, Inquiry, For, Of 등)를 제거하여
+    깔끔한 명사형 데이터 모델 이름을 추출합니다.
+    """
+    # 1. 보기 싫은 전치사와 접미사 삭제
+    name = re.sub(r'RequestFor|Request|Inquiry|For|Of|Status|Details', '', name, flags=re.IGNORECASE)
+    # 2. And, Or 등 불필요한 접속사 삭제 (선택적)
+    name = re.sub(r'And|Or', '', name)
+    return name or "Api" # 모두 지워졌을 경우 방어코드
+
 with open(APIS_JSON_PATH, 'r', encoding='utf-8') as f:
     apis = json.load(f)
 
 out = [
     "from pydantic import BaseModel, Field, ConfigDict, BeforeValidator", 
     "from typing import Optional, Dict, Any, List, Type, Annotated, Callable, Union", 
-    "from .client import KiwoomClient",
+    "from .core import KiwoomCore",
     "",
     "# ====================================================================",
     "# 0. Type Validators (키움증권 예외 타입 처리기)",
@@ -66,7 +77,6 @@ out = [
 ]
 
 def generate_sub_models(api, items, parent_class_name):
-    # 재귀적으로 children이 있는 항목들의 SubModel 클래스를 생성하고 선언 코드를 반환합니다.
     sub_model_classes = []
     field_declarations = []
     seen_keys = set()
@@ -105,21 +115,22 @@ def generate_sub_models(api, items, parent_class_name):
     return sub_model_classes, field_declarations
 
 for api in apis:
-    req_class_name = f"{api['class_name']}Request"
-    res_class_name = f"{api['class_name']}Response"
+    base_name = clean_base_name(api['class_name'])
+    req_class_name = f"{base_name}Request"
+    # Response라는 단어를 없애고, 순수 데이터 모델 객체명으로 승격
+    res_class_name = base_name
     
     # ---------------- REQUEST MODEL ----------------
     req_sub_classes, req_fields = generate_sub_models(api, api.get('headers', []) + api.get('params', []), req_class_name)
     out.extend(req_sub_classes)
     
     out.append(f"class {req_class_name}(BaseModel):")
-    out.append(f'    """[{api["id"]}] {api["name"]} 요청 모델"""')
+    out.append(f'    """[{api["id"]}] {api["name"]} 요청 모델 (내부 검증 및 Playground UI 용)"""')
     out.append('    model_config = ConfigDict(populate_by_name=True)')
     
     if not req_fields:
         out.append("    pass")
     else:
-        # Request에는 api_id 필터링 적용
         filtered_req_fields = [f for f in req_fields if not re.search(r'^\s*api_id:', f, re.IGNORECASE)]
         if not filtered_req_fields:
             out.append("    pass")
@@ -132,7 +143,7 @@ for api in apis:
     out.extend(res_sub_classes)
     
     out.append(f"class {res_class_name}(BaseModel):")
-    out.append(f'    """[{api["id"]}] {api["name"]} 응답 모델"""')
+    out.append(f'    """[{api["id"]}] {api["name"]} 응답 데이터 모델"""')
     out.append('    model_config = ConfigDict(populate_by_name=True)')
     
     if not res_fields:
@@ -147,42 +158,83 @@ for api in apis:
 
 out.extend([
     "# ====================================================================",
-    "# 2. Typed API Client (타입이 보장되는 클라이언트)",
+    "# 2. Generated API Client (자동 생성된 중수준 레이어)",
     "# ====================================================================",
     "",
-    "class KiwoomTypedClient:",
+    "class KiwoomGeneratedClient:",
     '    """',
-    '    kwargs 대신 명시적인 Pydantic 모델을 사용하여 API를 호출하는 안전한 클라이언트입니다.',
-    '    요청 및 응답 모두 Type Hinting이 적용된 객체를 사용합니다.',
+    '    명시적 파라미터(Named Arguments)를 통해 IDE 자동완성을 완벽하게 지원하는 중수준 클라이언트입니다.',
+    '    입력값은 자동으로 Pydantic 내부 검증을 거치며, 응답은 타입이 보장된 객체(BaseModel)로 반환됩니다.',
     '    """',
-    "    def __init__(self, client: KiwoomClient):",
-    "        self.client = client",
+    "    def __init__(self, core: KiwoomCore):",
+    "        self.core = core",
     "",
     "    async def connect_ws(self, on_message: Callable[[Dict[str, Any]], Any]):",
-    "        await self.client.connect_ws(on_message)",
+    "        await self.core.connect_ws(on_message)",
     "",
     "    async def disconnect_ws(self):",
-    "        await self.client.disconnect_ws()",
+    "        await self.core.disconnect_ws()",
     ""
 ])
 
 for api in apis:
-    req_class_name = f"{api['class_name']}Request"
-    res_class_name = f"{api['class_name']}Response"
-    method_name = to_snake_case(api['class_name'])
+    base_name = clean_base_name(api['class_name'])
+    req_class_name = f"{base_name}Request"
+    res_class_name = base_name
+    method_name = to_snake_case(base_name)
     
     if method_name in ["import", "class", "def", "pass", "return", "yield"]:
         method_name += "_api"
         
+    # 메서드 파라미터 조립
+    items = api.get('headers', []) + api.get('params', [])
+    sig_params = []
+    call_kwargs = []
+    
+    seen_keys = set()
+    for item in items:
+        real_key, py_key = clean_api_key(item['key'])
+        if py_key in seen_keys: continue
+        seen_keys.add(py_key)
+        if py_key.lower() == "api_id": continue
+        
+        ktype = item.get("type", "").replace(" ", "")
+        if ktype == "String[]":
+            py_type = "List[str]"
+            default_val = "None"
+        elif ktype == "int":
+            py_type = "int"
+            default_val = "0"
+        else:
+            py_type = "str"
+            default_val = '""'
+            
+        sig_params.append(f"{py_key}: {py_type} = {default_val}")
+        call_kwargs.append(f"{py_key}={py_key}")
+
+    sig_str = ", ".join(sig_params)
+    if sig_str:
+        sig_str = ", " + sig_str
+        
+    kwargs_str = ", ".join(call_kwargs)
+    
     if api.get("path") == "/api/dostk/websocket":
-        out.append(f"    async def {method_name}(self, req: {req_class_name}):")
-        out.append(f'        """[{api["id"]}] {api["name"]} ({api["group"]} - {api["category"]})"""')
-        out.append(f'        await self.client.send_ws(req.model_dump(by_alias=True, exclude_none=True))')
+        out.append(f"    async def {method_name}(self{sig_str}):")
+        out.append(f'        """')
+        out.append(f'        [{api["id"]}] {api["name"]}')
+        out.append(f'        분류: {api["group"]} - {api["category"]}')
+        out.append(f'        """')
+        out.append(f'        req = {req_class_name}({kwargs_str})')
+        out.append(f'        await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))')
         out.append("")
     else:
-        out.append(f"    def {method_name}(self, req: {req_class_name}) -> {res_class_name}:")
-        out.append(f'        """[{api["id"]}] {api["name"]} ({api["group"]} - {api["category"]})"""')
-        out.append(f'        raw_response = self.client.call("{api["id"]}", **req.model_dump(by_alias=True, exclude_none=True))')
+        out.append(f"    def {method_name}(self{sig_str}) -> {res_class_name}:")
+        out.append(f'        """')
+        out.append(f'        [{api["id"]}] {api["name"]}')
+        out.append(f'        분류: {api["group"]} - {api["category"]}')
+        out.append(f'        """')
+        out.append(f'        req = {req_class_name}({kwargs_str})')
+        out.append(f'        raw_response = self.core.call("{api["id"]}", **req.model_dump(by_alias=True, exclude_none=True))')
         out.append(f'        return {res_class_name}(**raw_response)')
         out.append("")
 
@@ -194,7 +246,8 @@ out.extend([
     "API_ID_TO_METHOD: Dict[str, str] = {",
 ])
 for api in apis:
-    method_name = to_snake_case(api['class_name'])
+    base_name = clean_base_name(api['class_name'])
+    method_name = to_snake_case(base_name)
     if method_name in ["import", "class", "def", "pass", "return", "yield"]:
         method_name += "_api"
     out.append(f'    "{api["id"]}": "{method_name}",')
@@ -203,19 +256,19 @@ out.append("")
 
 out.append("API_ID_TO_REQ_MODEL: Dict[str, Type[BaseModel]] = {")
 for api in apis:
-    req_class_name = f"{api['class_name']}Request"
-    out.append(f'    "{api["id"]}": {req_class_name},')
+    base_name = clean_base_name(api['class_name'])
+    out.append(f'    "{api["id"]}": {base_name}Request,')
 out.append("}")
 out.append("")
 
 out.append("API_ID_TO_RES_MODEL: Dict[str, Type[BaseModel]] = {")
 for api in apis:
-    res_class_name = f"{api['class_name']}Response"
-    out.append(f'    "{api["id"]}": {res_class_name},')
+    base_name = clean_base_name(api['class_name'])
+    out.append(f'    "{api["id"]}": {base_name},')
 out.append("}")
 out.append("")
 
 with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
     f.write('\n'.join(out))
 
-print("✅ kiwoom_rest/typed_api.py generated with Request AND Response models!")
+print("✅ kiwoom_rest/generated.py generated successfully with Name Cleaning & Parameter Unpacking!")

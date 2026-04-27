@@ -2,7 +2,7 @@ import os
 import asyncio
 import json
 from dotenv import load_dotenv
-from kiwoom_rest.client import KiwoomClient, KiwoomException
+from kiwoom_rest import KiwoomCore, KiwoomException
 
 # ==============================================================================
 # 1. 환경 설정 로드
@@ -21,8 +21,8 @@ async def main():
     # ==============================================================================
     # 2. 클라이언트 초기화
     # ==============================================================================
-    print("🚀 Raw KiwoomClient 초기화 중...")
-    client = KiwoomClient(
+    print("🚀 Raw KiwoomCore 초기화 중...")
+    client = KiwoomCore(
         appkey=APP_KEY,
         secretkey=SECRET_KEY,
         base_url=BASE_URL

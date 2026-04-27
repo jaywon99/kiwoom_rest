@@ -1,8 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
-from kiwoom_rest.client import KiwoomClient, KiwoomException
-from kiwoom_rest.typed_api import KiwoomTypedClient, RequestForBasicStockInformationRequest, StockPurchaseOrderRequest, StockDailyChartInquiryRequestRequest
+from kiwoom_rest import KiwoomClient, KiwoomException
 
 # ==========================================
 # 1. 환경변수(.env) 로드 및 설정
@@ -20,36 +19,30 @@ if not APP_KEY or not SECRET_KEY:
     exit(1)
 
 # ==========================================
-# 2. KiwoomTypedClient 초기화
+# 2. KiwoomClient (Facade) 초기화
 # ==========================================
-print("🚀 KiwoomTypedClient 초기화 중...")
+print("🚀 KiwoomClient 초기화 중...")
 client = KiwoomClient(
     appkey=APP_KEY,
     secretkey=SECRET_KEY,
     base_url=BASE_URL,
     acc_id=ACC_ID
 )
-typed_client = KiwoomTypedClient(client)
 
 # ==========================================
-# 3. [예제 1] 주식 기본정보(현재가 등) 조회
+# 3. [예제 1] 주식 일봉차트 조회
 # ==========================================
 print("\n📊 [예제 1] 삼성전자(005930) 정보 조회 중...")
 try:
-    # req = RequestForBasicStockInformationRequest(
-    #     stk_cd="005930"
-    # )
-    #
-    # res_price = typed_client.request_for_basic_stock_information(req)
-    req = StockDailyChartInquiryRequestRequest(
+    # Request 객체를 만들지 않고 명시적 파라미터로 직접 값을 넘깁니다.
+    res_price = client.stock_daily_chart(
          stk_cd="005930",
          base_dt="20260425",
          upd_stkpc_tp="1"
-            )
+    )
     
-    res_price = typed_client.stock_daily_chart_inquiry_request(req)
     print("✅ 성공! 정보 조회 완료")
-    print(res_price.stk_dt_pole_chart_qry[0].cur_prc)
+    print(f"최근 종가: {res_price.stk_dt_pole_chart_qry[0].cur_prc}")
     print(json.dumps(res_price.model_dump(), indent=2, ensure_ascii=False))
         
 except KiwoomException as ke:

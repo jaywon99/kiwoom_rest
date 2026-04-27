@@ -8,8 +8,14 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from kiwoom_rest.client import KiwoomClient, KiwoomException
-from kiwoom_rest.typed_api import KiwoomTypedClient, API_ID_TO_METHOD, API_ID_TO_REQ_MODEL
+from kiwoom_rest import (
+    KiwoomClient,
+    KiwoomCore,
+    KiwoomException,
+    KiwoomGeneratedClient,
+    API_ID_TO_METHOD,
+    API_ID_TO_REQ_MODEL
+)
 
 load_dotenv()
 
@@ -32,7 +38,7 @@ def get_client(appkey: str, secretkey: str, base_url: str, ws_url: str = "") -> 
         CLIENT_CACHE[appkey] = KiwoomClient(appkey=appkey, secretkey=secretkey, base_url=base_url, ws_url=ws_url)
     else:
         client = CLIENT_CACHE[appkey]
-        if client.secretkey != secretkey or client.base_url != base_url.rstrip("/") or client.ws_url != ws_url.rstrip("/"):
+        if client.core.secretkey != secretkey or client.core.base_url != base_url.rstrip("/") or client.core.ws_url != ws_url.rstrip("/"):
             CLIENT_CACHE[appkey] = KiwoomClient(appkey=appkey, secretkey=secretkey, base_url=base_url, ws_url=ws_url)
             
     return CLIENT_CACHE[appkey]
@@ -74,7 +80,7 @@ async def logout(req: LogoutRequest):
         
     if req_appkey in CLIENT_CACHE:
         client = CLIENT_CACHE[req_appkey]
-        res = client.revoke_token()
+        res = client.core.revoke_token()
         CLIENT_CACHE.pop(req_appkey, None)
         return res
     
@@ -89,40 +95,40 @@ async def proxy_request(req: ApiRequest):
     if not req_appkey or not req_secretkey:
         return {"error": "App Key and Secret Key are required (either in Settings or .env)", "status": 401}
 
-        try:
-            client = get_client(req_appkey, req_secretkey, req_base_url)
-            typed_client = KiwoomTypedClient(client)
+    try:
+        client = get_client(req_appkey, req_secretkey, req_base_url)
+        
+        api_id = req.api_id
+        if api_id in API_ID_TO_METHOD and api_id in API_ID_TO_REQ_MODEL:
+            method_name = API_ID_TO_METHOD[api_id]
+            RequestModelClass = API_ID_TO_REQ_MODEL[api_id]
             
-            api_id = req.api_id
-            if api_id in API_ID_TO_METHOD and api_id in API_ID_TO_REQ_MODEL:
-                method_name = API_ID_TO_METHOD[api_id]
-                RequestModelClass = API_ID_TO_REQ_MODEL[api_id]
+            combined_data = {**req.headers, **req.params}
+            req_model = RequestModelClass(**combined_data)
+            
+                method = getattr(client, method_name)
+            import inspect
+            if inspect.iscoroutinefunction(method):
+                return {"error": "This is a WebSocket API. Please use /api/ws_proxy.", "status": 400}
                 
-                combined_data = {**req.headers, **req.params}
-                req_model = RequestModelClass(**combined_data)
-                
-                method = getattr(typed_client, method_name)
-                import inspect
-                if inspect.iscoroutinefunction(method):
-                    return {"error": "This is a WebSocket API. Please use /api/ws_proxy.", "status": 400}
-                    
-                response_model = method(req_model)
-                
-                return {
-                    "status": 200,
-                    "body": response_model.model_dump()
-                }
-            else:
-                return {"error": f"Unknown API ID: {api_id}", "status": 400}
-
-        except KiwoomException as ke:
+            # Request 객체의 필드를 언패킹하여 전달
+            response_model = method(**req_model.model_dump(by_alias=False, exclude_none=True))
+            
             return {
-                "error": f"[{ke.return_code}] {ke.return_msg}",
-                "status": ke.status_code,
-                "body": {}
+                "status": 200,
+                "body": response_model.model_dump()
             }
-        except Exception as e:
-            return {"error": str(e), "status": 500, "body": {}}
+        else:
+            return {"error": f"Unknown API ID: {api_id}", "status": 400}
+
+    except KiwoomException as ke:
+        return {
+            "error": f"[{ke.return_code}] {ke.return_msg}",
+            "status": ke.status_code,
+            "body": {}
+        }
+    except Exception as e:
+        return {"error": str(e), "status": 500, "body": {}}
 
 class ConnectionManager:
     def __init__(self):
@@ -134,7 +140,7 @@ class ConnectionManager:
             self.active_connections[appkey] = []
         self.active_connections[appkey].append(websocket)
         
-        if appkey not in self.kiwoom_clients or not self.kiwoom_clients[appkey]._is_ws_connected:
+        if appkey not in self.kiwoom_clients or not self.kiwoom_clients[appkey].core._is_ws_connected:
             rest_client = get_client(appkey, secretkey, base_url, ws_url=ws_url)
             self.kiwoom_clients[appkey] = rest_client
             
@@ -167,8 +173,8 @@ class ConnectionManager:
 
     async def send_to_kiwoom(self, appkey: str, payload: dict):
         client = self.kiwoom_clients.get(appkey)
-        if client and client._is_ws_connected:
-            await client.send_ws(payload)
+        if client and client.core._is_ws_connected:
+            await client.core.send_ws(payload)
 
 ws_manager = ConnectionManager()
 

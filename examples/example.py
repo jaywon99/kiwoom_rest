@@ -1,7 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
-from kiwoom_rest.client import KiwoomClient, KiwoomException
+from kiwoom_rest import KiwoomCore, KiwoomException
 
 # ==========================================
 # 1. 환경변수(.env) 로드 및 설정
@@ -18,10 +18,10 @@ if not APP_KEY or not SECRET_KEY:
     exit(1)
 
 # ==========================================
-# 2. Raw KiwoomClient 초기화
+# 2. Raw KiwoomCore 초기화
 # ==========================================
-print("🚀 Raw KiwoomClient 초기화 중...")
-client = KiwoomClient(
+print("🚀 Raw KiwoomCore 초기화 중...")
+client = KiwoomCore(
     appkey=APP_KEY,
     secretkey=SECRET_KEY,
     base_url=BASE_URL,

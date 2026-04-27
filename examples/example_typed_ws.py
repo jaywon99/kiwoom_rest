@@ -1,11 +1,12 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-from kiwoom_rest.client import KiwoomClient, KiwoomException
-from kiwoom_rest.typed_api import (
-    KiwoomTypedClient, 
-    API_ID_TO_RES_MODEL,
-    StockSigningRequest,
+from kiwoom_rest import (
+    KiwoomClient, 
+    KiwoomException,
+    API_ID_TO_RES_MODEL
+)
+from kiwoom_rest.generated import (
     StockSigningRequest_Data
 )
 
@@ -24,13 +25,10 @@ if not APP_KEY or not SECRET_KEY:
 
 async def main():
     # ==============================================================================
-    # 2. Typed Client 초기화
+    # 2. 메인 Client 초기화
     # ==============================================================================
-    print("🚀 KiwoomTypedClient 초기화 중...")
+    print("🚀 KiwoomClient 초기화 중...")
     client = KiwoomClient(appkey=APP_KEY, secretkey=SECRET_KEY, base_url=BASE_URL)
-    
-    # KiwoomTypedClient로 감싸면 IDE의 강력한 자동완성 기능을 사용할 수 있습니다.
-    typed_client = KiwoomTypedClient(client)
 
     # ==============================================================================
     # 3. 실시간 데이터 수신 콜백 (자동 타입 캐스팅 패턴)
@@ -63,17 +61,19 @@ async def main():
     # 4. 웹소켓 연결 및 서버 로그인 대기
     # ==============================================================================
     print("\n🔗 웹소켓 연결 중...")
-    await typed_client.connect_ws(on_message=on_event)
+    await client.connect_ws(on_message=on_event)
     print("✅ 웹소켓 연결 완료! (서버 로그인 처리 대기 중...)")
     
     # [중요] 연결 직후 서버 인증 시간을 위해 반드시 1초 이상 대기합니다.
     await asyncio.sleep(1.0)
 
     # ==============================================================================
-    # 5. 타입 안전(Type-Safe)한 실시간 구독 요청 전송
+    # 5. 실시간 구독 요청 전송
     # ==============================================================================
-    # 실수로 문자열("0B")을 넣어도 Pydantic이 리스트(["0B"])로 안전하게 감싸서 전송합니다.
-    req = StockSigningRequest(
+    print("\n📡 구독 요청 전송 중...")
+    # Request 객체를 만들지 않고 인자로 직접 넘깁니다. 
+    # (data 파라미터는 Pydantic 객체 리스트를 넘겨도 내부에서 직렬화됩니다)
+    await client.stock_signing(
         trnm="REG",
         grp_no="g123",
         refresh="1",
@@ -81,10 +81,6 @@ async def main():
             StockSigningRequest_Data(item=["005930"], type=["0B"])
         ]
     )
-    
-    print("\n📡 구독 요청 전송 중...")
-    # dict 직렬화 없이 Pydantic 객체를 그대로 전송 가능합니다!
-    await typed_client.stock_signing(req)
     print("✅ 전송 완료! 실시간 수신 대기 중... (10초 후 자동 종료됩니다)")
     
     # ==============================================================================
@@ -93,7 +89,7 @@ async def main():
     await asyncio.sleep(10)
     
     print("👋 웹소켓 연결을 종료합니다.")
-    await typed_client.disconnect_ws()
+    await client.disconnect_ws()
 
 if __name__ == "__main__":
     asyncio.run(main())
