@@ -6302,6 +6302,7 @@ class StockChart_StkMinPoleChartQry(BaseModel):
     low_pric: SafeStr = Field(default="", description="저가")
     pred_pre: SafeStr = Field(default="", description="전일대비 현재가 - 전일종가")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비 기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
+    acc_trde_qty: SafeStr = Field(default="", description="누적거래량 (공식문서 누락 수동 패치)")
 
 class StockChart(BaseModel):
     """[ka10080] 주식분봉차트조회요청 응답 데이터 모델"""

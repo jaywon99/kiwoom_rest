@@ -50,6 +50,26 @@ def clean_base_name(name: str) -> str:
 with open(APIS_JSON_PATH, 'r', encoding='utf-8') as f:
     apis = json.load(f)
 
+# ====================================================================
+# [MANUAL PATCHES] 
+# 공식 문서의 누락/오류를 보정하기 위한 고정 패치 구간입니다.
+# ====================================================================
+for api in apis:
+    # ka10080 (주식분봉차트조회): 응답에 acc_trde_qty 누락 보정
+    if api.get("id") == "ka10080":
+        for item in api.get("res_body", []):
+            if item.get("key") == "stk_min_pole_chart_qry":
+                has_acc_trde_qty = any(child.get("key") == "acc_trde_qty" for child in item.get("children", []))
+                if not has_acc_trde_qty:
+                    item["children"].append({
+                        "key": "acc_trde_qty",
+                        "type": "String",
+                        "desc": "누적거래량 (공식문서 누락 수동 패치)",
+                        "default": "",
+                        "children": []
+                    })
+# ====================================================================
+
 out = [
     "from pydantic import BaseModel, Field, ConfigDict, BeforeValidator", 
     "from typing import Optional, Dict, Any, List, Type, Annotated, Callable, Union", 
