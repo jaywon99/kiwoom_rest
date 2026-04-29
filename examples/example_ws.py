@@ -2,7 +2,7 @@ import os
 import asyncio
 import json
 from dotenv import load_dotenv
-from kiwoom_rest import KiwoomCore
+from kiwoom_rest import KiwoomClient
 
 # ==============================================================================
 # 1. 환경 설정 로드
@@ -19,10 +19,10 @@ if not APP_KEY or not SECRET_KEY:
 
 async def main():
     # ==============================================================================
-    # 2. 클라이언트 초기화
+    # 2. 메인 Client 초기화
     # ==============================================================================
-    print("🚀 Raw KiwoomCore 초기화 중...")
-    client = KiwoomCore(appkey=APP_KEY, secretkey=SECRET_KEY, base_url=BASE_URL)
+    print("🚀 KiwoomClient 초기화 중...")
+    client = KiwoomClient(appkey=APP_KEY, secretkey=SECRET_KEY, base_url=BASE_URL)
 
     # ==============================================================================
     # 3. 실시간 데이터 수신 콜백 함수 정의
@@ -39,15 +39,19 @@ async def main():
     # 4. 웹소켓 연결 및 서버 로그인 대기
     # ==============================================================================
     print("\n🔗 웹소켓 연결 중...")
-    await client.connect_ws(on_message=on_message)
-    print("✅ 웹소켓 연결 완료! (서버 로그인 처리 대기 중...)")
+    try:
+        await client.connect_ws(on_message=on_message)
+        print("✅ 웹소켓 연결 완료! (서버 로그인 처리 대기 중...)")
+    except Exception as e:
+        print(f"❌ 웹소켓 연결 실패: {e}")
+        return
 
     # [중요] 웹소켓 접속 직후 키움 서버 내부적으로 인증(LOGIN) 처리가 진행됩니다.
     # 대기 없이 바로 구독(REG)을 요청하면 무시될 수 있으므로 최소 1초 이상 대기해야 합니다.
     await asyncio.sleep(1.0)
 
     # ==============================================================================
-    # 5. 실시간 구독(REG) 요청 페이로드 작성 및 전송
+    # 5. 실시간 구독(REG) 요청 페이로드 작성 및 전송 (Dictionary 방식)
     # ==============================================================================
     # 딕셔너리 형태로 직접 페이로드를 작성하는 방식입니다.
     payload = {
@@ -64,7 +68,7 @@ async def main():
     }
 
     print("\n📡 실시간 주식체결(0B) 구독 요청 전송 중...")
-    await client.send_ws(payload)
+    await client.core.send_ws(payload)
     print("✅ 전송 완료! 실시간 수신 대기 중... (10초 후 자동 종료됩니다)")
 
     # ==============================================================================

@@ -55,8 +55,12 @@ async def main():
     # 4. 웹소켓 연결 및 서버 로그인 대기
     # ==============================================================================
     print("\n🔗 웹소켓 연결 중...")
-    await client.connect_ws(on_message=on_event)
-    print("✅ 웹소켓 연결 완료! (서버 로그인 처리 대기 중...)")
+    try:
+        await client.connect_ws(on_message=on_event)
+        print("✅ 웹소켓 연결 완료! (서버 로그인 처리 대기 중...)")
+    except Exception as e:
+        print(f"❌ 웹소켓 연결 실패: {e}")
+        return
 
     # [중요] 연결 직후 서버 인증 시간을 위해 반드시 1초 이상 대기합니다.
     await asyncio.sleep(1.0)
