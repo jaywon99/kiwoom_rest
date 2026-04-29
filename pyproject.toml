@@ -34,6 +34,22 @@ playground = [
     "jinja2>=3.1.0",
     "python-dotenv>=1.0.0"
 ]
+dev = [
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pytest>=8.0.0",
+    "types-requests",
+    "pre-commit>=3.7.0",
+    "httpx>=0.24.0"
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
 
 [project.scripts]
 kiwoom-playground = "kiwoom_playground.cli:run_playground"

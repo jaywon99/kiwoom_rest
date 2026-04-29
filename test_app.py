@@ -1,8 +1,8 @@
-import pytest
 from fastapi.testclient import TestClient
-from main import app
+from kiwoom_playground.server import app
 
 client = TestClient(app)
+
 
 def test_read_root():
     response = client.get("/")
