@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict, BeforeValidator
-from typing import Optional, Dict, Any, List, Type, Annotated, Callable, Union
+from typing import Dict, Any, List, Type, Annotated, Callable
 from .core import KiwoomCore
+
 
 # ====================================================================
 # 0. Type Validators (키움증권 예외 타입 처리기)
@@ -12,12 +13,14 @@ def _force_str(v: Any) -> str:
         return ",".join(str(x) for x in v)
     return str(v)
 
+
 def _force_list(v: Any) -> Any:
     if v == "" or v is None:
         return []
     if not isinstance(v, list):
         return [v]
     return v
+
 
 def _force_int(v: Any) -> int:
     if v == "" or v is None:
@@ -27,6 +30,7 @@ def _force_int(v: Any) -> int:
     except ValueError:
         return 0
 
+
 SafeStr = Annotated[str, BeforeValidator(_force_str)]
 SafeInt = Annotated[int, BeforeValidator(_force_int)]
 SafeListStr = Annotated[List[str], BeforeValidator(_force_list)]
@@ -35,51 +39,84 @@ SafeListStr = Annotated[List[str], BeforeValidator(_force_list)]
 # 1. API Models (입력 및 출력 모델)
 # ====================================================================
 
+
 class IssueAccessTokenRequest(BaseModel):
     """[au10001] 접근토큰 발급 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     grant_type: SafeStr = Field(default="", description="grant_type client_credentials 입력")
     appkey: SafeStr = Field(default="", description="앱키")
     secretkey: SafeStr = Field(default="", description="시크릿키")
 
+
 class IssueAccessToken(BaseModel):
     """[au10001] 접근토큰 발급 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     expires_dt: SafeStr = Field(default="", description="만료일")
     token_type: SafeStr = Field(default="", description="토큰타입")
     token: SafeStr = Field(default="", description="접근토큰")
 
+
 class RevokeAccessTokenRequest(BaseModel):
     """[au10002] 접근토큰폐기 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     appkey: SafeStr = Field(default="", description="앱키")
     secretkey: SafeStr = Field(default="", description="시크릿키")
     token: SafeStr = Field(default="", description="접근토큰")
 
+
 class RevokeAccessToken(BaseModel):
     """[au10002] 접근토큰폐기 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     pass
 
+
 class AccountNumberRequest(BaseModel):
     """[ka00001] 계좌번호조회 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+
 
 class AccountNumber(BaseModel):
     """[ka00001] 계좌번호조회 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     acctNo: SafeStr = Field(default="", description="계좌번호")
+
 
 class DailyBalanceReturnRateRequest(BaseModel):
     """[ka01690] 일별잔고수익률 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     qry_dt: SafeStr = Field(default="", description="조회일자")
+
 
 class DailyBalanceReturnRate_DayBalRt(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -94,11 +131,15 @@ class DailyBalanceReturnRate_DayBalRt(BaseModel):
     evlt_amt: SafeStr = Field(default="", description="평가금액")
     evlt_wght: SafeStr = Field(default="", description="평가비중")
 
+
 class DailyBalanceReturnRate(BaseModel):
     """[ka01690] 일별잔고수익률 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     dt: SafeStr = Field(default="", description="일자")
     tot_buy_amt: SafeStr = Field(default="", description="총 매입가")
     tot_evlt_amt: SafeStr = Field(default="", description="총 평가금액")
@@ -107,15 +148,28 @@ class DailyBalanceReturnRate(BaseModel):
     dbst_bal: SafeStr = Field(default="", description="예수금")
     day_stk_asst: SafeStr = Field(default="", description="추정자산")
     buy_wght: SafeStr = Field(default="", description="현금비중")
-    day_bal_rt: Annotated[List[DailyBalanceReturnRate_DayBalRt], BeforeValidator(_force_list)] = Field(default_factory=list, description="일별잔고수익률")
+    day_bal_rt: Annotated[List[DailyBalanceReturnRate_DayBalRt], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="일별잔고수익률"
+    )
+
 
 class RealizedProfitLossByDateItemDateRequest(BaseModel):
     """[ka10072] 일자별종목별실현손익요청_일자 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
+
 
 class RealizedProfitLossByDateItemDate_DtStkDivRlztPl(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -134,21 +188,38 @@ class RealizedProfitLossByDateItemDate_DtStkDivRlztPl(BaseModel):
     stk_cd_1: SafeStr = Field(default="", description="종목코드1")
     tdy_sel_pl_1: SafeStr = Field(default="", description="당일매도손익1")
 
+
 class RealizedProfitLossByDateItemDate(BaseModel):
     """[ka10072] 일자별종목별실현손익요청_일자 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    dt_stk_div_rlzt_pl: Annotated[List[RealizedProfitLossByDateItemDate_DtStkDivRlztPl], BeforeValidator(_force_list)] = Field(default_factory=list, description="일자별종목별실현손익")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    dt_stk_div_rlzt_pl: Annotated[
+        List[RealizedProfitLossByDateItemDate_DtStkDivRlztPl], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="일자별종목별실현손익")
+
 
 class RealizedProfitLossByDateItemPeriodRequest(BaseModel):
     """[ka10073] 일자별종목별실현손익요청_기간 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
+
 
 class RealizedProfitLossByDateItemPeriod_DtStkRlztPl(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -167,20 +238,37 @@ class RealizedProfitLossByDateItemPeriod_DtStkRlztPl(BaseModel):
     loan_dt: SafeStr = Field(default="", description="대출일")
     crd_tp: SafeStr = Field(default="", description="신용구분")
 
+
 class RealizedProfitLossByDateItemPeriod(BaseModel):
     """[ka10073] 일자별종목별실현손익요청_기간 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    dt_stk_rlzt_pl: Annotated[List[RealizedProfitLossByDateItemPeriod_DtStkRlztPl], BeforeValidator(_force_list)] = Field(default_factory=list, description="일자별종목별실현손익")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    dt_stk_rlzt_pl: Annotated[List[RealizedProfitLossByDateItemPeriod_DtStkRlztPl], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="일자별종목별실현손익")
+    )
+
 
 class RealizedProfitLossByDateRequest(BaseModel):
     """[ka10074] 일자별실현손익요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자")
     end_dt: SafeStr = Field(default="", description="종료일자")
+
 
 class RealizedProfitLossByDate_DtRlztPl(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -191,27 +279,44 @@ class RealizedProfitLossByDate_DtRlztPl(BaseModel):
     tdy_trde_cmsn: SafeStr = Field(default="", description="당일매매수수료")
     tdy_trde_tax: SafeStr = Field(default="", description="당일매매세금")
 
+
 class RealizedProfitLossByDate(BaseModel):
     """[ka10074] 일자별실현손익요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     tot_buy_amt: SafeStr = Field(default="", description="총매수금액")
     tot_sell_amt: SafeStr = Field(default="", description="총매도금액")
     rlzt_pl: SafeStr = Field(default="", description="실현손익")
     trde_cmsn: SafeStr = Field(default="", description="매매수수료")
     trde_tax: SafeStr = Field(default="", description="매매세금")
-    dt_rlzt_pl: Annotated[List[RealizedProfitLossByDate_DtRlztPl], BeforeValidator(_force_list)] = Field(default_factory=list, description="일자별실현손익")
+    dt_rlzt_pl: Annotated[List[RealizedProfitLossByDate_DtRlztPl], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="일자별실현손익"
+    )
+
 
 class NonConfirmationRequest(BaseModel):
     """[ka10075] 미체결요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     all_stk_tp: SafeStr = Field(default="", description="전체종목구분 0:전체, 1:종목")
     trde_tp: SafeStr = Field(default="", description="매매구분 0:전체, 1:매도, 2:매수")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     stex_tp: SafeStr = Field(default="", description="거래소구분 0 : 통합, 1 : KRX, 2 : NXT")
+
 
 class NonConfirmation_Oso(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -246,23 +351,42 @@ class NonConfirmation_Oso(BaseModel):
     sor_yn: SafeStr = Field(default="", description="SOR 여부값 Y,N")
     stop_pric: SafeStr = Field(default="", description="스톱가 스톱지정가주문 스톱가")
 
+
 class NonConfirmation(BaseModel):
     """[ka10075] 미체결요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    oso: Annotated[List[NonConfirmation_Oso], BeforeValidator(_force_list)] = Field(default_factory=list, description="미체결")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    oso: Annotated[List[NonConfirmation_Oso], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="미체결"
+    )
+
 
 class ConclusionRequest(BaseModel):
     """[ka10076] 체결요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     qry_tp: SafeStr = Field(default="", description="조회구분 0:전체, 1:종목")
     sell_tp: SafeStr = Field(default="", description="매도수구분 0:전체, 1:매도, 2:매수")
-    ord_no: SafeStr = Field(default="", description="주문번호 검색 기준 값으로 입력한 주문번호 보다 과거에 체결된 내역이 조회됩니다.")
+    ord_no: SafeStr = Field(
+        default="", description="주문번호 검색 기준 값으로 입력한 주문번호 보다 과거에 체결된 내역이 조회됩니다."
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 0 : 통합, 1 : KRX, 2 : NXT")
+
 
 class Conclusion_Cntr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -286,19 +410,36 @@ class Conclusion_Cntr(BaseModel):
     sor_yn: SafeStr = Field(default="", description="SOR 여부값 Y,N")
     stop_pric: SafeStr = Field(default="", description="스톱가 스톱지정가주문 스톱가")
 
+
 class Conclusion(BaseModel):
     """[ka10076] 체결요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    cntr: Annotated[List[Conclusion_Cntr], BeforeValidator(_force_list)] = Field(default_factory=list, description="체결")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    cntr: Annotated[List[Conclusion_Cntr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="체결"
+    )
+
 
 class SameDayRealizedProfitLossRequest(BaseModel):
     """[ka10077] 당일실현손익상세요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class SameDayRealizedProfitLoss_TdyRlztPlDtl(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -312,20 +453,37 @@ class SameDayRealizedProfitLoss_TdyRlztPlDtl(BaseModel):
     tdy_trde_tax: SafeStr = Field(default="", description="당일매매세금")
     stk_cd: SafeStr = Field(default="", description="종목코드")
 
+
 class SameDayRealizedProfitLoss(BaseModel):
     """[ka10077] 당일실현손익상세요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     tdy_rlzt_pl: SafeStr = Field(default="", description="당일실현손익")
-    tdy_rlzt_pl_dtl: Annotated[List[SameDayRealizedProfitLoss_TdyRlztPlDtl], BeforeValidator(_force_list)] = Field(default_factory=list, description="당일실현손익상세")
+    tdy_rlzt_pl_dtl: Annotated[List[SameDayRealizedProfitLoss_TdyRlztPlDtl], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="당일실현손익상세"
+    )
+
 
 class AccountYieldRequest(BaseModel):
     """[ka10085] 계좌수익률요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 0 : 통합, 1 : KRX, 2 : NXT")
+
 
 class AccountYield_AcntPrftRt(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -347,19 +505,36 @@ class AccountYield_AcntPrftRt(BaseModel):
     crd_int: SafeStr = Field(default="", description="신용이자")
     expr_dt: SafeStr = Field(default="", description="만기일")
 
+
 class AccountYield(BaseModel):
     """[ka10085] 계좌수익률요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    acnt_prft_rt: Annotated[List[AccountYield_AcntPrftRt], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌수익률")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    acnt_prft_rt: Annotated[List[AccountYield_AcntPrftRt], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="계좌수익률"
+    )
+
 
 class UnfilledSplitOrderDetailsRequest(BaseModel):
     """[ka10088] 미체결 분할주문 상세 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
+
 
 class UnfilledSplitOrderDetails_Osop(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -378,21 +553,38 @@ class UnfilledSplitOrderDetails_Osop(BaseModel):
     stex_tp: SafeStr = Field(default="", description="거래소구분 0 : 통합, 1 : KRX, 2 : NXT")
     stex_tp_txt: SafeStr = Field(default="", description="거래소구분텍스트 통합,KRX,NXT")
 
+
 class UnfilledSplitOrderDetails(BaseModel):
     """[ka10088] 미체결 분할주문 상세 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    osop: Annotated[List[UnfilledSplitOrderDetails_Osop], BeforeValidator(_force_list)] = Field(default_factory=list, description="미체결분할주문리스트")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    osop: Annotated[List[UnfilledSplitOrderDetails_Osop], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="미체결분할주문리스트"
+    )
+
 
 class SameDaySalesLogRequest(BaseModel):
     """[ka10170] 당일매매일지요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD(공백입력시 금일데이터,최근 2개월까지 제공)")
     ottks_tp: SafeStr = Field(default="", description="단주구분 1:당일매수에 대한 당일매도,2:당일매도 전체")
     ch_crd_tp: SafeStr = Field(default="", description="현금신용구분 0:전체, 1:현금매매만, 2:신용매매만")
+
 
 class SameDaySalesLog_TdyTrdeDiary(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -408,25 +600,42 @@ class SameDaySalesLog_TdyTrdeDiary(BaseModel):
     prft_rt: SafeStr = Field(default="", description="수익률")
     stk_cd: SafeStr = Field(default="", description="종목코드")
 
+
 class SameDaySalesLog(BaseModel):
     """[ka10170] 당일매매일지요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     tot_sell_amt: SafeStr = Field(default="", description="총매도금액")
     tot_buy_amt: SafeStr = Field(default="", description="총매수금액")
     tot_cmsn_tax: SafeStr = Field(default="", description="총수수료_세금")
     tot_exct_amt: SafeStr = Field(default="", description="총정산금액")
     tot_pl_amt: SafeStr = Field(default="", description="총손익금액")
     tot_prft_rt: SafeStr = Field(default="", description="총수익률")
-    tdy_trde_diary: Annotated[List[SameDaySalesLog_TdyTrdeDiary], BeforeValidator(_force_list)] = Field(default_factory=list, description="당일매매일지")
+    tdy_trde_diary: Annotated[List[SameDaySalesLog_TdyTrdeDiary], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="당일매매일지"
+    )
+
 
 class DetailedDepositRequest(BaseModel):
     """[kt00001] 예수금상세현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     qry_tp: SafeStr = Field(default="", description="조회구분 3:추정조회, 2:일반조회")
+
 
 class DetailedDeposit_StkEntrPrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -445,11 +654,15 @@ class DetailedDeposit_StkEntrPrst(BaseModel):
     d3_fx_entr: SafeStr = Field(default="", description="d+3외화예수금")
     d4_fx_entr: SafeStr = Field(default="", description="d+4외화예수금")
 
+
 class DetailedDeposit(BaseModel):
     """[kt00001] 예수금상세현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     entr: SafeStr = Field(default="", description="예수금")
     profa_ch: SafeStr = Field(default="", description="주식증거금현금")
     bncr_profa_ch: SafeStr = Field(default="", description="수익증권증거금현금")
@@ -519,15 +732,28 @@ class DetailedDeposit(BaseModel):
     d2_pymn_alow_amt: SafeStr = Field(default="", description="d+2출금가능금액")
     n_50stk_ord_alow_amt: SafeStr = Field(default="", alias="50stk_ord_alow_amt", description="50%종목주문가능금액")
     n_60stk_ord_alow_amt: SafeStr = Field(default="", alias="60stk_ord_alow_amt", description="60%종목주문가능금액")
-    stk_entr_prst: Annotated[List[DetailedDeposit_StkEntrPrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별예수금")
+    stk_entr_prst: Annotated[List[DetailedDeposit_StkEntrPrst], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="종목별예수금"
+    )
+
 
 class DailyEstimatedDepositedAssetRequest(BaseModel):
     """[kt00002] 일별추정예탁자산현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     start_dt: SafeStr = Field(default="", description="시작조회기간 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료조회기간 YYYYMMDD")
+
 
 class DailyEstimatedDepositedAsset_DalyPrsmDpstAsetAmtPrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -540,34 +766,65 @@ class DailyEstimatedDepositedAsset_DalyPrsmDpstAsetAmtPrst(BaseModel):
     prsm_dpst_aset_amt: SafeStr = Field(default="", description="추정예탁자산")
     prsm_dpst_aset_amt_bncr_skip: SafeStr = Field(default="", description="추정예탁자산수익증권제외")
 
+
 class DailyEstimatedDepositedAsset(BaseModel):
     """[kt00002] 일별추정예탁자산현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    daly_prsm_dpst_aset_amt_prst: Annotated[List[DailyEstimatedDepositedAsset_DalyPrsmDpstAsetAmtPrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="일별추정예탁자산현황")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    daly_prsm_dpst_aset_amt_prst: Annotated[
+        List[DailyEstimatedDepositedAsset_DalyPrsmDpstAsetAmtPrst], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="일별추정예탁자산현황")
+
 
 class EstimatedAssetRequest(BaseModel):
     """[kt00003] 추정자산조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     qry_tp: SafeStr = Field(default="", description="상장폐지조회구분 0:전체, 1:상장폐지종목제외")
+
 
 class EstimatedAsset(BaseModel):
     """[kt00003] 추정자산조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     prsm_dpst_aset_amt: SafeStr = Field(default="", description="추정예탁자산")
+
 
 class AccountEvaluationRequest(BaseModel):
     """[kt00004] 계좌평가현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     qry_tp: SafeStr = Field(default="", description="상장폐지조회구분 0:전체, 1:상장폐지종목제외")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX:한국거래소,NXT:넥스트트레이드")
+
 
 class AccountEvaluation_StkAcntEvltPrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -587,11 +844,15 @@ class AccountEvaluation_StkAcntEvltPrst(BaseModel):
     tdy_buyq: SafeStr = Field(default="", description="금일매수수량")
     tdy_sellq: SafeStr = Field(default="", description="금일매도수량")
 
+
 class AccountEvaluation(BaseModel):
     """[kt00004] 계좌평가현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     acnt_nm: SafeStr = Field(default="", description="계좌명")
     brch_nm: SafeStr = Field(default="", description="지점명")
     entr: SafeStr = Field(default="", description="예수금")
@@ -610,14 +871,27 @@ class AccountEvaluation(BaseModel):
     tdy_lspft_rt: SafeStr = Field(default="", description="당일손익율")
     lspft_ratio: SafeStr = Field(default="", description="당월손익율")
     lspft_rt: SafeStr = Field(default="", description="누적손익율")
-    stk_acnt_evlt_prst: Annotated[List[AccountEvaluation_StkAcntEvltPrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별계좌평가현황")
+    stk_acnt_evlt_prst: Annotated[List[AccountEvaluation_StkAcntEvltPrst], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="종목별계좌평가현황"
+    )
+
 
 class TransactionBalanceRequest(BaseModel):
     """[kt00005] 체결잔고요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX:한국거래소,NXT:넥스트트레이드")
+
 
 class TransactionBalance_StkCntrRemn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -635,11 +909,15 @@ class TransactionBalance_StkCntrRemn(BaseModel):
     evltv_prft: SafeStr = Field(default="", description="평가손익")
     pl_rt: SafeStr = Field(default="", description="손익률")
 
+
 class TransactionBalance(BaseModel):
     """[kt00005] 체결잔고요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     entr: SafeStr = Field(default="", description="예수금")
     entr_d1: SafeStr = Field(default="", description="예수금D+1")
     entr_d2: SafeStr = Field(default="", description="예수금D+2")
@@ -670,20 +948,35 @@ class TransactionBalance(BaseModel):
     crd_grnt_rt: SafeStr = Field(default="", description="신용담보비율")
     dpst_grnt_use_amt_amt: SafeStr = Field(default="", description="예탁담보대출금액")
     grnt_loan_amt: SafeStr = Field(default="", description="매도담보대출금액")
-    stk_cntr_remn: Annotated[List[TransactionBalance_StkCntrRemn], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별체결잔고")
+    stk_cntr_remn: Annotated[List[TransactionBalance_StkCntrRemn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="종목별체결잔고"
+    )
+
 
 class OrderDetailsByAccountRequest(BaseModel):
     """[kt00007] 계좌별주문체결내역상세요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     ord_dt: SafeStr = Field(default="", description="주문일자 YYYYMMDD")
     qry_tp: SafeStr = Field(default="", description="조회구분 1:주문순, 2:역순, 3:미체결, 4:체결내역만")
     stk_bond_tp: SafeStr = Field(default="", description="주식채권구분 0:전체, 1:주식, 2:채권")
     sell_tp: SafeStr = Field(default="", description="매도수구분 0:전체, 1:매도, 2:매수")
     stk_cd: SafeStr = Field(default="", description="종목코드 공백허용 (공백일때 전체종목)")
     fr_ord_no: SafeStr = Field(default="", description="시작주문번호 공백허용 (공백일때 전체주문)")
-    dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 %:(전체),KRX:한국거래소,NXT:넥스트트레이드,SOR:최선주문집행")
+    dmst_stex_tp: SafeStr = Field(
+        default="", description="국내거래소구분 %:(전체),KRX:한국거래소,NXT:넥스트트레이드,SOR:최선주문집행"
+    )
+
 
 class OrderDetailsByAccount_AcntOrdCntrPrpsDtl(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -710,19 +1003,36 @@ class OrderDetailsByAccount_AcntOrdCntrPrpsDtl(BaseModel):
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
     cond_uv: SafeStr = Field(default="", description="스톱가")
 
+
 class OrderDetailsByAccount(BaseModel):
     """[kt00007] 계좌별주문체결내역상세요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    acnt_ord_cntr_prps_dtl: Annotated[List[OrderDetailsByAccount_AcntOrdCntrPrpsDtl], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌별주문체결내역상세")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    acnt_ord_cntr_prps_dtl: Annotated[List[OrderDetailsByAccount_AcntOrdCntrPrpsDtl], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="계좌별주문체결내역상세")
+    )
+
 
 class NextDayPaymentScheduleDetailsByAccountRequest(BaseModel):
     """[kt00008] 계좌별익일결제예정내역요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dcd_seq: SafeStr = Field(default="", description="시작결제번호")
+
 
 class NextDayPaymentScheduleDetailsByAccount_AcntNxdySetlFrcsPrpsArray(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -742,22 +1052,38 @@ class NextDayPaymentScheduleDetailsByAccount_AcntNxdySetlFrcsPrpsArray(BaseModel
     resi_tax: SafeStr = Field(default="", description="주민세")
     crd_tp: SafeStr = Field(default="", description="신용구분")
 
+
 class NextDayPaymentScheduleDetailsByAccount(BaseModel):
     """[kt00008] 계좌별익일결제예정내역요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     trde_dt: SafeStr = Field(default="", description="매매일자")
     setl_dt: SafeStr = Field(default="", description="결제일자")
     sell_amt_sum: SafeStr = Field(default="", description="매도정산합")
     buy_amt_sum: SafeStr = Field(default="", description="매수정산합")
-    acnt_nxdy_setl_frcs_prps_array: Annotated[List[NextDayPaymentScheduleDetailsByAccount_AcntNxdySetlFrcsPrpsArray], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌별익일결제예정내역배열")
+    acnt_nxdy_setl_frcs_prps_array: Annotated[
+        List[NextDayPaymentScheduleDetailsByAccount_AcntNxdySetlFrcsPrpsArray], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="계좌별익일결제예정내역배열")
+
 
 class OrderExecutionByAccountRequest(BaseModel):
     """[kt00009] 계좌별주문체결현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     ord_dt: SafeStr = Field(default="", description="주문일자 YYYYMMDD")
     stk_bond_tp: SafeStr = Field(default="", description="주식채권구분 0:전체, 1:주식, 2:채권")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 0:전체, 1:코스피, 2:코스닥, 3:OTCBB, 4:ECN")
@@ -765,7 +1091,10 @@ class OrderExecutionByAccountRequest(BaseModel):
     qry_tp: SafeStr = Field(default="", description="조회구분 0:전체, 1:체결")
     stk_cd: SafeStr = Field(default="", description="종목코드 전문 조회할 종목코드")
     fr_ord_no: SafeStr = Field(default="", description="시작주문번호")
-    dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 %:(전체),KRX:한국거래소,NXT:넥스트트레이드,SOR:최선주문집행")
+    dmst_stex_tp: SafeStr = Field(
+        default="", description="국내거래소구분 %:(전체),KRX:한국거래소,NXT:넥스트트레이드,SOR:최선주문집행"
+    )
+
 
 class OrderExecutionByAccount_AcntOrdCntrPrstArray(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -792,21 +1121,37 @@ class OrderExecutionByAccount_AcntOrdCntrPrstArray(BaseModel):
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
     cond_uv: SafeStr = Field(default="", description="스톱가")
 
+
 class OrderExecutionByAccount(BaseModel):
     """[kt00009] 계좌별주문체결현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     sell_grntl_engg_amt: SafeStr = Field(default="", description="매도약정금액")
     buy_engg_amt: SafeStr = Field(default="", description="매수약정금액")
     engg_amt: SafeStr = Field(default="", description="약정금액")
-    acnt_ord_cntr_prst_array: Annotated[List[OrderExecutionByAccount_AcntOrdCntrPrstArray], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌별주문체결현황배열")
+    acnt_ord_cntr_prst_array: Annotated[
+        List[OrderExecutionByAccount_AcntOrdCntrPrstArray], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="계좌별주문체결현황배열")
+
 
 class OrderWithdrawalAmountRequest(BaseModel):
     """[kt00010] 주문인출가능금액요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     io_amt: SafeStr = Field(default="", description="입출금액")
     stk_cd: SafeStr = Field(default="", description="종목번호")
     trde_tp: SafeStr = Field(default="", description="매매구분 1:매도, 2:매수")
@@ -814,11 +1159,15 @@ class OrderWithdrawalAmountRequest(BaseModel):
     uv: SafeStr = Field(default="", description="매수가격")
     exp_buy_unp: SafeStr = Field(default="", description="예상매수단가")
 
+
 class OrderWithdrawalAmount(BaseModel):
     """[kt00010] 주문인출가능금액요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     profa_20ord_alow_amt: SafeStr = Field(default="", description="증거금20%주문가능금액")
     profa_20ord_alowq: SafeStr = Field(default="", description="증거금20%주문가능수량")
     profa_30ord_alow_amt: SafeStr = Field(default="", description="증거금30%주문가능금액")
@@ -848,19 +1197,33 @@ class OrderWithdrawalAmount(BaseModel):
     d2entra: SafeStr = Field(default="", description="D2추정예수금")
     profa_rdex_aplc_tp: SafeStr = Field(default="", description="증거금감면적용구분 0:일반,1:60%감면")
 
+
 class QuantityAvailableOrderByMarginRateRequest(BaseModel):
     """[kt00011] 증거금율별주문가능수량조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목번호")
     uv: SafeStr = Field(default="", description="매수가격")
 
+
 class QuantityAvailableOrderByMarginRate(BaseModel):
     """[kt00011] 증거금율별주문가능수량조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_profa_rt: SafeStr = Field(default="", description="종목증거금율")
     profa_rt: SafeStr = Field(default="", description="계좌증거금율")
     aplc_rt: SafeStr = Field(default="", description="적용증거금율")
@@ -898,19 +1261,33 @@ class QuantityAvailableOrderByMarginRate(BaseModel):
     ord_pos_repl: SafeStr = Field(default="", description="주문가능대용")
     ord_alowa: SafeStr = Field(default="", description="주문가능현금")
 
+
 class QuantityAvailableOrderByCreditDepositRateRequest(BaseModel):
     """[kt00012] 신용보증금율별주문가능수량조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목번호")
     uv: SafeStr = Field(default="", description="매수가격")
 
+
 class QuantityAvailableOrderByCreditDepositRate(BaseModel):
     """[kt00012] 신용보증금율별주문가능수량조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_assr_rt: SafeStr = Field(default="", description="종목보증금율")
     stk_assr_rt_nm: SafeStr = Field(default="", description="종목보증금율명")
     assr_30ord_alow_amt: SafeStr = Field(default="", description="보증금30%주문가능금액")
@@ -939,17 +1316,31 @@ class QuantityAvailableOrderByCreditDepositRate(BaseModel):
     min_amt: SafeStr = Field(default="", description="미수불가금액")
     min_qty: SafeStr = Field(default="", description="미수불가수량")
 
+
 class MarginDetailsRequest(BaseModel):
     """[kt00013] 증거금세부내역조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+
 
 class MarginDetails(BaseModel):
     """[kt00013] 증거금세부내역조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     tdy_reu_objt_amt: SafeStr = Field(default="", description="금일재사용대상금액")
     tdy_reu_use_amt: SafeStr = Field(default="", description="금일재사용사용금액")
     tdy_reu_alowa: SafeStr = Field(default="", description="금일재사용가능금액")
@@ -1001,19 +1392,33 @@ class MarginDetails(BaseModel):
     d2vexct_entr: SafeStr = Field(default="", description="D2가정산예수금")
     d2ch_ord_alow_amt: SafeStr = Field(default="", description="D2현금주문가능금액")
 
+
 class ComprehensiveConsignmentTransactionDetailsRequest(BaseModel):
     """[kt00015] 위탁종합거래내역요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자")
     end_dt: SafeStr = Field(default="", description="종료일자")
-    tp: SafeStr = Field(default="", description="구분 0:전체,1:입출금,2:입출고,3:매매,4:매수,5:매도,6:입금,7:출금,A:예탁담보대출입금,B:매도담보대출입금,C:현금상환(융자,담보상환),F:환전,M:입출금+환전,G:외화매수,H:외화매도,I:환전정산입금,J:환전정산출금")
+    tp: SafeStr = Field(
+        default="",
+        description="구분 0:전체,1:입출금,2:입출고,3:매매,4:매수,5:매도,6:입금,7:출금,A:예탁담보대출입금,B:매도담보대출입금,C:현금상환(융자,담보상환),F:환전,M:입출금+환전,G:외화매수,H:외화매도,I:환전정산입금,J:환전정산출금",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     crnc_cd: SafeStr = Field(default="", description="통화코드")
     gds_tp: SafeStr = Field(default="", description="상품구분 0:전체, 1:국내주식, 2:수익증권, 3:해외주식, 4:금융상품")
     frgn_stex_code: SafeStr = Field(default="", description="해외거래소코드")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 %:(전체),KRX:한국거래소,NXT:넥스트트레이드")
+
 
 class ComprehensiveConsignmentTransactionDetails_TrstOvrlTrdePrpsArray(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1027,7 +1432,9 @@ class ComprehensiveConsignmentTransactionDetails_TrstOvrlTrdePrpsArray(BaseModel
     fc_exct_amt: SafeStr = Field(default="", description="정산금액(외)")
     entra_remn: SafeStr = Field(default="", description="예수금잔고")
     crnc_cd: SafeStr = Field(default="", description="통화코드")
-    trde_ocr_tp: SafeStr = Field(default="", description="거래종류구분 1:입출금, 2:펀드, 3:ELS, 4:채권, 5:해외채권, 6:외화RP, 7:외화발행어음")
+    trde_ocr_tp: SafeStr = Field(
+        default="", description="거래종류구분 1:입출금, 2:펀드, 3:ELS, 4:채권, 5:해외채권, 6:외화RP, 7:외화발행어음"
+    )
     trde_kind_nm: SafeStr = Field(default="", description="거래종류명")
     stk_nm: SafeStr = Field(default="", description="종목명")
     trde_amt: SafeStr = Field(default="", description="거래금액")
@@ -1069,26 +1476,46 @@ class ComprehensiveConsignmentTransactionDetails_TrstOvrlTrdePrpsArray(BaseModel
     rcpmnyer: SafeStr = Field(default="", description="입금자")
     trde_prtc_tp: SafeStr = Field(default="", description="거래내역구분")
 
+
 class ComprehensiveConsignmentTransactionDetails(BaseModel):
     """[kt00015] 위탁종합거래내역요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    trst_ovrl_trde_prps_array: Annotated[List[ComprehensiveConsignmentTransactionDetails_TrstOvrlTrdePrpsArray], BeforeValidator(_force_list)] = Field(default_factory=list, description="위탁종합거래내역배열")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    trst_ovrl_trde_prps_array: Annotated[
+        List[ComprehensiveConsignmentTransactionDetails_TrstOvrlTrdePrpsArray], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="위탁종합거래내역배열")
+
 
 class DetailedDailyAccountReturnsRequest(BaseModel):
     """[kt00016] 일별계좌수익률상세현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     fr_dt: SafeStr = Field(default="", description="평가시작일")
     to_dt: SafeStr = Field(default="", description="평가종료일")
 
+
 class DetailedDailyAccountReturns(BaseModel):
     """[kt00016] 일별계좌수익률상세현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     mang_empno: SafeStr = Field(default="", description="관리사원번호")
     mngr_nm: SafeStr = Field(default="", description="관리자명")
     dept_nm: SafeStr = Field(default="", description="관리자지점")
@@ -1129,17 +1556,31 @@ class DetailedDailyAccountReturns(BaseModel):
     futr_repl_sella: SafeStr = Field(default="", description="선물대용매도금액")
     trst_repl_sella: SafeStr = Field(default="", description="위탁대용매도금액")
 
+
 class DailyByAccountRequest(BaseModel):
     """[kt00017] 계좌별당일현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+
 
 class DailyByAccount(BaseModel):
     """[kt00017] 계좌별당일현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     d2_entra: SafeStr = Field(default="", description="D+2추정예수금")
     crd_int_npay_gold: SafeStr = Field(default="", description="신용이자미납금")
     etc_loana: SafeStr = Field(default="", description="기타대여금")
@@ -1166,13 +1607,24 @@ class DailyByAccount(BaseModel):
     sel_prica_grnt_loan_int_amt_amt: SafeStr = Field(default="", description="매도대금담보대출이자금액")
     dvida_amt: SafeStr = Field(default="", description="배당금액")
 
+
 class AccountEvaluationBalanceDetailsRequest(BaseModel):
     """[kt00018] 계좌평가잔고내역요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     qry_tp: SafeStr = Field(default="", description="조회구분 1:합산, 2:개별")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX:한국거래소,NXT:넥스트트레이드")
+
 
 class AccountEvaluationBalanceDetails_AcntEvltRemnIndvTot(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1200,11 +1652,15 @@ class AccountEvaluationBalanceDetails_AcntEvltRemnIndvTot(BaseModel):
     crd_tp_nm: SafeStr = Field(default="", description="신용구분명")
     crd_loan_dt: SafeStr = Field(default="", description="대출일")
 
+
 class AccountEvaluationBalanceDetails(BaseModel):
     """[kt00018] 계좌평가잔고내역요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     tot_pur_amt: SafeStr = Field(default="", description="총매입금액")
     tot_evlt_amt: SafeStr = Field(default="", description="총평가금액")
     tot_evlt_pl: SafeStr = Field(default="", description="총평가손익금액")
@@ -1213,13 +1669,26 @@ class AccountEvaluationBalanceDetails(BaseModel):
     tot_loan_amt: SafeStr = Field(default="", description="총대출금")
     tot_crd_loan_amt: SafeStr = Field(default="", description="총융자금액")
     tot_crd_ls_amt: SafeStr = Field(default="", description="총대주금액")
-    acnt_evlt_remn_indv_tot: Annotated[List[AccountEvaluationBalanceDetails_AcntEvltRemnIndvTot], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌평가잔고개별합산")
+    acnt_evlt_remn_indv_tot: Annotated[
+        List[AccountEvaluationBalanceDetails_AcntEvltRemnIndvTot], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="계좌평가잔고개별합산")
+
 
 class CheckGoldSpotBalanceRequest(BaseModel):
     """[kt50020] 금현물 잔고확인 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+
 
 class CheckGoldSpotBalance_GoldAcntEvltPrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1240,11 +1709,15 @@ class CheckGoldSpotBalance_GoldAcntEvltPrst(BaseModel):
     sell_qty: SafeStr = Field(default="", description="매도수량")
     able_qty: SafeStr = Field(default="", description="가능수량")
 
+
 class CheckGoldSpotBalance(BaseModel):
     """[kt50020] 금현물 잔고확인 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     tot_entr: SafeStr = Field(default="", description="예수금")
     net_entr: SafeStr = Field(default="", description="추정예수금")
     tot_est_amt: SafeStr = Field(default="", description="잔고평가액")
@@ -1253,19 +1726,35 @@ class CheckGoldSpotBalance(BaseModel):
     tot_dep_amt: SafeStr = Field(default="", description="추정예탁자산")
     paym_alowa: SafeStr = Field(default="", description="출금가능금액")
     pl_amt: SafeStr = Field(default="", description="실현손익")
-    gold_acnt_evlt_prst: Annotated[List[CheckGoldSpotBalance_GoldAcntEvltPrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물계좌평가현황")
+    gold_acnt_evlt_prst: Annotated[List[CheckGoldSpotBalance_GoldAcntEvltPrst], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물계좌평가현황"
+    )
+
 
 class GoldSpotDepositRequest(BaseModel):
     """[kt50021] 금현물 예수금 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+
 
 class GoldSpotDeposit(BaseModel):
     """[kt50021] 금현물 예수금 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     entra: SafeStr = Field(default="", description="예수금")
     profa_ch: SafeStr = Field(default="", description="증거금현금")
     chck_ina_amt: SafeStr = Field(default="", description="수표입금액")
@@ -1281,11 +1770,21 @@ class GoldSpotDeposit(BaseModel):
     pymn_alow_amt: SafeStr = Field(default="", description="출금가능금액")
     ord_alow_amt: SafeStr = Field(default="", description="주문가능금액")
 
+
 class AllGoldSpotOrdersRequest(BaseModel):
     """[kt50030] 금현물 주문체결전체조회 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     ord_dt: SafeStr = Field(default="", description="주문일자")
     qry_tp: SafeStr = Field(default="", description="조회구분 1: 주문순, 2: 역순")
     mrkt_deal_tp: SafeStr = Field(default="", description="시장구분")
@@ -1294,6 +1793,7 @@ class AllGoldSpotOrdersRequest(BaseModel):
     stk_cd: SafeStr = Field(default="", description="종목코드")
     fr_ord_no: SafeStr = Field(default="", description="시작주문번호")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 %:(전체), KRX, NXT, SOR")
+
 
 class AllGoldSpotOrders_AcntOrdCntrPrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1320,25 +1820,44 @@ class AllGoldSpotOrders_AcntOrdCntrPrst(BaseModel):
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
     cond_uv: SafeStr = Field(default="", description="스톱가")
 
+
 class AllGoldSpotOrders(BaseModel):
     """[kt50030] 금현물 주문체결전체조회 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    acnt_ord_cntr_prst: Annotated[List[AllGoldSpotOrders_AcntOrdCntrPrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌별주문체결현황")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    acnt_ord_cntr_prst: Annotated[List[AllGoldSpotOrders_AcntOrdCntrPrst], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="계좌별주문체결현황"
+    )
+
 
 class GoldSpotOrderExecutionRequest(BaseModel):
     """[kt50031] 금현물 주문체결조회 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     ord_dt: SafeStr = Field(default="", description="주문일자 YYYYMMDD")
     qry_tp: SafeStr = Field(default="", description="조회구분 1:주문순, 2:역순, 3:미체결, 4:체결내역만")
     stk_bond_tp: SafeStr = Field(default="", description="주식채권구분 0:전체, 1:주식, 2:채권")
     sell_tp: SafeStr = Field(default="", description="매도수구분 0:전체, 1:매도, 2:매수")
     stk_cd: SafeStr = Field(default="", description="종목코드 공백허용 (공백일때 전체종목)")
     fr_ord_no: SafeStr = Field(default="", description="시작주문번호 공백허용 (공백일때 전체주문)")
-    dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 %:(전체),KRX:한국거래소,NXT:넥스트트레이드,SOR:최선주문집행")
+    dmst_stex_tp: SafeStr = Field(
+        default="", description="국내거래소구분 %:(전체),KRX:한국거래소,NXT:넥스트트레이드,SOR:최선주문집행"
+    )
+
 
 class GoldSpotOrderExecution_AcntOrdCntrPrpsDtl(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1365,22 +1884,39 @@ class GoldSpotOrderExecution_AcntOrdCntrPrpsDtl(BaseModel):
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
     cond_uv: SafeStr = Field(default="", description="스톱가")
 
+
 class GoldSpotOrderExecution(BaseModel):
     """[kt50031] 금현물 주문체결조회 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    acnt_ord_cntr_prps_dtl: Annotated[List[GoldSpotOrderExecution_AcntOrdCntrPrpsDtl], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌별주문체결내역상세")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    acnt_ord_cntr_prps_dtl: Annotated[List[GoldSpotOrderExecution_AcntOrdCntrPrpsDtl], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="계좌별주문체결내역상세")
+    )
+
 
 class GoldSpotTransactionHistoryRequest(BaseModel):
     """[kt50032] 금현물 거래내역조회 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자")
     end_dt: SafeStr = Field(default="", description="종료일자")
     tp: SafeStr = Field(default="", description="구분 0:전체, 1:입출금, 2:출고, 3:매매, 4:매수, 5:매도, 6:입금, 7:출금")
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class GoldSpotTransactionHistory_GoldTrdeHist(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1409,19 +1945,35 @@ class GoldSpotTransactionHistory_GoldTrdeHist(BaseModel):
     proc_brch_nm: SafeStr = Field(default="", description="처리점")
     prcsr: SafeStr = Field(default="", description="처리자")
 
+
 class GoldSpotTransactionHistory(BaseModel):
     """[kt50032] 금현물 거래내역조회 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     acnt_print: SafeStr = Field(default="", description="계좌번호 계좌번호 출력용")
-    gold_trde_hist: Annotated[List[GoldSpotTransactionHistory_GoldTrdeHist], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물거래내역")
+    gold_trde_hist: Annotated[List[GoldSpotTransactionHistory_GoldTrdeHist], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물거래내역"
+    )
+
 
 class GoldSpotNonTradingRequest(BaseModel):
     """[kt50075] 금현물 미체결조회 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     ord_dt: SafeStr = Field(default="", description="주문일자")
     qry_tp: SafeStr = Field(default="", description="조회구분 1: 주문순, 2: 역순")
     mrkt_deal_tp: SafeStr = Field(default="", description="시장구분")
@@ -1430,6 +1982,7 @@ class GoldSpotNonTradingRequest(BaseModel):
     stk_cd: SafeStr = Field(default="", description="종목코드")
     fr_ord_no: SafeStr = Field(default="", description="시작주문번호")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 %:(전체), KRX, NXT, SOR")
+
 
 class GoldSpotNonTrading_AcntOrdOsoPrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1456,22 +2009,41 @@ class GoldSpotNonTrading_AcntOrdOsoPrst(BaseModel):
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
     cond_uv: SafeStr = Field(default="", description="스톱가")
 
+
 class GoldSpotNonTrading(BaseModel):
     """[kt50075] 금현물 미체결조회 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    acnt_ord_oso_prst: Annotated[List[GoldSpotNonTrading_AcntOrdOsoPrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="계좌별주문미체결현황")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    acnt_ord_oso_prst: Annotated[List[GoldSpotNonTrading_AcntOrdOsoPrst], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="계좌별주문미체결현황"
+    )
+
 
 class ShortSellingTrendRequest(BaseModel):
     """[ka10014] 공매도추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     tm_tp: SafeStr = Field(default="", description="시간구분 0:시작일, 1:기간")
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
+
 
 class ShortSellingTrend_ShrtsTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1487,19 +2059,38 @@ class ShortSellingTrend_ShrtsTrnsn(BaseModel):
     shrts_trde_prica: SafeStr = Field(default="", description="공매도거래대금")
     shrts_avg_pric: SafeStr = Field(default="", description="공매도평균가")
 
+
 class ShortSellingTrend(BaseModel):
     """[ka10014] 공매도추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    shrts_trnsn: Annotated[List[ShortSellingTrend_ShrtsTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="공매도추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    shrts_trnsn: Annotated[List[ShortSellingTrend_ShrtsTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="공매도추이"
+    )
+
 
 class ForeignStockTradingTrendsByItemRequest(BaseModel):
     """[ka10008] 주식외국인종목별매매동향 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class ForeignStockTradingTrendsByItem_StkFrgnr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1515,25 +2106,47 @@ class ForeignStockTradingTrendsByItem_StkFrgnr(BaseModel):
     frgnr_limit_irds: SafeStr = Field(default="", description="외국인한도증감")
     limit_exh_rt: SafeStr = Field(default="", description="한도소진률")
 
+
 class ForeignStockTradingTrendsByItem(BaseModel):
     """[ka10008] 주식외국인종목별매매동향 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    stk_frgnr: Annotated[List[ForeignStockTradingTrendsByItem_StkFrgnr], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식외국인")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    stk_frgnr: Annotated[List[ForeignStockTradingTrendsByItem_StkFrgnr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식외국인"
+    )
+
 
 class StockInstitutionRequest(BaseModel):
     """[ka10009] 주식기관요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class StockInstitution(BaseModel):
     """[ka10009] 주식기관요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     date: SafeStr = Field(default="", description="날짜")
     close_pric: SafeStr = Field(default="", description="종가")
     pre: SafeStr = Field(default="", description="대비")
@@ -1542,12 +2155,24 @@ class StockInstitution(BaseModel):
     frgnr_daly_nettrde: SafeStr = Field(default="", description="외국인일별순매매")
     frgnr_qota_rt: SafeStr = Field(default="", description="외국인지분율")
 
+
 class ContinuousTradingByInstitutionalForeignersRequest(BaseModel):
     """[ka10131] 기관외국인연속매매현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    dt: SafeStr = Field(default="", description="기간 1:최근일, 3:3일, 5:5일, 10:10일, 20:20일, 120:120일, 0:시작일자/종료일자로 조회")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    dt: SafeStr = Field(
+        default="", description="기간 1:최근일, 3:3일, 5:5일, 10:10일, 20:20일, 120:120일, 0:시작일자/종료일자로 조회"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     mrkt_tp: SafeStr = Field(default="", description="장구분 001:코스피, 101:코스닥")
@@ -1555,6 +2180,7 @@ class ContinuousTradingByInstitutionalForeignersRequest(BaseModel):
     stk_inds_tp: SafeStr = Field(default="", description="종목업종구분 0:종목(주식),1:업종")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 0:금액, 1:수량")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class ContinuousTradingByInstitutionalForeigners_OrgnFrgnrContTrdePrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1578,18 +2204,35 @@ class ContinuousTradingByInstitutionalForeigners_OrgnFrgnrContTrdePrst(BaseModel
     tot_cont_nettrde_qty: SafeStr = Field(default="", description="합계연속순매매수량")
     tot_cont_netprps_amt: SafeStr = Field(default="", description="합계연속순매수금액")
 
+
 class ContinuousTradingByInstitutionalForeigners(BaseModel):
     """[ka10131] 기관외국인연속매매현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    orgn_frgnr_cont_trde_prst: Annotated[List[ContinuousTradingByInstitutionalForeigners_OrgnFrgnrContTrdePrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="기관외국인연속매매현황")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    orgn_frgnr_cont_trde_prst: Annotated[
+        List[ContinuousTradingByInstitutionalForeigners_OrgnFrgnrContTrdePrst], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="기관외국인연속매매현황")
+
 
 class CurrentGoldSpotInvestorsRequest(BaseModel):
     """[ka52301] 금현물투자자현황 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+
 
 class CurrentGoldSpotInvestors_InveTradStat(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1612,21 +2255,38 @@ class CurrentGoldSpotInvestors_InveTradStat(BaseModel):
     acc_netprps_qty: SafeStr = Field(default="", description="누적 순매수 수량(천)")
     stk_cd: SafeStr = Field(default="", description="투자자 코드")
 
+
 class CurrentGoldSpotInvestors(BaseModel):
     """[ka52301] 금현물투자자현황 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    inve_trad_stat: Annotated[List[CurrentGoldSpotInvestors_InveTradStat], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물투자자현황")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    inve_trad_stat: Annotated[List[CurrentGoldSpotInvestors_InveTradStat], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물투자자현황"
+    )
+
 
 class LoanLendingTransactionTrendRequest(BaseModel):
     """[ka10068] 대차거래추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     all_tp: SafeStr = Field(default="", description="전체구분 1: 전체표시")
+
 
 class LoanLendingTransactionTrend_DbrtTrdeTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1637,21 +2297,38 @@ class LoanLendingTransactionTrend_DbrtTrdeTrnsn(BaseModel):
     rmnd: SafeStr = Field(default="", description="잔고주수")
     remn_amt: SafeStr = Field(default="", description="잔고금액")
 
+
 class LoanLendingTransactionTrend(BaseModel):
     """[ka10068] 대차거래추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    dbrt_trde_trnsn: Annotated[List[LoanLendingTransactionTrend_DbrtTrdeTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="대차거래추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    dbrt_trde_trnsn: Annotated[List[LoanLendingTransactionTrend_DbrtTrdeTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="대차거래추이"
+    )
+
 
 class Top10BorrowingStocksRequest(BaseModel):
     """[ka10069] 대차거래상위10종목요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 001:코스피, 101:코스닥")
+
 
 class Top10BorrowingStocks_DbrtTrdeUpper10Stk(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1662,11 +2339,15 @@ class Top10BorrowingStocks_DbrtTrdeUpper10Stk(BaseModel):
     rmnd: SafeStr = Field(default="", description="잔고주수")
     remn_amt: SafeStr = Field(default="", description="잔고금액")
 
+
 class Top10BorrowingStocks(BaseModel):
     """[ka10069] 대차거래상위10종목요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     dbrt_trde_cntrcnt_sum: SafeStr = Field(default="", description="대차거래체결주수합")
     dbrt_trde_rpy_sum: SafeStr = Field(default="", description="대차거래상환주수합")
     rmnd_sum: SafeStr = Field(default="", description="잔고주수합")
@@ -1675,17 +2356,30 @@ class Top10BorrowingStocks(BaseModel):
     dbrt_trde_rpy_rt: SafeStr = Field(default="", description="대차거래상환주수비율")
     rmnd_rt: SafeStr = Field(default="", description="잔고주수비율")
     remn_amt_rt: SafeStr = Field(default="", description="잔고금액비율")
-    dbrt_trde_upper_10stk: Annotated[List[Top10BorrowingStocks_DbrtTrdeUpper10Stk], BeforeValidator(_force_list)] = Field(default_factory=list, description="대차거래상위10종목")
+    dbrt_trde_upper_10stk: Annotated[List[Top10BorrowingStocks_DbrtTrdeUpper10Stk], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="대차거래상위10종목")
+    )
+
 
 class LoanLendingTransactionTrendByItemRequest(BaseModel):
     """[ka20068] 대차거래추이요청(종목별) 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     all_tp: SafeStr = Field(default="", description="전체구분 0:종목코드 입력종목만 표시")
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class LoanLendingTransactionTrendByItem_DbrtTrdeTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1696,20 +2390,37 @@ class LoanLendingTransactionTrendByItem_DbrtTrdeTrnsn(BaseModel):
     rmnd: SafeStr = Field(default="", description="잔고주수")
     remn_amt: SafeStr = Field(default="", description="잔고금액")
 
+
 class LoanLendingTransactionTrendByItem(BaseModel):
     """[ka20068] 대차거래추이요청(종목별) 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    dbrt_trde_trnsn: Annotated[List[LoanLendingTransactionTrendByItem_DbrtTrdeTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="대차거래추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    dbrt_trde_trnsn: Annotated[List[LoanLendingTransactionTrendByItem_DbrtTrdeTrnsn], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="대차거래추이")
+    )
+
 
 class LoanTransactionDetailsRequest(BaseModel):
     """[ka90012] 대차거래내역요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dt: SafeStr = Field(default="", description="일자 YYYYMMDD")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 001:코스피, 101:코스닥")
+
 
 class LoanTransactionDetails_DbrtTrdePrps(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1720,24 +2431,51 @@ class LoanTransactionDetails_DbrtTrdePrps(BaseModel):
     rmnd: SafeStr = Field(default="", description="잔고주수")
     remn_amt: SafeStr = Field(default="", description="잔고금액")
 
+
 class LoanTransactionDetails(BaseModel):
     """[ka90012] 대차거래내역요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    dbrt_trde_prps: Annotated[List[LoanTransactionDetails_DbrtTrdePrps], BeforeValidator(_force_list)] = Field(default_factory=list, description="대차거래내역")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    dbrt_trde_prps: Annotated[List[LoanTransactionDetails_DbrtTrdePrps], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="대차거래내역"
+    )
+
 
 class HigherQuotaBalanceRequest(BaseModel):
     """[ka10020] 호가잔량상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 001:코스피, 101:코스닥")
-    sort_tp: SafeStr = Field(default="", description="정렬구분 1:순매수잔량순, 2:순매도잔량순, 3:매수비율순, 4:매도비율순")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 0000:장시작전(0주이상), 0010:만주이상, 0050:5만주이상, 00100:10만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
+    sort_tp: SafeStr = Field(
+        default="", description="정렬구분 1:순매수잔량순, 2:순매도잔량순, 3:매수비율순, 4:매도비율순"
+    )
+    trde_qty_tp: SafeStr = Field(
+        default="", description="거래량구분 0000:장시작전(0주이상), 0010:만주이상, 0050:5만주이상, 00100:10만주이상"
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HigherQuotaBalance_BidReqUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1752,25 +2490,47 @@ class HigherQuotaBalance_BidReqUpper(BaseModel):
     netprps_req: SafeStr = Field(default="", description="순매수잔량")
     buy_rt: SafeStr = Field(default="", description="매수비율")
 
+
 class HigherQuotaBalance(BaseModel):
     """[ka10020] 호가잔량상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    bid_req_upper: Annotated[List[HigherQuotaBalance_BidReqUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="호가잔량상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    bid_req_upper: Annotated[List[HigherQuotaBalance_BidReqUpper], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="호가잔량상위"
+    )
+
 
 class SuddenIncreaseQuotationBalanceRequest(BaseModel):
     """[ka10021] 호가잔량급증요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 001:코스피, 101:코스닥")
     trde_tp: SafeStr = Field(default="", description="매매구분 1:매수잔량, 2:매도잔량")
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:급증량, 2:급증률")
     tm_tp: SafeStr = Field(default="", description="시간구분 분 입력")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 1:천주이상, 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기")
+    trde_qty_tp: SafeStr = Field(
+        default="", description="거래량구분 1:천주이상, 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상"
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class SuddenIncreaseQuotationBalance_BidReqSdnin(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1785,24 +2545,46 @@ class SuddenIncreaseQuotationBalance_BidReqSdnin(BaseModel):
     sdnin_rt: SafeStr = Field(default="", description="급증률")
     tot_buy_qty: SafeStr = Field(default="", description="총매수량")
 
+
 class SuddenIncreaseQuotationBalance(BaseModel):
     """[ka10021] 호가잔량급증요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    bid_req_sdnin: Annotated[List[SuddenIncreaseQuotationBalance_BidReqSdnin], BeforeValidator(_force_list)] = Field(default_factory=list, description="호가잔량급증")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    bid_req_sdnin: Annotated[List[SuddenIncreaseQuotationBalance_BidReqSdnin], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="호가잔량급증"
+    )
+
 
 class SuddenIncreaseRemainingCapacityRequest(BaseModel):
     """[ka10022] 잔량율급증요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 001:코스피, 101:코스닥")
     rt_tp: SafeStr = Field(default="", description="비율구분 1:매수/매도비율, 2:매도/매수비율")
     tm_tp: SafeStr = Field(default="", description="시간구분 분 입력")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기")
+    trde_qty_tp: SafeStr = Field(
+        default="", description="거래량구분 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상"
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class SuddenIncreaseRemainingCapacity_ReqRtSdnin(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1817,26 +2599,51 @@ class SuddenIncreaseRemainingCapacity_ReqRtSdnin(BaseModel):
     tot_sel_req: SafeStr = Field(default="", description="총매도잔량")
     tot_buy_req: SafeStr = Field(default="", description="총매수잔량")
 
+
 class SuddenIncreaseRemainingCapacity(BaseModel):
     """[ka10022] 잔량율급증요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    req_rt_sdnin: Annotated[List[SuddenIncreaseRemainingCapacity_ReqRtSdnin], BeforeValidator(_force_list)] = Field(default_factory=list, description="잔량율급증")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    req_rt_sdnin: Annotated[List[SuddenIncreaseRemainingCapacity_ReqRtSdnin], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="잔량율급증"
+    )
+
 
 class SuddenIncreaseTradingVolumeRequest(BaseModel):
     """[ka10023] 거래량급증요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:급증량, 2:급증률, 3:급감량, 4:급감률")
     tm_tp: SafeStr = Field(default="", description="시간구분 1:분, 2:전일")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상")
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상",
+    )
     tm: SafeStr = Field(default="", description="시간 분 입력")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 3:우선주제외, 11:정리매매종목제외, 4:관리종목,우선주제외, 5:증100제외, 6:증100만보기, 13:증60만보기, 12:증50만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 17:ETN제외, 14:ETF제외, 18:ETF+ETN제외, 15:스팩제외, 20:ETF+ETN+스팩제외")
-    pric_tp: SafeStr = Field(default="", description="가격구분 0:전체조회, 2:5만원이상, 5:1만원이상, 6:5천원이상, 8:1천원이상, 9:10만원이상")
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 3:우선주제외, 11:정리매매종목제외, 4:관리종목,우선주제외, 5:증100제외, 6:증100만보기, 13:증60만보기, 12:증50만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 17:ETN제외, 14:ETF제외, 18:ETF+ETN제외, 15:스팩제외, 20:ETF+ETN+스팩제외",
+    )
+    pric_tp: SafeStr = Field(
+        default="", description="가격구분 0:전체조회, 2:5만원이상, 5:1만원이상, 6:5천원이상, 8:1천원이상, 9:10만원이상"
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class SuddenIncreaseTradingVolume_TrdeQtySdnin(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1851,27 +2658,59 @@ class SuddenIncreaseTradingVolume_TrdeQtySdnin(BaseModel):
     sdnin_qty: SafeStr = Field(default="", description="급증량")
     sdnin_rt: SafeStr = Field(default="", description="급증률")
 
+
 class SuddenIncreaseTradingVolume(BaseModel):
     """[ka10023] 거래량급증요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    trde_qty_sdnin: Annotated[List[SuddenIncreaseTradingVolume_TrdeQtySdnin], BeforeValidator(_force_list)] = Field(default_factory=list, description="거래량급증")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    trde_qty_sdnin: Annotated[List[SuddenIncreaseTradingVolume_TrdeQtySdnin], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="거래량급증"
+    )
+
 
 class HigherFluctuationRateComparedPreviousDayRequest(BaseModel):
     """[ka10027] 전일대비등락률상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:상승률, 2:상승폭, 3:하락률, 4:하락폭, 5:보합")
-    trde_qty_cnd: SafeStr = Field(default="", description="거래량조건 0000:전체조회, 0010:만주이상, 0050:5만주이상, 0100:10만주이상, 0150:15만주이상, 0200:20만주이상, 0300:30만주이상, 0500:50만주이상, 1000:백만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 4:우선주+관리주제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 11:정리매매종목제외, 12:증50만보기, 13:증60만보기, 14:ETF제외, 15:스펙제외, 16:ETF+ETN제외")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
+    trde_qty_cnd: SafeStr = Field(
+        default="",
+        description="거래량조건 0000:전체조회, 0010:만주이상, 0050:5만주이상, 0100:10만주이상, 0150:15만주이상, 0200:20만주이상, 0300:30만주이상, 0500:50만주이상, 1000:백만주이상",
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 4:우선주+관리주제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 11:정리매매종목제외, 12:증50만보기, 13:증60만보기, 14:ETF제외, 15:스펙제외, 16:ETF+ETN제외",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
     updown_incls: SafeStr = Field(default="", description="상하한포함 0:불 포함, 1:포함")
-    pric_cnd: SafeStr = Field(default="", description="가격조건 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~5천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상, 10: 1만원미만")
-    trde_prica_cnd: SafeStr = Field(default="", description="거래대금조건 0:전체조회, 3:3천만원이상, 5:5천만원이상, 10:1억원이상, 30:3억원이상, 50:5억원이상, 100:10억원이상, 300:30억원이상, 500:50억원이상, 1000:100억원이상, 3000:300억원이상, 5000:500억원이상")
+    pric_cnd: SafeStr = Field(
+        default="",
+        description="가격조건 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~5천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상, 10: 1만원미만",
+    )
+    trde_prica_cnd: SafeStr = Field(
+        default="",
+        description="거래대금조건 0:전체조회, 3:3천만원이상, 5:5천만원이상, 10:1억원이상, 30:3억원이상, 50:5억원이상, 100:10억원이상, 300:30억원이상, 500:50억원이상, 1000:100억원이상, 3000:300억원이상, 5000:500억원이상",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HigherFluctuationRateComparedPreviousDay_PredPreFluRtUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1888,25 +2727,56 @@ class HigherFluctuationRateComparedPreviousDay_PredPreFluRtUpper(BaseModel):
     cntr_str: SafeStr = Field(default="", description="체결강도")
     cnt: SafeStr = Field(default="", description="횟수")
 
+
 class HigherFluctuationRateComparedPreviousDay(BaseModel):
     """[ka10027] 전일대비등락률상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    pred_pre_flu_rt_upper: Annotated[List[HigherFluctuationRateComparedPreviousDay_PredPreFluRtUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="전일대비등락률상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    pred_pre_flu_rt_upper: Annotated[
+        List[HigherFluctuationRateComparedPreviousDay_PredPreFluRtUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="전일대비등락률상위")
+
 
 class HigherExpectedTransactionRateRequest(BaseModel):
     """[ka10029] 예상체결등락률상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
-    sort_tp: SafeStr = Field(default="", description="정렬구분 1:상승률, 2:상승폭, 3:보합, 4:하락률, 5:하락폭, 6:체결량, 7:상한, 8:하한")
-    trde_qty_cnd: SafeStr = Field(default="", description="거래량조건 0:전체조회, 1;천주이상, 3:3천주, 5:5천주, 10:만주이상, 50:5만주이상, 100:10만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 3:우선주제외, 4:관리종목,우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 11:정리매매종목제외, 12:증50만보기, 13:증60만보기, 14:ETF제외, 15:스팩제외, 16:ETF+ETN제외")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 5:신용한도초과제외, 7:신용융자E군, 8:신용대주, 9:신용융자전체")
-    pric_cnd: SafeStr = Field(default="", description="가격조건 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~5천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상, 10:1만원미만")
+    sort_tp: SafeStr = Field(
+        default="", description="정렬구분 1:상승률, 2:상승폭, 3:보합, 4:하락률, 5:하락폭, 6:체결량, 7:상한, 8:하한"
+    )
+    trde_qty_cnd: SafeStr = Field(
+        default="",
+        description="거래량조건 0:전체조회, 1;천주이상, 3:3천주, 5:5천주, 10:만주이상, 50:5만주이상, 100:10만주이상",
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 3:우선주제외, 4:관리종목,우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 11:정리매매종목제외, 12:증50만보기, 13:증60만보기, 14:ETF제외, 15:스팩제외, 16:ETF+ETN제외",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 5:신용한도초과제외, 7:신용융자E군, 8:신용대주, 9:신용융자전체",
+    )
+    pric_cnd: SafeStr = Field(
+        default="",
+        description="가격조건 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~5천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상, 10:1만원미만",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HigherExpectedTransactionRate_ExpCntrFluRtUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1923,27 +2793,59 @@ class HigherExpectedTransactionRate_ExpCntrFluRtUpper(BaseModel):
     buy_bid: SafeStr = Field(default="", description="매수호가")
     buy_req: SafeStr = Field(default="", description="매수잔량")
 
+
 class HigherExpectedTransactionRate(BaseModel):
     """[ka10029] 예상체결등락률상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    exp_cntr_flu_rt_upper: Annotated[List[HigherExpectedTransactionRate_ExpCntrFluRtUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="예상체결등락률상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    exp_cntr_flu_rt_upper: Annotated[
+        List[HigherExpectedTransactionRate_ExpCntrFluRtUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="예상체결등락률상위")
+
 
 class HighTransactionVolumeDayRequest(BaseModel):
     """[ka10030] 당일거래량상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:거래량, 2:거래회전율, 3:거래대금")
-    mang_stk_incls: SafeStr = Field(default="", description="관리종목포함 0:관리종목 포함, 1:관리종목 미포함, 3:우선주제외, 11:정리매매종목제외, 4:관리종목, 우선주제외, 5:증100제외, 6:증100마나보기, 13:증60만보기, 12:증50만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 14:ETF제외, 15:스팩제외, 16:ETF+ETN제외")
-    crd_tp: SafeStr = Field(default="", description="신용구분 0:전체조회, 9:신용융자전체, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 8:신용대주")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 0:전체조회, 5:5천주이상, 10:1만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:500만주이상, 1000:백만주이상")
-    pric_tp: SafeStr = Field(default="", description="가격구분 0:전체조회, 1:1천원미만, 2:1천원이상, 3:1천원~2천원, 4:2천원~5천원, 5:5천원이상, 6:5천원~1만원, 10:1만원미만, 7:1만원이상, 8:5만원이상, 9:10만원이상")
-    trde_prica_tp: SafeStr = Field(default="", description="거래대금구분 0:전체조회, 1:1천만원이상, 3:3천만원이상, 4:5천만원이상, 10:1억원이상, 30:3억원이상, 50:5억원이상, 100:10억원이상, 300:30억원이상, 500:50억원이상, 1000:100억원이상, 3000:300억원이상, 5000:500억원이상")
+    mang_stk_incls: SafeStr = Field(
+        default="",
+        description="관리종목포함 0:관리종목 포함, 1:관리종목 미포함, 3:우선주제외, 11:정리매매종목제외, 4:관리종목, 우선주제외, 5:증100제외, 6:증100마나보기, 13:증60만보기, 12:증50만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기, 14:ETF제외, 15:스팩제외, 16:ETF+ETN제외",
+    )
+    crd_tp: SafeStr = Field(
+        default="",
+        description="신용구분 0:전체조회, 9:신용융자전체, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 8:신용대주",
+    )
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 0:전체조회, 5:5천주이상, 10:1만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:500만주이상, 1000:백만주이상",
+    )
+    pric_tp: SafeStr = Field(
+        default="",
+        description="가격구분 0:전체조회, 1:1천원미만, 2:1천원이상, 3:1천원~2천원, 4:2천원~5천원, 5:5천원이상, 6:5천원~1만원, 10:1만원미만, 7:1만원이상, 8:5만원이상, 9:10만원이상",
+    )
+    trde_prica_tp: SafeStr = Field(
+        default="",
+        description="거래대금구분 0:전체조회, 1:1천만원이상, 3:3천만원이상, 4:5천만원이상, 10:1억원이상, 30:3억원이상, 50:5억원이상, 100:10억원이상, 300:30억원이상, 500:50억원이상, 1000:100억원이상, 3000:300억원이상, 5000:500억원이상",
+    )
     mrkt_open_tp: SafeStr = Field(default="", description="장운영구분 0:전체조회, 1:장중, 2:장전시간외, 3:장후시간외")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HighTransactionVolumeDay_TdyTrdeQtyUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1970,23 +2872,40 @@ class HighTransactionVolumeDay_TdyTrdeQtyUpper(BaseModel):
     bf_mkrt_trde_rt: SafeStr = Field(default="", description="장전거래회전율")
     bf_mkrt_trde_amt: SafeStr = Field(default="", description="장전거래금액")
 
+
 class HighTransactionVolumeDay(BaseModel):
     """[ka10030] 당일거래량상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    tdy_trde_qty_upper: Annotated[List[HighTransactionVolumeDay_TdyTrdeQtyUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="당일거래량상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    tdy_trde_qty_upper: Annotated[List[HighTransactionVolumeDay_TdyTrdeQtyUpper], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="당일거래량상위"
+    )
+
 
 class PreviousDayHighestTradingVolumeRequest(BaseModel):
     """[ka10031] 전일거래량상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     qry_tp: SafeStr = Field(default="", description="조회구분 1:전일거래량 상위100종목, 2:전일거래대금 상위100종목")
     rank_strt: SafeStr = Field(default="", description="순위시작 0 ~ 100 값 중에  조회를 원하는 순위 시작값")
     rank_end: SafeStr = Field(default="", description="순위끝 0 ~ 100 값 중에  조회를 원하는 순위 끝값")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class PreviousDayHighestTradingVolume_PredTrdeQtyUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -1997,21 +2916,38 @@ class PreviousDayHighestTradingVolume_PredTrdeQtyUpper(BaseModel):
     pred_pre: SafeStr = Field(default="", description="전일대비")
     trde_qty: SafeStr = Field(default="", description="거래량")
 
+
 class PreviousDayHighestTradingVolume(BaseModel):
     """[ka10031] 전일거래량상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    pred_trde_qty_upper: Annotated[List[PreviousDayHighestTradingVolume_PredTrdeQtyUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="전일거래량상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    pred_trde_qty_upper: Annotated[
+        List[PreviousDayHighestTradingVolume_PredTrdeQtyUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="전일거래량상위")
+
 
 class HigherTransactionAmountRequest(BaseModel):
     """[ka10032] 거래대금상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     mang_stk_incls: SafeStr = Field(default="", description="관리종목포함 0:관리종목 미포함, 1:관리종목 포함")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HigherTransactionAmount_TrdePricaUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2029,24 +2965,50 @@ class HigherTransactionAmount_TrdePricaUpper(BaseModel):
     pred_trde_qty: SafeStr = Field(default="", description="전일거래량")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class HigherTransactionAmount(BaseModel):
     """[ka10032] 거래대금상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    trde_prica_upper: Annotated[List[HigherTransactionAmount_TrdePricaUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="거래대금상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    trde_prica_upper: Annotated[List[HigherTransactionAmount_TrdePricaUpper], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="거래대금상위"
+    )
+
 
 class HigherCreditRatioRequest(BaseModel):
     """[ka10033] 신용비율상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 0:전체조회, 10:만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기")
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 0:전체조회, 10:만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상",
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기",
+    )
     updown_incls: SafeStr = Field(default="", description="상하한포함 0:상하한 미포함, 1:상하한포함")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HigherCreditRatio_CrdRtUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2062,22 +3024,39 @@ class HigherCreditRatio_CrdRtUpper(BaseModel):
     buy_req: SafeStr = Field(default="", description="매수잔량")
     now_trde_qty: SafeStr = Field(default="", description="현재거래량")
 
+
 class HigherCreditRatio(BaseModel):
     """[ka10033] 신용비율상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    crd_rt_upper: Annotated[List[HigherCreditRatio_CrdRtUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="신용비율상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    crd_rt_upper: Annotated[List[HigherCreditRatio_CrdRtUpper], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="신용비율상위"
+    )
+
 
 class ExternalTransactionTopSalesByPeriodRequest(BaseModel):
     """[ka10034] 외인기간별매매상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     trde_tp: SafeStr = Field(default="", description="매매구분 1:순매도, 2:순매수, 3:순매매")
     dt: SafeStr = Field(default="", description="기간 0:당일, 1:전일, 5:5일, 10;10일, 20:20일, 60:60일")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class ExternalTransactionTopSalesByPeriod_ForDtTrdeUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2093,22 +3072,39 @@ class ExternalTransactionTopSalesByPeriod_ForDtTrdeUpper(BaseModel):
     netprps_qty: SafeStr = Field(default="", description="순매수량")
     gain_pos_stkcnt: SafeStr = Field(default="", description="취득가능주식수")
 
+
 class ExternalTransactionTopSalesByPeriod(BaseModel):
     """[ka10034] 외인기간별매매상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    for_dt_trde_upper: Annotated[List[ExternalTransactionTopSalesByPeriod_ForDtTrdeUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="외인기간별매매상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    for_dt_trde_upper: Annotated[
+        List[ExternalTransactionTopSalesByPeriod_ForDtTrdeUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="외인기간별매매상위")
+
 
 class ForeignContinuousNetSalesTopRequest(BaseModel):
     """[ka10035] 외인연속순매매상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     trde_tp: SafeStr = Field(default="", description="매매구분 1:연속순매도, 2:연속순매수")
     base_dt_tp: SafeStr = Field(default="", description="기준일구분 0:당일기준, 1:전일기준")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class ForeignContinuousNetSalesTop_ForContNettrdeUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2126,21 +3122,38 @@ class ForeignContinuousNetSalesTop_ForContNettrdeUpper(BaseModel):
     pred_pre_2: SafeStr = Field(default="", description="전일대비2")
     pred_pre_3: SafeStr = Field(default="", description="전일대비3")
 
+
 class ForeignContinuousNetSalesTop(BaseModel):
     """[ka10035] 외인연속순매매상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    for_cont_nettrde_upper: Annotated[List[ForeignContinuousNetSalesTop_ForContNettrdeUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="외인연속순매매상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    for_cont_nettrde_upper: Annotated[
+        List[ForeignContinuousNetSalesTop_ForContNettrdeUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="외인연속순매매상위")
+
 
 class TopForeignLimitBurnoutRateIncreaseRequest(BaseModel):
     """[ka10036] 외인한도소진율증가상위 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     dt: SafeStr = Field(default="", description="기간 0:당일, 1:전일, 5:5일, 10;10일, 20:20일, 60:60일")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class TopForeignLimitBurnoutRateIncrease_ForLimitExhRtIncrsUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2157,23 +3170,40 @@ class TopForeignLimitBurnoutRateIncrease_ForLimitExhRtIncrsUpper(BaseModel):
     limit_exh_rt: SafeStr = Field(default="", description="한도소진율")
     exh_rt_incrs: SafeStr = Field(default="", description="소진율증가")
 
+
 class TopForeignLimitBurnoutRateIncrease(BaseModel):
     """[ka10036] 외인한도소진율증가상위 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    for_limit_exh_rt_incrs_upper: Annotated[List[TopForeignLimitBurnoutRateIncrease_ForLimitExhRtIncrsUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="외인한도소진율증가상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    for_limit_exh_rt_incrs_upper: Annotated[
+        List[TopForeignLimitBurnoutRateIncrease_ForLimitExhRtIncrsUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="외인한도소진율증가상위")
+
 
 class ForeignOverCounterSalesRequest(BaseModel):
     """[ka10037] 외국계창구매매상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     dt: SafeStr = Field(default="", description="기간 0:당일, 1:전일, 5:5일, 10;10일, 20:20일, 60:60일")
     trde_tp: SafeStr = Field(default="", description="매매구분 1:순매수, 2:순매도, 3:매수, 4:매도")
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:금액, 2:수량")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class ForeignOverCounterSales_FrgnWicketTrdeUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2191,23 +3221,42 @@ class ForeignOverCounterSales_FrgnWicketTrdeUpper(BaseModel):
     trde_qty: SafeStr = Field(default="", description="거래량")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class ForeignOverCounterSales(BaseModel):
     """[ka10037] 외국계창구매매상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    frgn_wicket_trde_upper: Annotated[List[ForeignOverCounterSales_FrgnWicketTrdeUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="외국계창구매매상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    frgn_wicket_trde_upper: Annotated[
+        List[ForeignOverCounterSales_FrgnWicketTrdeUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="외국계창구매매상위")
+
 
 class RankingSecuritiesCompaniesByStockRequest(BaseModel):
     """[ka10038] 종목별증권사순위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     qry_tp: SafeStr = Field(default="", description="조회구분 1:순매도순위정렬, 2:순매수순위정렬")
     dt: SafeStr = Field(default="", description="기간 1:전일, 4:5일, 9:10일, 19:20일, 39:40일, 59:60일, 119:120일")
+
 
 class RankingSecuritiesCompaniesByStock_StkSecRank(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2217,27 +3266,46 @@ class RankingSecuritiesCompaniesByStock_StkSecRank(BaseModel):
     sell_qty: SafeStr = Field(default="", description="매도수량")
     acc_netprps_qty: SafeStr = Field(default="", description="누적순매수수량")
 
+
 class RankingSecuritiesCompaniesByStock(BaseModel):
     """[ka10038] 종목별증권사순위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     rank_1: SafeStr = Field(default="", description="순위1")
     rank_2: SafeStr = Field(default="", description="순위2")
     rank_3: SafeStr = Field(default="", description="순위3")
     prid_trde_qty: SafeStr = Field(default="", description="기간중거래량")
-    stk_sec_rank: Annotated[List[RankingSecuritiesCompaniesByStock_StkSecRank], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별증권사순위")
+    stk_sec_rank: Annotated[List[RankingSecuritiesCompaniesByStock_StkSecRank], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="종목별증권사순위"
+    )
+
 
 class TopTradingBySecuritiesCompanyRequest(BaseModel):
     """[ka10039] 증권사별매매상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mmcm_cd: SafeStr = Field(default="", description="회원사코드 회원사 코드는 ka10102 조회")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 0:전체, 5:5000주, 10:1만주, 50:5만주, 100:10만주, 500:50만주, 1000: 100만주")
+    trde_qty_tp: SafeStr = Field(
+        default="", description="거래량구분 0:전체, 5:5000주, 10:1만주, 50:5만주, 100:10만주, 500:50만주, 1000: 100만주"
+    )
     trde_tp: SafeStr = Field(default="", description="매매구분 1:순매수, 2:순매도")
     dt: SafeStr = Field(default="", description="기간 1:전일, 5:5일, 10:10일, 60:60일")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class TopTradingBySecuritiesCompany_SecTrdeUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2254,19 +3322,36 @@ class TopTradingBySecuritiesCompany_SecTrdeUpper(BaseModel):
     buy_amt: SafeStr = Field(default="", description="매수금액")
     sell_amt: SafeStr = Field(default="", description="매도금액")
 
+
 class TopTradingBySecuritiesCompany(BaseModel):
     """[ka10039] 증권사별매매상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    sec_trde_upper: Annotated[List[TopTradingBySecuritiesCompany_SecTrdeUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="증권사별매매상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    sec_trde_upper: Annotated[List[TopTradingBySecuritiesCompany_SecTrdeUpper], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="증권사별매매상위"
+    )
+
 
 class SameDayMajorTransactionRequest(BaseModel):
     """[ka10040] 당일주요거래원요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class SameDayMajorTransaction_TdyMainTrdeOri(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2279,11 +3364,15 @@ class SameDayMajorTransaction_TdyMainTrdeOri(BaseModel):
     qry_dt: SafeStr = Field(default="", description="조회일자")
     qry_tm: SafeStr = Field(default="", description="조회시간")
 
+
 class SameDayMajorTransaction(BaseModel):
     """[ka10040] 당일주요거래원요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     sel_trde_ori_irds_1: SafeStr = Field(default="", description="매도거래원별증감1")
     sel_trde_ori_qty_1: SafeStr = Field(default="", description="매도거래원수량1")
     sel_trde_ori_1: SafeStr = Field(default="", description="매도거래원1")
@@ -2328,14 +3417,28 @@ class SameDayMajorTransaction(BaseModel):
     frgn_sel_prsm_sum: SafeStr = Field(default="", description="외국계매도추정합")
     frgn_buy_prsm_sum: SafeStr = Field(default="", description="외국계매수추정합")
     frgn_buy_prsm_sum_chang: SafeStr = Field(default="", description="외국계매수추정합변동")
-    tdy_main_trde_ori: Annotated[List[SameDayMajorTransaction_TdyMainTrdeOri], BeforeValidator(_force_list)] = Field(default_factory=list, description="당일주요거래원")
+    tdy_main_trde_ori: Annotated[List[SameDayMajorTransaction_TdyMainTrdeOri], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="당일주요거래원"
+    )
+
 
 class NetBuyingTraderRankingRequest(BaseModel):
     """[ka10042] 순매수거래원순위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     qry_dt_tp: SafeStr = Field(default="", description="조회기간구분 0:기간으로 조회, 1:시작일자, 종료일자로 조회")
@@ -2343,25 +3446,45 @@ class NetBuyingTraderRankingRequest(BaseModel):
     dt: SafeStr = Field(default="", description="기간 5:5일, 10:10일, 20:20일, 40:40일, 60:60일, 120:120일")
     sort_base: SafeStr = Field(default="", description="정렬기준 1:종가순, 2:날짜순")
 
+
 class NetBuyingTraderRanking_NetprpsTrdeOriRank(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     rank: SafeStr = Field(default="", description="순위")
     mmcm_cd: SafeStr = Field(default="", description="회원사코드")
     mmcm_nm: SafeStr = Field(default="", description="회원사명")
 
+
 class NetBuyingTraderRanking(BaseModel):
     """[ka10042] 순매수거래원순위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    netprps_trde_ori_rank: Annotated[List[NetBuyingTraderRanking_NetprpsTrdeOriRank], BeforeValidator(_force_list)] = Field(default_factory=list, description="순매수거래원순위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    netprps_trde_ori_rank: Annotated[List[NetBuyingTraderRanking_NetprpsTrdeOriRank], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="순매수거래원순위")
+    )
+
 
 class SameDayHighWithdrawalRequest(BaseModel):
     """[ka10053] 당일상위이탈원요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class SameDayHighWithdrawal_TdyUpperScesnOri(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2374,18 +3497,34 @@ class SameDayHighWithdrawal_TdyUpperScesnOri(BaseModel):
     qry_dt: SafeStr = Field(default="", description="조회일자")
     qry_tm: SafeStr = Field(default="", description="조회시간")
 
+
 class SameDayHighWithdrawal(BaseModel):
     """[ka10053] 당일상위이탈원요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    tdy_upper_scesn_ori: Annotated[List[SameDayHighWithdrawal_TdyUpperScesnOri], BeforeValidator(_force_list)] = Field(default_factory=list, description="당일상위이탈원")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    tdy_upper_scesn_ori: Annotated[List[SameDayHighWithdrawal_TdyUpperScesnOri], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="당일상위이탈원"
+    )
+
 
 class SameNetSalesRankingRequest(BaseModel):
     """[ka10062] 동일순매매순위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001: 코스피, 101:코스닥")
@@ -2393,6 +3532,7 @@ class SameNetSalesRankingRequest(BaseModel):
     sort_cnd: SafeStr = Field(default="", description="정렬조건 1:수량, 2:금액")
     unit_tp: SafeStr = Field(default="", description="단위구분 1:단주, 1000:천주")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class SameNetSalesRanking_EqlNettrdeRank(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2413,22 +3553,42 @@ class SameNetSalesRanking_EqlNettrdeRank(BaseModel):
     nettrde_qty: SafeStr = Field(default="", description="순매매수량")
     nettrde_amt: SafeStr = Field(default="", description="순매매금액")
 
+
 class SameNetSalesRanking(BaseModel):
     """[ka10062] 동일순매매순위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    eql_nettrde_rank: Annotated[List[SameNetSalesRanking_EqlNettrdeRank], BeforeValidator(_force_list)] = Field(default_factory=list, description="동일순매매순위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    eql_nettrde_rank: Annotated[List[SameNetSalesRanking_EqlNettrdeRank], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="동일순매매순위"
+    )
+
 
 class IntradayTradingByInvestorRequest(BaseModel):
     """[ka10065] 장중투자자별매매상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     trde_tp: SafeStr = Field(default="", description="매매구분 1:순매수, 2:순매도")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
-    orgn_tp: SafeStr = Field(default="", description="기관구분 9000:외국인, 9100:외국계, 1000:금융투자, 3000:투신, 5000:기타금융, 4000:은행, 2000:보험, 6000:연기금, 7000:국가, 7100:기타법인, 9999:기관계")
+    orgn_tp: SafeStr = Field(
+        default="",
+        description="기관구분 9000:외국인, 9100:외국계, 1000:금융투자, 3000:투신, 5000:기타금융, 4000:은행, 2000:보험, 6000:연기금, 7000:국가, 7100:기타법인, 9999:기관계",
+    )
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
+
 
 class IntradayTradingByInvestor_OpmrInvsrTrdeUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2438,24 +3598,53 @@ class IntradayTradingByInvestor_OpmrInvsrTrdeUpper(BaseModel):
     buy_qty: SafeStr = Field(default="", description="매수량 매수금액/매수량")
     netslmt: SafeStr = Field(default="", description="순매도 순매수/순매도(금액/수량)")
 
+
 class IntradayTradingByInvestor(BaseModel):
     """[ka10065] 장중투자자별매매상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    opmr_invsr_trde_upper: Annotated[List[IntradayTradingByInvestor_OpmrInvsrTrdeUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="장중투자자별매매상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    opmr_invsr_trde_upper: Annotated[
+        List[IntradayTradingByInvestor_OpmrInvsrTrdeUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="장중투자자별매매상위")
+
 
 class RankingOutHoursSinglePriceFluctuationRateRequest(BaseModel):
     """[ka10098] 시간외단일가등락율순위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체,001:코스피,101:코스닥")
     sort_base: SafeStr = Field(default="", description="정렬기준 1:상승률, 2:상승폭, 3:하락률, 4:하락폭, 5:보합")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회,1:관리종목제외,2:정리매매종목제외,3:우선주제외,4:관리종목우선주제외,5:증100제외,6:증100만보기,7:증40만보기,8:증30만보기,9:증20만보기,12:증50만보기,13:증60만보기,14:ETF제외,15:스팩제외,16:ETF+ETN제외,17:ETN제외")
-    trde_qty_cnd: SafeStr = Field(default="", description="거래량조건 0:전체조회, 10:백주이상,50:5백주이상,100;천주이상, 500:5천주이상, 1000:만주이상, 5000:5만주이상, 10000:10만주이상")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 9:신용융자전체, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 8:신용대주, 5:신용한도초과제외")
-    trde_prica: SafeStr = Field(default="", description="거래대금 0:전체조회, 5:5백만원이상,10:1천만원이상, 30:3천만원이상, 50:5천만원이상, 100:1억원이상, 300:3억원이상, 500:5억원이상, 1000:10억원이상, 3000:30억원이상, 5000:50억원이상, 10000:100억원이상")
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회,1:관리종목제외,2:정리매매종목제외,3:우선주제외,4:관리종목우선주제외,5:증100제외,6:증100만보기,7:증40만보기,8:증30만보기,9:증20만보기,12:증50만보기,13:증60만보기,14:ETF제외,15:스팩제외,16:ETF+ETN제외,17:ETN제외",
+    )
+    trde_qty_cnd: SafeStr = Field(
+        default="",
+        description="거래량조건 0:전체조회, 10:백주이상,50:5백주이상,100;천주이상, 500:5천주이상, 1000:만주이상, 5000:5만주이상, 10000:10만주이상",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 9:신용융자전체, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 8:신용대주, 5:신용한도초과제외",
+    )
+    trde_prica: SafeStr = Field(
+        default="",
+        description="거래대금 0:전체조회, 5:5백만원이상,10:1천만원이상, 30:3천만원이상, 50:5천만원이상, 100:1억원이상, 300:3억원이상, 500:5억원이상, 1000:10억원이상, 3000:30억원이상, 5000:50억원이상, 10000:100억원이상",
+    )
+
 
 class RankingOutHoursSinglePriceFluctuationRate_OvtSigpricFluRtRank(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2473,23 +3662,40 @@ class RankingOutHoursSinglePriceFluctuationRate_OvtSigpricFluRtRank(BaseModel):
     tdy_close_pric: SafeStr = Field(default="", description="당일종가")
     tdy_close_pric_flu_rt: SafeStr = Field(default="", description="당일종가등락률")
 
+
 class RankingOutHoursSinglePriceFluctuationRate(BaseModel):
     """[ka10098] 시간외단일가등락율순위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    ovt_sigpric_flu_rt_rank: Annotated[List[RankingOutHoursSinglePriceFluctuationRate_OvtSigpricFluRtRank], BeforeValidator(_force_list)] = Field(default_factory=list, description="시간외단일가등락율순위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    ovt_sigpric_flu_rt_rank: Annotated[
+        List[RankingOutHoursSinglePriceFluctuationRate_OvtSigpricFluRtRank], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="시간외단일가등락율순위")
+
 
 class ForeignInstitutionalTradingTopRequest(BaseModel):
     """[ka90009] 외국인기관매매상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액(천만), 2:수량(천)")
     qry_dt_tp: SafeStr = Field(default="", description="조회일자구분 0:조회일자 미포함, 1:조회일자 포함")
     date: SafeStr = Field(default="", description="날짜 YYYYMMDD(연도4자리, 월 2자리, 일 2자리 형식)")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class ForeignInstitutionalTradingTop_FrgnrOrgnTrdeUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2510,25 +3716,47 @@ class ForeignInstitutionalTradingTop_FrgnrOrgnTrdeUpper(BaseModel):
     orgn_netprps_amt: SafeStr = Field(default="", description="기관순매수금액")
     orgn_netprps_qty: SafeStr = Field(default="", description="기관순매수수량")
 
+
 class ForeignInstitutionalTradingTop(BaseModel):
     """[ka90009] 외국인기관매매상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    frgnr_orgn_trde_upper: Annotated[List[ForeignInstitutionalTradingTop_FrgnrOrgnTrdeUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="외국인기관매매상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    frgnr_orgn_trde_upper: Annotated[
+        List[ForeignInstitutionalTradingTop_FrgnrOrgnTrdeUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="외국인기관매매상위")
+
 
 class StockQuoteRequest(BaseModel):
     """[ka10004] 주식호가요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class StockQuote(BaseModel):
     """[ka10004] 주식호가요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     bid_req_base_tm: SafeStr = Field(default="", description="호가잔량기준시간 호가시간")
     sel_10th_pre_req_pre: SafeStr = Field(default="", description="매도10차선잔량대비 매도호가직전대비10")
     sel_10th_pre_req: SafeStr = Field(default="", description="매도10차선잔량 매도호가수량10")
@@ -2599,12 +3827,25 @@ class StockQuote(BaseModel):
     ovt_buy_req: SafeStr = Field(default="", description="시간외매수잔량 시간외 매수호가 총잔량")
     ovt_buy_req_pre: SafeStr = Field(default="", description="시간외매수잔량대비 시간외 매수호가 총잔량 직전대비")
 
+
 class StockWeeklyMonthlyHourlyMinutesRequest(BaseModel):
     """[ka10005] 주식일주월시분요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class StockWeeklyMonthlyHourlyMinutes_StkDdwkmm(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2626,25 +3867,47 @@ class StockWeeklyMonthlyHourlyMinutes_StkDdwkmm(BaseModel):
     frgn: SafeStr = Field(default="", description="외국계")
     prm: SafeStr = Field(default="", description="프로그램")
 
+
 class StockWeeklyMonthlyHourlyMinutes(BaseModel):
     """[ka10005] 주식일주월시분요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    stk_ddwkmm: Annotated[List[StockWeeklyMonthlyHourlyMinutes_StkDdwkmm], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식일주월시분")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    stk_ddwkmm: Annotated[List[StockWeeklyMonthlyHourlyMinutes_StkDdwkmm], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식일주월시분"
+    )
+
 
 class StockTimeRequest(BaseModel):
     """[ka10006] 주식시분요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class StockTime(BaseModel):
     """[ka10006] 주식시분요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     date: SafeStr = Field(default="", description="날짜")
     open_pric: SafeStr = Field(default="", description="시가")
     high_pric: SafeStr = Field(default="", description="고가")
@@ -2656,18 +3919,34 @@ class StockTime(BaseModel):
     trde_prica: SafeStr = Field(default="", description="거래대금")
     cntr_str: SafeStr = Field(default="", description="체결강도")
 
+
 class PriceInformationRequest(BaseModel):
     """[ka10007] 시세표성정보요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class PriceInformation(BaseModel):
     """[ka10007] 시세표성정보요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_nm: SafeStr = Field(default="", description="종목명")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     date: SafeStr = Field(default="", description="날짜")
@@ -2793,12 +4072,25 @@ class PriceInformation(BaseModel):
     tot_buy_cnt: SafeStr = Field(default="", description="총매수건수")
     tot_sel_cnt: SafeStr = Field(default="", description="총매도건수")
 
+
 class AllNewStockWarrantsRequest(BaseModel):
     """[ka10011] 신주인수권전체시세요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    newstk_recvrht_tp: SafeStr = Field(default="", description="신주인수권구분 00:전체, 05:신주인수권증권, 07:신주인수권증서")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    newstk_recvrht_tp: SafeStr = Field(
+        default="", description="신주인수권구분 00:전체, 05:신주인수권증권, 07:신주인수권증서"
+    )
+
 
 class AllNewStockWarrants_NewstkRecvrhtMrpr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2815,23 +4107,40 @@ class AllNewStockWarrants_NewstkRecvrhtMrpr(BaseModel):
     high_pric: SafeStr = Field(default="", description="고가")
     low_pric: SafeStr = Field(default="", description="저가")
 
+
 class AllNewStockWarrants(BaseModel):
     """[ka10011] 신주인수권전체시세요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    newstk_recvrht_mrpr: Annotated[List[AllNewStockWarrants_NewstkRecvrhtMrpr], BeforeValidator(_force_list)] = Field(default_factory=list, description="신주인수권시세")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    newstk_recvrht_mrpr: Annotated[List[AllNewStockWarrants_NewstkRecvrhtMrpr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="신주인수권시세"
+    )
+
 
 class DailyInstitutionalTradingItemsRequest(BaseModel):
     """[ka10044] 일별기관매매종목요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     trde_tp: SafeStr = Field(default="", description="매매구분 1:순매도, 2:순매수")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 001:코스피, 101:코스닥")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class DailyInstitutionalTradingItems_DalyOrgnTrdeStk(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2840,23 +4149,42 @@ class DailyInstitutionalTradingItems_DalyOrgnTrdeStk(BaseModel):
     netprps_qty: SafeStr = Field(default="", description="순매수수량")
     netprps_amt: SafeStr = Field(default="", description="순매수금액")
 
+
 class DailyInstitutionalTradingItems(BaseModel):
     """[ka10044] 일별기관매매종목요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    daly_orgn_trde_stk: Annotated[List[DailyInstitutionalTradingItems_DalyOrgnTrdeStk], BeforeValidator(_force_list)] = Field(default_factory=list, description="일별기관매매종목")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    daly_orgn_trde_stk: Annotated[
+        List[DailyInstitutionalTradingItems_DalyOrgnTrdeStk], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="일별기관매매종목")
+
 
 class InstitutionalTradingTrendByItemRequest(BaseModel):
     """[ka10045] 종목별기관매매추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     orgn_prsm_unp_tp: SafeStr = Field(default="", description="기관추정단가구분 1:매수단가, 2:매도단가")
     for_prsm_unp_tp: SafeStr = Field(default="", description="외인추정단가구분 1:매수단가, 2:매도단가")
+
 
 class InstitutionalTradingTrendByItem_StkOrgnTrdeTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2872,21 +4200,40 @@ class InstitutionalTradingTrendByItem_StkOrgnTrdeTrnsn(BaseModel):
     for_daly_nettrde_qty: SafeStr = Field(default="", description="외인일별순매매수량")
     limit_exh_rt: SafeStr = Field(default="", description="한도소진율")
 
+
 class InstitutionalTradingTrendByItem(BaseModel):
     """[ka10045] 종목별기관매매추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     orgn_prsm_avg_pric: SafeStr = Field(default="", description="기관추정평균가")
     for_prsm_avg_pric: SafeStr = Field(default="", description="외인추정평균가")
-    stk_orgn_trde_trnsn: Annotated[List[InstitutionalTradingTrendByItem_StkOrgnTrdeTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별기관매매추이")
+    stk_orgn_trde_trnsn: Annotated[
+        List[InstitutionalTradingTrendByItem_StkOrgnTrdeTrnsn], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="종목별기관매매추이")
+
 
 class FasteningStrengthTrendByTimeRequest(BaseModel):
     """[ka10046] 체결강도추이시간별요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class FasteningStrengthTrendByTime_CntrStrTm(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2904,19 +4251,38 @@ class FasteningStrengthTrendByTime_CntrStrTm(BaseModel):
     cntr_str_60min: SafeStr = Field(default="", description="체결강도60분")
     stex_tp: SafeStr = Field(default="", description="거래소구분")
 
+
 class FasteningStrengthTrendByTime(BaseModel):
     """[ka10046] 체결강도추이시간별요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    cntr_str_tm: Annotated[List[FasteningStrengthTrendByTime_CntrStrTm], BeforeValidator(_force_list)] = Field(default_factory=list, description="체결강도시간별")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    cntr_str_tm: Annotated[List[FasteningStrengthTrendByTime_CntrStrTm], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="체결강도시간별"
+    )
+
 
 class DailyTighteningStrengthTrendRequest(BaseModel):
     """[ka10047] 체결강도추이일별요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class DailyTighteningStrengthTrend_CntrStrDaly(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2933,24 +4299,43 @@ class DailyTighteningStrengthTrend_CntrStrDaly(BaseModel):
     cntr_str_20min: SafeStr = Field(default="", description="체결강도20일")
     cntr_str_60min: SafeStr = Field(default="", description="체결강도60일")
 
+
 class DailyTighteningStrengthTrend(BaseModel):
     """[ka10047] 체결강도추이일별요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    cntr_str_daly: Annotated[List[DailyTighteningStrengthTrend_CntrStrDaly], BeforeValidator(_force_list)] = Field(default_factory=list, description="체결강도일별")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    cntr_str_daly: Annotated[List[DailyTighteningStrengthTrend_CntrStrDaly], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="체결강도일별"
+    )
+
 
 class IntradayInvestorSpecificTradingRequest(BaseModel):
     """[ka10063] 장중투자자별매매요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1: 금액&수량")
-    invsr: SafeStr = Field(default="", description="투자자별 6:외국인, 7:기관계, 1:투신, 0:보험, 2:은행, 3:연기금, 4:국가, 5:기타법인")
+    invsr: SafeStr = Field(
+        default="", description="투자자별 6:외국인, 7:기관계, 1:투신, 0:보험, 2:은행, 3:연기금, 4:국가, 5:기타법인"
+    )
     frgn_all: SafeStr = Field(default="", description="외국계전체 1:체크, 0:미체크")
     smtm_netprps_tp: SafeStr = Field(default="", description="동시순매수구분 1:체크, 0:미체크")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class IntradayInvestorSpecificTrading_OpmrInvsrTrde(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -2976,22 +4361,39 @@ class IntradayInvestorSpecificTrading_OpmrInvsrTrde(BaseModel):
     sell_qty: SafeStr = Field(default="", description="매도수량")
     sell_qty_irds: SafeStr = Field(default="", description="매도수량증감")
 
+
 class IntradayInvestorSpecificTrading(BaseModel):
     """[ka10063] 장중투자자별매매요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    opmr_invsr_trde: Annotated[List[IntradayInvestorSpecificTrading_OpmrInvsrTrde], BeforeValidator(_force_list)] = Field(default_factory=list, description="장중투자자별매매")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    opmr_invsr_trde: Annotated[List[IntradayInvestorSpecificTrading_OpmrInvsrTrde], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="장중투자자별매매")
+    )
+
 
 class TradingByInvestorAfterMarketCloseRequest(BaseModel):
     """[ka10066] 장마감후투자자별매매요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
     trde_tp: SafeStr = Field(default="", description="매매구분 0:순매수, 1:매수, 2:매도")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class TradingByInvestorAfterMarketClose_OpafInvsrTrde(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3015,22 +4417,41 @@ class TradingByInvestorAfterMarketClose_OpafInvsrTrde(BaseModel):
     natn: SafeStr = Field(default="", description="국가")
     etc_corp: SafeStr = Field(default="", description="기타법인")
 
+
 class TradingByInvestorAfterMarketClose(BaseModel):
     """[ka10066] 장마감후투자자별매매요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    opaf_invsr_trde: Annotated[List[TradingByInvestorAfterMarketClose_OpafInvsrTrde], BeforeValidator(_force_list)] = Field(default_factory=list, description="장중투자자별매매차트")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    opaf_invsr_trde: Annotated[List[TradingByInvestorAfterMarketClose_OpafInvsrTrde], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="장중투자자별매매차트")
+    )
+
 
 class StockTradingTrendsBySecuritiesCompanyRequest(BaseModel):
     """[ka10078] 증권사별종목매매동향요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mmcm_cd: SafeStr = Field(default="", description="회원사코드 회원사 코드는 ka10102 조회")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
+
 
 class StockTradingTrendsBySecuritiesCompany_SecStkTrdeTrend(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3044,21 +4465,40 @@ class StockTradingTrendsBySecuritiesCompany_SecStkTrdeTrend(BaseModel):
     buy_qty: SafeStr = Field(default="", description="매수수량")
     sell_qty: SafeStr = Field(default="", description="매도수량")
 
+
 class StockTradingTrendsBySecuritiesCompany(BaseModel):
     """[ka10078] 증권사별종목매매동향요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    sec_stk_trde_trend: Annotated[List[StockTradingTrendsBySecuritiesCompany_SecStkTrdeTrend], BeforeValidator(_force_list)] = Field(default_factory=list, description="증권사별종목매매동향")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    sec_stk_trde_trend: Annotated[
+        List[StockTradingTrendsBySecuritiesCompany_SecStkTrdeTrend], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="증권사별종목매매동향")
+
 
 class DailyStockRequest(BaseModel):
     """[ka10086] 일별주가요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     qry_dt: SafeStr = Field(default="", description="조회일자 YYYYMMDD")
     indc_tp: SafeStr = Field(default="", description="표시구분 0:수량, 1:금액(백만원)")
+
 
 class DailyStock_DalyStkpc(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3085,25 +4525,45 @@ class DailyStock_DalyStkpc(BaseModel):
     ind_netprps: SafeStr = Field(default="", description="개인순매수")
     crd_remn_rt: SafeStr = Field(default="", description="신용잔고율")
 
+
 class DailyStock(BaseModel):
     """[ka10086] 일별주가요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    daly_stkpc: Annotated[List[DailyStock_DalyStkpc], BeforeValidator(_force_list)] = Field(default_factory=list, description="일별주가")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    daly_stkpc: Annotated[List[DailyStock_DalyStkpc], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="일별주가"
+    )
+
 
 class SingleAfterHoursRequest(BaseModel):
     """[ka10087] 시간외단일가요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class SingleAfterHours(BaseModel):
     """[ka10087] 시간외단일가요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     bid_req_base_tm: SafeStr = Field(default="", description="호가잔량기준시간")
     ovt_sigpric_sel_bid_jub_pre_5: SafeStr = Field(default="", description="시간외단일가_매도호가직전대비5")
     ovt_sigpric_sel_bid_jub_pre_4: SafeStr = Field(default="", description="시간외단일가_매도호가직전대비4")
@@ -3151,12 +4611,23 @@ class SingleAfterHours(BaseModel):
     ovt_sigpric_flu_rt: SafeStr = Field(default="", description="시간외단일가_등락률")
     ovt_sigpric_acc_trde_qty: SafeStr = Field(default="", description="시간외단일가_누적거래량")
 
+
 class GoldSpotTradingTrendRequest(BaseModel):
     """[ka50010] 금현물체결추이 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
+
 
 class GoldSpotTradingTrend_GoldCntr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3174,20 +4645,37 @@ class GoldSpotTradingTrend_GoldCntr(BaseModel):
     trde_tern_rt: SafeStr = Field(default="", description="전일 거래량 대비 순간 거래량 비율")
     cntr_str: SafeStr = Field(default="", description="체결강도")
 
+
 class GoldSpotTradingTrend(BaseModel):
     """[ka50010] 금현물체결추이 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gold_cntr: Annotated[List[GoldSpotTradingTrend_GoldCntr], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물체결추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gold_cntr: Annotated[List[GoldSpotTradingTrend_GoldCntr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물체결추이"
+    )
+
 
 class SpotGoldDailyTrendRequest(BaseModel):
     """[ka50012] 금현물일별추이 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class SpotGoldDailyTrend_GoldDalyTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3205,19 +4693,36 @@ class SpotGoldDailyTrend_GoldDalyTrnsn(BaseModel):
     for_netprps: SafeStr = Field(default="", description="외국인 순매수 수량")
     ind_netprps: SafeStr = Field(default="", description="순매매량(개인)")
 
+
 class SpotGoldDailyTrend(BaseModel):
     """[ka50012] 금현물일별추이 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gold_daly_trnsn: Annotated[List[SpotGoldDailyTrend_GoldDalyTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물일별추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gold_daly_trnsn: Annotated[List[SpotGoldDailyTrend_GoldDalyTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물일별추이"
+    )
+
 
 class GoldSpotExpectedTransactionRequest(BaseModel):
     """[ka50087] 금현물예상체결 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
+
 
 class GoldSpotExpectedTransaction_GoldExptExec(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3230,25 +4735,45 @@ class GoldSpotExpectedTransaction_GoldExptExec(BaseModel):
     exp_pre_sig: SafeStr = Field(default="", description="예상 체결가 전일대비기호")
     stex_tp: SafeStr = Field(default="", description="거래소 구분")
 
+
 class GoldSpotExpectedTransaction(BaseModel):
     """[ka50087] 금현물예상체결 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gold_expt_exec: Annotated[List[GoldSpotExpectedTransaction_GoldExptExec], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물예상체결")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gold_expt_exec: Annotated[List[GoldSpotExpectedTransaction_GoldExptExec], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물예상체결"
+    )
+
 
 class GoldSpotPriceInformationRequest(BaseModel):
     """[ka50100] 금현물 시세정보 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class GoldSpotPriceInformation(BaseModel):
     """[ka50100] 금현물 시세정보 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
     pred_pre: SafeStr = Field(default="", description="전일대비")
     flu_rt: SafeStr = Field(default="", description="등락율")
@@ -3261,13 +4786,24 @@ class GoldSpotPriceInformation(BaseModel):
     lst_pric: SafeStr = Field(default="", description="하한가")
     pred_close_pric: SafeStr = Field(default="", description="전일종가")
 
+
 class GoldSpotQuoteRequest(BaseModel):
     """[ka50101] 금현물 호가 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     tic_scope: SafeStr = Field(default="", description="틱범위 1:1틱, 3:3틱, 5:5틱, 10:10틱, 30:30틱")
+
 
 class GoldSpotQuote_GoldBid(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3287,23 +4823,43 @@ class GoldSpotQuote_GoldBid(BaseModel):
     lpmmcm_nm_1: SafeStr = Field(default="", description="K.O 접근도")
     stex_tp: SafeStr = Field(default="", description="거래소구분")
 
+
 class GoldSpotQuote(BaseModel):
     """[ka50101] 금현물 호가 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gold_bid: Annotated[List[GoldSpotQuote_GoldBid], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물호가")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gold_bid: Annotated[List[GoldSpotQuote_GoldBid], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물호가"
+    )
+
 
 class ProgramTradingTrendByTimeZoneRequest(BaseModel):
     """[ka90005] 프로그램매매추이요청 시간대별 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     date: SafeStr = Field(default="", description="날짜 YYYYMMDD")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액(백만원), 2:수량(천주)")
-    mrkt_tp: SafeStr = Field(default="", description="시장구분 코스피- 거래소구분값 1일경우:P00101, 2일경우:P001_NX01, 3일경우:P001_AL01  코스닥- 거래소구분값 1일경우:P10102, 2일경우:P101_NX02, 3일경우:P101_AL02")
+    mrkt_tp: SafeStr = Field(
+        default="",
+        description="시장구분 코스피- 거래소구분값 1일경우:P00101, 2일경우:P001_NX01, 3일경우:P001_AL01  코스닥- 거래소구분값 1일경우:P10102, 2일경우:P101_NX02, 3일경우:P101_AL02",
+    )
     min_tic_tp: SafeStr = Field(default="", description="분틱구분 0:틱, 1:분")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class ProgramTradingTrendByTimeZone_PrmTrdeTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3326,20 +4882,37 @@ class ProgramTradingTrendByTimeZone_PrmTrdeTrnsn(BaseModel):
     kospi200: SafeStr = Field(default="", description="KOSPI200")
     basis: SafeStr = Field(default="", description="BASIS")
 
+
 class ProgramTradingTrendByTimeZone(BaseModel):
     """[ka90005] 프로그램매매추이요청 시간대별 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    prm_trde_trnsn: Annotated[List[ProgramTradingTrendByTimeZone_PrmTrdeTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="프로그램매매추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    prm_trde_trnsn: Annotated[List[ProgramTradingTrendByTimeZone_PrmTrdeTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="프로그램매매추이"
+    )
+
 
 class ProgramTradingProfitBalanceTrendRequest(BaseModel):
     """[ka90006] 프로그램매매차익잔고추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     date: SafeStr = Field(default="", description="날짜 YYYYMMDD")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class ProgramTradingProfitBalanceTrend_PrmTrdeDfrtRemnTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3351,22 +4924,39 @@ class ProgramTradingProfitBalanceTrend_PrmTrdeDfrtRemnTrnsn(BaseModel):
     sel_dfrt_trde_amt: SafeStr = Field(default="", description="매도차익거래금액")
     sel_dfrt_trde_irds_amt: SafeStr = Field(default="", description="매도차익거래증감액")
 
+
 class ProgramTradingProfitBalanceTrend(BaseModel):
     """[ka90006] 프로그램매매차익잔고추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    prm_trde_dfrt_remn_trnsn: Annotated[List[ProgramTradingProfitBalanceTrend_PrmTrdeDfrtRemnTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="프로그램매매차익잔고추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    prm_trde_dfrt_remn_trnsn: Annotated[
+        List[ProgramTradingProfitBalanceTrend_PrmTrdeDfrtRemnTrnsn], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="프로그램매매차익잔고추이")
+
 
 class CumulativeProgramTradingTrendRequest(BaseModel):
     """[ka90007] 프로그램매매누적추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     date: SafeStr = Field(default="", description="날짜 YYYYMMDD (종료일기준 1년간 데이터만 조회가능)")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 0:코스피 , 1:코스닥")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class CumulativeProgramTradingTrend_PrmTrdeAccTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3380,21 +4970,40 @@ class CumulativeProgramTradingTrend_PrmTrdeAccTrnsn(BaseModel):
     all_tdy: SafeStr = Field(default="", description="전체당일")
     all_acc: SafeStr = Field(default="", description="전체누적")
 
+
 class CumulativeProgramTradingTrend(BaseModel):
     """[ka90007] 프로그램매매누적추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    prm_trde_acc_trnsn: Annotated[List[CumulativeProgramTradingTrend_PrmTrdeAccTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="프로그램매매누적추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    prm_trde_acc_trnsn: Annotated[List[CumulativeProgramTradingTrend_PrmTrdeAccTrnsn], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="프로그램매매누적추이")
+    )
+
 
 class ProgramTradingTrendByItemTimeRequest(BaseModel):
     """[ka90008] 종목시간별프로그램매매추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     date: SafeStr = Field(default="", description="날짜 YYYYMMDD")
+
 
 class ProgramTradingTrendByItemTime_StkTmPrmTrdeTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3417,23 +5026,43 @@ class ProgramTradingTrendByItemTime_StkTmPrmTrdeTrnsn(BaseModel):
     remn_rcvord_sum: SafeStr = Field(default="", description="잔고수주합")
     stex_tp: SafeStr = Field(default="", description="거래소구분 KRX , NXT , 통합")
 
+
 class ProgramTradingTrendByItemTime(BaseModel):
     """[ka90008] 종목시간별프로그램매매추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    stk_tm_prm_trde_trnsn: Annotated[List[ProgramTradingTrendByItemTime_StkTmPrmTrdeTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목시간별프로그램매매추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    stk_tm_prm_trde_trnsn: Annotated[
+        List[ProgramTradingTrendByItemTime_StkTmPrmTrdeTrnsn], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="종목시간별프로그램매매추이")
+
 
 class ProgramTradingTrendDateRequest(BaseModel):
     """[ka90010] 프로그램매매추이요청 일자별 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     date: SafeStr = Field(default="", description="날짜 YYYYMMDD")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액(백만원), 2:수량(천주)")
-    mrkt_tp: SafeStr = Field(default="", description="시장구분 코스피- 거래소구분값 1일경우:P00101, 2일경우:P001_NX01, 3일경우:P001_AL01  코스닥- 거래소구분값 1일경우:P10102, 2일경우:P101_NX02, 3일경우:P001_AL02")
+    mrkt_tp: SafeStr = Field(
+        default="",
+        description="시장구분 코스피- 거래소구분값 1일경우:P00101, 2일경우:P001_NX01, 3일경우:P001_AL01  코스닥- 거래소구분값 1일경우:P10102, 2일경우:P101_NX02, 3일경우:P001_AL02",
+    )
     min_tic_tp: SafeStr = Field(default="", description="분틱구분 0:틱, 1:분")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class ProgramTradingTrendDate_PrmTrdeTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3456,21 +5085,40 @@ class ProgramTradingTrendDate_PrmTrdeTrnsn(BaseModel):
     kospi200: SafeStr = Field(default="", description="KOSPI200")
     basis: SafeStr = Field(default="", description="BASIS")
 
+
 class ProgramTradingTrendDate(BaseModel):
     """[ka90010] 프로그램매매추이요청 일자별 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    prm_trde_trnsn: Annotated[List[ProgramTradingTrendDate_PrmTrdeTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="프로그램매매추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    prm_trde_trnsn: Annotated[List[ProgramTradingTrendDate_PrmTrdeTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="프로그램매매추이"
+    )
+
 
 class DailyProgramTradingTrendItemsRequest(BaseModel):
     """[ka90013] 종목일별프로그램매매추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     date: SafeStr = Field(default="", description="날짜 YYYYMMDD")
+
 
 class DailyProgramTradingTrendItems_StkDalyPrmTrdeTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3493,60 +5141,110 @@ class DailyProgramTradingTrendItems_StkDalyPrmTrdeTrnsn(BaseModel):
     remn_rcvord_sum: SafeStr = Field(default="", description="잔고수주합")
     stex_tp: SafeStr = Field(default="", description="거래소구분 KRX , NXT , 통합")
 
+
 class DailyProgramTradingTrendItems(BaseModel):
     """[ka90013] 종목일별프로그램매매추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    stk_daly_prm_trde_trnsn: Annotated[List[DailyProgramTradingTrendItems_StkDalyPrmTrdeTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목일별프로그램매매추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    stk_daly_prm_trde_trnsn: Annotated[
+        List[DailyProgramTradingTrendItems_StkDalyPrmTrdeTrnsn], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="종목일별프로그램매매추이")
+
 
 class CreditBuyOrderRequest(BaseModel):
     """[kt10006] 신용 매수주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     ord_qty: SafeStr = Field(default="", description="주문수량")
     ord_uv: SafeStr = Field(default="", description="주문단가")
-    trde_tp: SafeStr = Field(default="", description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)")
+    trde_tp: SafeStr = Field(
+        default="",
+        description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)",
+    )
     cond_uv: SafeStr = Field(default="", description="조건단가")
+
 
 class CreditBuyOrder(BaseModel):
     """[kt10006] 신용 매수주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
 
+
 class CreditSellOrderRequest(BaseModel):
     """[kt10007] 신용 매도주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     ord_qty: SafeStr = Field(default="", description="주문수량")
     ord_uv: SafeStr = Field(default="", description="주문단가")
-    trde_tp: SafeStr = Field(default="", description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)")
+    trde_tp: SafeStr = Field(
+        default="",
+        description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)",
+    )
     crd_deal_tp: SafeStr = Field(default="", description="신용거래구분 33:융자 , 99:융자합")
     crd_loan_dt: SafeStr = Field(default="", description="대출일 YYYYMMDD(융자일경우필수)")
     cond_uv: SafeStr = Field(default="", description="조건단가")
 
+
 class CreditSellOrder(BaseModel):
     """[kt10007] 신용 매도주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
 
+
 class CreditCorrectionOrderRequest(BaseModel):
     """[kt10008] 신용 정정주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     orig_ord_no: SafeStr = Field(default="", description="원주문번호")
     stk_cd: SafeStr = Field(default="", description="종목코드")
@@ -3554,47 +5252,74 @@ class CreditCorrectionOrderRequest(BaseModel):
     mdfy_uv: SafeStr = Field(default="", description="정정단가")
     mdfy_cond_uv: SafeStr = Field(default="", description="정정조건단가")
 
+
 class CreditCorrectionOrder(BaseModel):
     """[kt10008] 신용 정정주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     base_orig_ord_no: SafeStr = Field(default="", description="모주문번호")
     mdfy_qty: SafeStr = Field(default="", description="정정수량")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
 
+
 class CreditCancellationOrderRequest(BaseModel):
     """[kt10009] 신용 취소주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     orig_ord_no: SafeStr = Field(default="", description="원주문번호")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     cncl_qty: SafeStr = Field(default="", description="취소수량 '0' 입력시 잔량 전부 취소")
 
+
 class CreditCancellationOrder(BaseModel):
     """[kt10009] 신용 취소주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     base_orig_ord_no: SafeStr = Field(default="", description="모주문번호")
     cncl_qty: SafeStr = Field(default="", description="취소수량")
+
 
 class OrderExecutionRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소")
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
+
 class OrderExecutionRequest(BaseModel):
     """[00] 주문체결 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시  0:기존유지안함 1:기존유지(Default)  0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지  해지(REMOVE)시 값 불필요")
-    data: Annotated[List[OrderExecutionRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시  0:기존유지안함 1:기존유지(Default)  0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지  해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[OrderExecutionRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class OrderExecution_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3610,8 +5335,16 @@ class OrderExecution_Data_Values(BaseModel):
     n_902: SafeStr = Field(default="", alias="902", description="미체결수량")
     n_903: SafeStr = Field(default="", alias="903", description="체결누계금액")
     n_904: SafeStr = Field(default="", alias="904", description="원주문번호")
-    n_905: SafeStr = Field(default="", alias="905", description="주문구분 '+/-', 매도, 매수, 매도정정, 매수정정, 매수취소, 매도취소  ※ 영웅문4에서 적색으로 표기되어있으면 +가, 청색으로 표기되어있으면 -가 앞에 기재됩니다")
-    n_906: SafeStr = Field(default="", alias="906", description="매매구분 보통, 시장가, 조건부지정가, 최유리지정가, 최우선지정가, 보통(IOC), 시장가(IOC), 최유리(IOC), 보통(FOK), 시장가(FOK), 최유리(FOK), 스톰지정가, 중간가, 중간가(IOC), 중간가(FOK), 장전시간외, 장후시간외, 시간외대량, 시간외바스켓, 시간외자사주, 시간외단일가")
+    n_905: SafeStr = Field(
+        default="",
+        alias="905",
+        description="주문구분 '+/-', 매도, 매수, 매도정정, 매수정정, 매수취소, 매도취소  ※ 영웅문4에서 적색으로 표기되어있으면 +가, 청색으로 표기되어있으면 -가 앞에 기재됩니다",
+    )
+    n_906: SafeStr = Field(
+        default="",
+        alias="906",
+        description="매매구분 보통, 시장가, 조건부지정가, 최유리지정가, 최우선지정가, 보통(IOC), 시장가(IOC), 최유리(IOC), 보통(FOK), 시장가(FOK), 최유리(FOK), 스톰지정가, 중간가, 중간가(IOC), 중간가(FOK), 장전시간외, 장후시간외, 시간외대량, 시간외바스켓, 시간외자사주, 시간외단일가",
+    )
     n_907: SafeStr = Field(default="", alias="907", description="매도수구분 1:매도, 2:매수")
     n_908: SafeStr = Field(default="", alias="908", description="주문/체결시간")
     n_909: SafeStr = Field(default="", alias="909", description="체결번호")
@@ -3634,33 +5367,52 @@ class OrderExecution_Data_Values(BaseModel):
     n_2135: SafeStr = Field(default="", alias="2135", description="거래소구분명 통합,KRX,NXT")
     n_2136: SafeStr = Field(default="", alias="2136", description="SOR여부 Y,N")
 
+
 class OrderExecution_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[OrderExecution_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[OrderExecution_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class OrderExecution(BaseModel):
     """[00] 주문체결 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[OrderExecution_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[OrderExecution_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class BalanceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소")
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
+
 class BalanceRequest(BaseModel):
     """[04] 잔고 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시   0:기존유지안함 1:기존유지(Default)  0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지  해지(REMOVE)시 값 불필요")
-    data: Annotated[List[BalanceRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시   0:기존유지안함 1:기존유지(Default)  0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지  해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[BalanceRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class Balance_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3692,33 +5444,55 @@ class Balance_Data_Values(BaseModel):
     n_959: SafeStr = Field(default="", alias="959", description="담보대출수량")
     n_924: SafeStr = Field(default="", alias="924", description="Extra Item")
 
+
 class Balance_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[Balance_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[Balance_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class Balance(BaseModel):
     """[04] 잔고 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[Balance_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[Balance_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockMomentumRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockMomentumRequest(BaseModel):
     """[0A] 주식기세 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시  0:기존유지안함 1:기존유지(Default)  0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지  해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockMomentumRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시  0:기존유지안함 1:기존유지(Default)  0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지  해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockMomentumRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockMomentum_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3742,33 +5516,57 @@ class StockMomentum_Data_Values(BaseModel):
     n_567: SafeStr = Field(default="", alias="567", description="상한가발생시간")
     n_568: SafeStr = Field(default="", alias="568", description="하한가발생시간")
 
+
 class StockMomentum_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockMomentum_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockMomentum_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockMomentum(BaseModel):
     """[0A] 주식기세 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
-    return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지(등록,해지시에만 값 전송,데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
+    return_msg: SafeStr = Field(
+        default="", description="결과메시지 통신결과에대한메시지(등록,해지시에만 값 전송,데이터 실시간 수신시 미전송)"
+    )
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockMomentum_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockMomentum_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockSigningRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockSigningRequest(BaseModel):
     """[0B] 주식체결 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockSigningRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockSigningRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockSigning_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -3816,66 +5614,110 @@ class StockSigning_Data_Values(BaseModel):
     n_852: SafeStr = Field(default="", alias="852", description="대주거래비용")
     n_9081: SafeStr = Field(default="", alias="9081", description="거래소구분")
 
+
 class StockSigning_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0B,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockSigning_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockSigning_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockSigning(BaseModel):
     """[0B] 주식체결 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockSigning_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockSigning_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockPreferredPriceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockPreferredPriceRequest(BaseModel):
     """[0C] 주식우선호가 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockPreferredPriceRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockPreferredPriceRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockPreferredPrice_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     n_27: SafeStr = Field(default="", alias="27", description="(최우선)매도호가")
     n_28: SafeStr = Field(default="", alias="28", description="(최우선)매수호가")
 
+
 class StockPreferredPrice_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockPreferredPrice_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockPreferredPrice_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockPreferredPrice(BaseModel):
     """[0C] 주식우선호가 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockPreferredPrice_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockPreferredPrice_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockQuoteBalanceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockQuoteBalanceRequest(BaseModel):
     """[0D] 주식호가잔량 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockQuoteBalanceRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockQuoteBalanceRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockQuoteBalance_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4043,33 +5885,55 @@ class StockQuoteBalance_Data_Values(BaseModel):
     n_6114: SafeStr = Field(default="", alias="6114", description="NXT중간가대비 기호 기준가대비")
     n_6115: SafeStr = Field(default="", alias="6115", description="NXT중간가대비등락율 기준가대비")
 
+
 class StockQuoteBalance_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockQuoteBalance_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockQuoteBalance_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockQuoteBalance(BaseModel):
     """[0D] 주식호가잔량 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockQuoteBalance_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockQuoteBalance_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockAfterHoursQuoteRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockAfterHoursQuoteRequest(BaseModel):
     """[0E] 주식시간외호가 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockAfterHoursQuoteRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockAfterHoursQuoteRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockAfterHoursQuote_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4079,33 +5943,57 @@ class StockAfterHoursQuote_Data_Values(BaseModel):
     n_135: SafeStr = Field(default="", alias="135", description="시간외매수호가총잔량")
     n_136: SafeStr = Field(default="", alias="136", description="시간외매수호가총잔량직전대비")
 
+
 class StockAfterHoursQuote_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
-    item: SafeStr = Field(default="", description="실시간 등록 요소 거래소별 종목코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    values: Annotated[List[StockAfterHoursQuote_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    item: SafeStr = Field(
+        default="", description="실시간 등록 요소 거래소별 종목코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+    values: Annotated[List[StockAfterHoursQuote_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockAfterHoursQuote(BaseModel):
     """[0E] 주식시간외호가 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockAfterHoursQuote_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockAfterHoursQuote_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockDayTraderRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockDayTraderRequest(BaseModel):
     """[0F] 주식당일거래원 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockDayTraderRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockDayTraderRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockDayTrader_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4167,33 +6055,55 @@ class StockDayTrader_Data_Values(BaseModel):
     n_268: SafeStr = Field(default="", alias="268", description="외국계순매수변동")
     n_337: SafeStr = Field(default="", alias="337", description="거래소구분")
 
+
 class StockDayTrader_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockDayTrader_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockDayTrader_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockDayTrader(BaseModel):
     """[0F] 주식당일거래원 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockDayTrader_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockDayTrader_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class EtfNavRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class EtfNavRequest(BaseModel):
     """[0G] ETF NAV 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[EtfNavRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[EtfNavRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class EtfNav_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4213,33 +6123,55 @@ class EtfNav_Data_Values(BaseModel):
     n_265: SafeStr = Field(default="", alias="265", description="NAV/지수괴리율")
     n_266: SafeStr = Field(default="", alias="266", description="NAV/ETF괴리율")
 
+
 class EtfNav_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[EtfNav_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[EtfNav_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class EtfNav(BaseModel):
     """[0G] ETF NAV 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[EtfNav_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[EtfNav_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockExpectedExecutionRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockExpectedExecutionRequest(BaseModel):
     """[0H] 주식예상체결 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockExpectedExecutionRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockExpectedExecutionRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockExpectedExecution_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4251,33 +6183,52 @@ class StockExpectedExecution_Data_Values(BaseModel):
     n_13: SafeStr = Field(default="", alias="13", description="누적거래량")
     n_25: SafeStr = Field(default="", alias="25", description="전일대비기호")
 
+
 class StockExpectedExecution_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockExpectedExecution_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockExpectedExecution_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockExpectedExecution(BaseModel):
     """[0H] 주식예상체결 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockExpectedExecution_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockExpectedExecution_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class InternationalGoldConversionPriceRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 MGD: 원/g, MGU: $/온스,소수점2자리")
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
 
+
 class InternationalGoldConversionPriceRequest(BaseModel):
     """[0I] 국제금환산가격 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[InternationalGoldConversionPriceRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[InternationalGoldConversionPriceRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class InternationalGoldConversionPrice_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4286,32 +6237,51 @@ class InternationalGoldConversionPrice_Data_Values(BaseModel):
     n_11: SafeStr = Field(default="", alias="11", description="전일대비")
     n_12: SafeStr = Field(default="", alias="12", description="등락율")
 
+
 class InternationalGoldConversionPrice_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0B,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[InternationalGoldConversionPrice_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[InternationalGoldConversionPrice_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class InternationalGoldConversionPrice(BaseModel):
     """[0I] 국제금환산가격 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[InternationalGoldConversionPrice_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[InternationalGoldConversionPrice_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class SectorIndexRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class SectorIndexRequest(BaseModel):
     """[0J] 업종지수 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[SectorIndexRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[SectorIndexRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class SectorIndex_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4328,33 +6298,55 @@ class SectorIndex_Data_Values(BaseModel):
     n_25: SafeStr = Field(default="", alias="25", description="전일대비기호")
     n_26: SafeStr = Field(default="", alias="26", description="전일거래량대비 계약,주")
 
+
 class SectorIndex_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[SectorIndex_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[SectorIndex_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class SectorIndex(BaseModel):
     """[0J] 업종지수 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[SectorIndex_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[SectorIndex_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class IndustryFluctuationsRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class IndustryFluctuationsRequest(BaseModel):
     """[0U] 업종등락 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[IndustryFluctuationsRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[IndustryFluctuationsRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class IndustryFluctuations_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4373,33 +6365,55 @@ class IndustryFluctuations_Data_Values(BaseModel):
     n_257: SafeStr = Field(default="", alias="257", description="거래형성비율")
     n_25: SafeStr = Field(default="", alias="25", description="전일대비기호")
 
+
 class IndustryFluctuations_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[IndustryFluctuations_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[IndustryFluctuations_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class IndustryFluctuations(BaseModel):
     """[0U] 업종등락 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[IndustryFluctuations_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[IndustryFluctuations_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockItemInformationRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockItemInformationRequest(BaseModel):
     """[0g] 주식종목정보 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockItemInformationRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockItemInformationRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockItemInformation_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4414,33 +6428,55 @@ class StockItemInformation_Data_Values(BaseModel):
     n_382: SafeStr = Field(default="", alias="382", description="증거금율표시")
     n_370: SafeStr = Field(default="", alias="370", description="종목정보")
 
+
 class StockItemInformation_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockItemInformation_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockItemInformation_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockItemInformation(BaseModel):
     """[0g] 주식종목정보 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockItemInformation_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockItemInformation_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class ElwTheoristRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class ElwTheoristRequest(BaseModel):
     """[0m] ELW 이론가 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[ElwTheoristRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[ElwTheoristRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class ElwTheorist_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4455,67 +6491,115 @@ class ElwTheorist_Data_Values(BaseModel):
     n_676: SafeStr = Field(default="", alias="676", description="ELW로")
     n_706: SafeStr = Field(default="", alias="706", description="LP호가내재변동성")
 
+
 class ElwTheorist_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[ElwTheorist_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[ElwTheorist_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class ElwTheorist(BaseModel):
     """[0m] ELW 이론가 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[ElwTheorist_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[ElwTheorist_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class LongStartTimeRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class LongStartTimeRequest(BaseModel):
     """[0s] 장시작시간 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[LongStartTimeRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[LongStartTimeRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class LongStartTime_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    n_215: SafeStr = Field(default="", alias="215", description="장운영구분 0 : 장시작전 알림(8:40~),  3 : 장시작(09:00),  2 : 장마감 알림(15:20~),  4 : 장마감(15:30),  8 : 정규장마감(거래소 수신시 15:30 이후),  9 : 전체장마감(거래소 수신시 18:00 이후),  a : 시간외 종가매매 시작(15:40),  b : 시간외 종가매매 종료(16:00),  c : 시간외 단일가 시작(16:00),  d : 시간외 단일가 종료(18:00),  e : 선옵 장마감전 동시호가 종료,  f : 선물옵션 장운영시간 알림(조기개장 상품),  o : 선옵 장시작,  s : 선옵 장마감전 동시호가 시작,  P : NXT 프리마켓 시작 알림,  Q : NXT 프리마켓 종료 알림,  R : NXT 메인마켓 시작 알림,  S : NXT 메인마켓 종료 알림,  T : NXT 에프터마켓 단일가 시작 알림,  U : NXT 에프터마켓 시작 알림,  V : NXT 에프터마켓 종료 알림")
+    n_215: SafeStr = Field(
+        default="",
+        alias="215",
+        description="장운영구분 0 : 장시작전 알림(8:40~),  3 : 장시작(09:00),  2 : 장마감 알림(15:20~),  4 : 장마감(15:30),  8 : 정규장마감(거래소 수신시 15:30 이후),  9 : 전체장마감(거래소 수신시 18:00 이후),  a : 시간외 종가매매 시작(15:40),  b : 시간외 종가매매 종료(16:00),  c : 시간외 단일가 시작(16:00),  d : 시간외 단일가 종료(18:00),  e : 선옵 장마감전 동시호가 종료,  f : 선물옵션 장운영시간 알림(조기개장 상품),  o : 선옵 장시작,  s : 선옵 장마감전 동시호가 시작,  P : NXT 프리마켓 시작 알림,  Q : NXT 프리마켓 종료 알림,  R : NXT 메인마켓 시작 알림,  S : NXT 메인마켓 종료 알림,  T : NXT 에프터마켓 단일가 시작 알림,  U : NXT 에프터마켓 시작 알림,  V : NXT 에프터마켓 종료 알림",
+    )
     n_20: SafeStr = Field(default="", alias="20", description="체결시간")
     n_214: SafeStr = Field(default="", alias="214", description="장시작예상잔여시간")
+
 
 class LongStartTime_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[LongStartTime_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[LongStartTime_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class LongStartTime(BaseModel):
     """[0s] 장시작시간 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[LongStartTime_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[LongStartTime_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class ElwIndicatorRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class ElwIndicatorRequest(BaseModel):
     """[0u] ELW 지표 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[ElwIndicatorRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[ElwIndicatorRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class ElwIndicator_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4526,33 +6610,55 @@ class ElwIndicator_Data_Values(BaseModel):
     n_668: SafeStr = Field(default="", alias="668", description="ELW손익분기율")
     n_669: SafeStr = Field(default="", alias="669", description="ELW자본지지점")
 
+
 class ElwIndicator_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[ElwIndicator_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[ElwIndicator_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class ElwIndicator(BaseModel):
     """[0u] ELW 지표 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[ElwIndicator_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[ElwIndicator_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class StockProgramTradingRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class StockProgramTradingRequest(BaseModel):
     """[0w] 종목프로그램매매 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[StockProgramTradingRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[StockProgramTradingRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class StockProgramTrading_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4574,33 +6680,55 @@ class StockProgramTrading_Data_Values(BaseModel):
     n_215: SafeStr = Field(default="", alias="215", description="장운영구분")
     n_216: SafeStr = Field(default="", alias="216", description="투자자별ticker")
 
+
 class StockProgramTrading_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[StockProgramTrading_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[StockProgramTrading_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class StockProgramTrading(BaseModel):
     """[0w] 종목프로그램매매 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[StockProgramTrading_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[StockProgramTrading_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class ActivateDisableViRequest_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    item: SafeListStr = Field(default_factory=list, description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    item: SafeListStr = Field(
+        default_factory=list,
+        description="실시간 등록 요소 거래소별 종목코드, 업종코드  (KRX:039490,NXT:039490_NX,SOR:039490_AL)",
+    )
     type: SafeListStr = Field(default_factory=list, description="실시간 항목 TR 명(0A,0B....)")
+
 
 class ActivateDisableViRequest(BaseModel):
     """[1h] VI발동/해제 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 REG : 등록 , REMOVE : 해지")
     grp_no: SafeStr = Field(default="", description="그룹번호")
-    refresh: SafeStr = Field(default="", description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요")
-    data: Annotated[List[ActivateDisableViRequest_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록 리스트")
+    refresh: SafeStr = Field(
+        default="",
+        description="기존등록유지여부 등록(REG)시0:기존유지안함 1:기존유지(Default) 0일경우 기존등록한 item/type은 해지, 1일경우 기존등록한 item/type 유지해지(REMOVE)시 값 불필요",
+    )
+    data: Annotated[List[ActivateDisableViRequest_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록 리스트"
+    )
+
 
 class ActivateDisableVi_Data_Values(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4624,33 +6752,59 @@ class ActivateDisableVi_Data_Values(BaseModel):
     n_9069: SafeStr = Field(default="", alias="9069", description="발동방향구분")
     n_1279: SafeStr = Field(default="", alias="1279", description="Extra Item")
 
+
 class ActivateDisableVi_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: SafeStr = Field(default="", description="실시간항목 TR 명(0A,0B....)")
     name: SafeStr = Field(default="", description="실시간 항목명")
     item: SafeStr = Field(default="", description="실시간 등록 요소 종목코드")
-    values: Annotated[List[ActivateDisableVi_Data_Values], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 값 리스트")
+    values: Annotated[List[ActivateDisableVi_Data_Values], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 값 리스트"
+    )
+
 
 class ActivateDisableVi(BaseModel):
     """[1h] VI발동/해제 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
-    return_code: SafeInt = Field(default=0, description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)")
+    return_code: SafeInt = Field(
+        default=0,
+        description="결과코드 통신결과에대한 코드(등록,해지요청시에만 값 전송 0:정상,1:오류 , 데이터 실시간 수신시 미전송)",
+    )
     return_msg: SafeStr = Field(default="", description="결과메시지 통신결과에대한메시지")
     trnm: SafeStr = Field(default="", description="서비스명 등록,해지요청시 요청값 반환 , 실시간수신시 REAL 반환")
-    data: Annotated[List[ActivateDisableVi_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간 등록리스트")
+    data: Annotated[List[ActivateDisableVi_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간 등록리스트"
+    )
+
 
 class IndustryProgramRequest(BaseModel):
     """[ka10010] 업종프로그램요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class IndustryProgram(BaseModel):
     """[ka10010] 업종프로그램요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     dfrt_trst_sell_qty: SafeStr = Field(default="", description="차익위탁매도수량")
     dfrt_trst_sell_amt: SafeStr = Field(default="", description="차익위탁매도금액")
     dfrt_trst_buy_qty: SafeStr = Field(default="", description="차익위탁매수수량")
@@ -4670,15 +6824,26 @@ class IndustryProgram(BaseModel):
     all_dfrt_trst_netprps_qty: SafeStr = Field(default="", description="전체차익위탁순매수수량")
     all_dfrt_trst_netprps_amt: SafeStr = Field(default="", description="전체차익위탁순매수금액")
 
+
 class InvestorNetPurchaseByIndustryRequest(BaseModel):
     """[ka10051] 업종별투자자순매수요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 코스피:0, 코스닥:1")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 금액:0, 수량:1")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class InvestorNetPurchaseByIndustry_IndsNetprps(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4703,20 +6868,40 @@ class InvestorNetPurchaseByIndustry_IndsNetprps(BaseModel):
     samo_fund_netprps: SafeStr = Field(default="", description="사모펀드순매수")
     orgn_netprps: SafeStr = Field(default="", description="기관계순매수")
 
+
 class InvestorNetPurchaseByIndustry(BaseModel):
     """[ka10051] 업종별투자자순매수요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    inds_netprps: Annotated[List[InvestorNetPurchaseByIndustry_IndsNetprps], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종별순매수")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    inds_netprps: Annotated[List[InvestorNetPurchaseByIndustry_IndsNetprps], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종별순매수"
+    )
+
 
 class CurrentIndustryRequest(BaseModel):
     """[ka20001] 업종현재가요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 0:코스피, 1:코스닥, 2:코스피200")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
+
 
 class CurrentIndustry_IndsCurPrcTm(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4728,11 +6913,15 @@ class CurrentIndustry_IndsCurPrcTm(BaseModel):
     trde_qty_n: SafeStr = Field(default="", description="거래량n")
     acc_trde_qty_n: SafeStr = Field(default="", description="누적거래량n")
 
+
 class CurrentIndustry(BaseModel):
     """[ka20001] 업종현재가요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     cur_prc: SafeStr = Field(default="", description="현재가")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
     pred_pre: SafeStr = Field(default="", description="전일대비")
@@ -4755,16 +6944,32 @@ class CurrentIndustry(BaseModel):
     n_52wk_lwst_pric: SafeStr = Field(default="", alias="52wk_lwst_pric", description="52주최저가")
     n_52wk_lwst_pric_dt: SafeStr = Field(default="", alias="52wk_lwst_pric_dt", description="52주최저가일")
     n_52wk_lwst_pric_pre_rt: SafeStr = Field(default="", alias="52wk_lwst_pric_pre_rt", description="52주최저가대비율")
-    inds_cur_prc_tm: Annotated[List[CurrentIndustry_IndsCurPrcTm], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종현재가_시간별")
+    inds_cur_prc_tm: Annotated[List[CurrentIndustry_IndsCurPrcTm], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종현재가_시간별"
+    )
+
 
 class StocksByIndustryRequest(BaseModel):
     """[ka20002] 업종별주가요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 0:코스피, 1:코스닥, 2:코스피200")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class StocksByIndustry_IndsStkpc(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4781,19 +6986,36 @@ class StocksByIndustry_IndsStkpc(BaseModel):
     high_pric: SafeStr = Field(default="", description="고가")
     low_pric: SafeStr = Field(default="", description="저가")
 
+
 class StocksByIndustry(BaseModel):
     """[ka20002] 업종별주가요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    inds_stkpc: Annotated[List[StocksByIndustry_IndsStkpc], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종별주가")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    inds_stkpc: Annotated[List[StocksByIndustry_IndsStkpc], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종별주가"
+    )
+
 
 class AllIndustryIndicesRequest(BaseModel):
     """[ka20003] 전업종지수요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 101:종합(KOSDAQ)")
+
 
 class AllIndustryIndices_AllIndsIdex(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4813,20 +7035,40 @@ class AllIndustryIndices_AllIndsIdex(BaseModel):
     lst: SafeStr = Field(default="", description="하한")
     flo_stk_num: SafeStr = Field(default="", description="상장종목수")
 
+
 class AllIndustryIndices(BaseModel):
     """[ka20003] 전업종지수요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    all_inds_idex: Annotated[List[AllIndustryIndices_AllIndsIdex], BeforeValidator(_force_list)] = Field(default_factory=list, description="전업종지수")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    all_inds_idex: Annotated[List[AllIndustryIndices_AllIndsIdex], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="전업종지수"
+    )
+
 
 class IndustryCurrentPriceDailyRequest(BaseModel):
     """[ka20009] 업종현재가일별요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 0:코스피, 1:코스닥, 2:코스피200")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
+
 
 class IndustryCurrentPriceDaily_IndsCurPrcDalyRept(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4837,11 +7079,15 @@ class IndustryCurrentPriceDaily_IndsCurPrcDalyRept(BaseModel):
     flu_rt_n: SafeStr = Field(default="", description="등락률n")
     acc_trde_qty_n: SafeStr = Field(default="", description="누적거래량n")
 
+
 class IndustryCurrentPriceDaily(BaseModel):
     """[ka20009] 업종현재가일별요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     cur_prc: SafeStr = Field(default="", description="현재가")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
     pred_pre: SafeStr = Field(default="", description="전일대비")
@@ -4864,28 +7110,39 @@ class IndustryCurrentPriceDaily(BaseModel):
     n_52wk_lwst_pric: SafeStr = Field(default="", alias="52wk_lwst_pric", description="52주최저가")
     n_52wk_lwst_pric_dt: SafeStr = Field(default="", alias="52wk_lwst_pric_dt", description="52주최저가일")
     n_52wk_lwst_pric_pre_rt: SafeStr = Field(default="", alias="52wk_lwst_pric_pre_rt", description="52주최저가대비율")
-    inds_cur_prc_daly_rept: Annotated[List[IndustryCurrentPriceDaily_IndsCurPrcDalyRept], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종현재가_일별반복")
+    inds_cur_prc_daly_rept: Annotated[
+        List[IndustryCurrentPriceDaily_IndsCurPrcDalyRept], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="업종현재가_일별반복")
+
 
 class ConditionSearchListRequest(BaseModel):
     """[ka10171] 조건검색 목록조회 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="TR명 CNSRLST고정값")
+
 
 class ConditionSearchList_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
     name: SafeStr = Field(default="", description="조건검색식 명")
 
+
 class ConditionSearchList(BaseModel):
     """[ka10171] 조건검색 목록조회 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     return_code: SafeInt = Field(default=0, description="결과코드 정상 : 0")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
     trnm: SafeStr = Field(default="", description="서비스명 CNSRLST 고정값")
-    data: Annotated[List[ConditionSearchList_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="조건검색식 목록")
+    data: Annotated[List[ConditionSearchList_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="조건검색식 목록"
+    )
+
 
 class ConditionalSearchGeneralRequest(BaseModel):
     """[ka10172] 조건검색 요청 일반 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 CNSRREQ 고정값")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
@@ -4893,6 +7150,7 @@ class ConditionalSearchGeneralRequest(BaseModel):
     stex_tp: SafeStr = Field(default="", description="거래소구분 K:KRX")
     cont_yn: SafeStr = Field(default="", description="연속조회여부 Y:연속조회요청,N:연속조회미요청")
     next_key: SafeStr = Field(default="", description="연속조회키")
+
 
 class ConditionalSearchGeneral_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4907,8 +7165,10 @@ class ConditionalSearchGeneral_Data(BaseModel):
     n_17: SafeStr = Field(default="", alias="17", description="고가")
     n_18: SafeStr = Field(default="", alias="18", description="저가")
 
+
 class ConditionalSearchGeneral(BaseModel):
     """[ka10172] 조건검색 요청 일반 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     return_code: SafeInt = Field(default=0, description="결과코드 정상:0 나머지:에러")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
@@ -4916,49 +7176,73 @@ class ConditionalSearchGeneral(BaseModel):
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
     cont_yn: SafeStr = Field(default="", description="연속조회여부 연속 데이터가 존재하는경우 Y, 없으면 N")
     next_key: SafeStr = Field(default="", description="연속조회키 연속조회여부가Y일경우 다음 조회시 필요한 조회값")
-    data: Annotated[List[ConditionalSearchGeneral_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="검색결과데이터")
+    data: Annotated[List[ConditionalSearchGeneral_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="검색결과데이터"
+    )
+
 
 class RealTimeConditionalSearchRequest(BaseModel):
     """[ka10173] 조건검색 요청 실시간 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 CNSRREQ 고정값")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
     search_type: SafeStr = Field(default="", description="조회타입 1: 조건검색+실시간조건검색")
     stex_tp: SafeStr = Field(default="", description="거래소구분 K:KRX")
 
+
 class RealTimeConditionalSearch_Data(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     jmcode: SafeStr = Field(default="", description="종목코드")
 
+
 class RealTimeConditionalSearch(BaseModel):
     """[ka10173] 조건검색 요청 실시간 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     return_code: SafeInt = Field(default=0, description="결과코드 정상:0 나머지:에러")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
     trnm: SafeStr = Field(default="", description="서비스명 CNSRREQ")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
-    data: Annotated[List[RealTimeConditionalSearch_Data], BeforeValidator(_force_list)] = Field(default_factory=list, description="검색결과데이터")
+    data: Annotated[List[RealTimeConditionalSearch_Data], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="검색결과데이터"
+    )
+
 
 class ConditionalSearchRealTimeCancellationRequest(BaseModel):
     """[ka10174] 조건검색 실시간 해제 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
     trnm: SafeStr = Field(default="", description="서비스명 CNSRCLR 고정값")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
 
+
 class ConditionalSearchRealTimeCancellation(BaseModel):
     """[ka10174] 조건검색 실시간 해제 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     return_code: SafeInt = Field(default=0, description="결과코드 정상:0 나머지:에러")
     return_msg: SafeStr = Field(default="", description="결과메시지 정상인 경우는 메시지 없음")
     trnm: SafeStr = Field(default="", description="서비스명 CNSRCLR 고정값")
     seq: SafeStr = Field(default="", description="조건검색식 일련번호")
 
+
 class RealTimeItemRankingRequest(BaseModel):
     """[ka00198] 실시간종목조회순위 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     qry_tp: SafeStr = Field(default="", description="구분 1:1분, 2:10분, 3:1시간, 4:당일 누적, 5:30초")
+
 
 class RealTimeItemRanking_ItemInqRank(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -4975,25 +7259,47 @@ class RealTimeItemRanking_ItemInqRank(BaseModel):
     tm: SafeStr = Field(default="", description="시간")
     stk_cd: SafeStr = Field(default="", description="종목코드")
 
+
 class RealTimeItemRanking(BaseModel):
     """[ka00198] 실시간종목조회순위 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    item_inq_rank: Annotated[List[RealTimeItemRanking_ItemInqRank], BeforeValidator(_force_list)] = Field(default_factory=list, description="실시간종목조회순위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    item_inq_rank: Annotated[List[RealTimeItemRanking_ItemInqRank], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="실시간종목조회순위"
+    )
+
 
 class BasicStockInformationRequest(BaseModel):
     """[ka10001] 주식기본정보요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class BasicStockInformation(BaseModel):
     """[ka10001] 주식기본정보요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     stk_nm: SafeStr = Field(default="", description="종목명")
     setl_mm: SafeStr = Field(default="", description="결산월")
@@ -5007,9 +7313,15 @@ class BasicStockInformation(BaseModel):
     mac_wght: SafeStr = Field(default="", description="시가총액비중")
     for_exh_rt: SafeStr = Field(default="", description="외인소진률")
     repl_pric: SafeStr = Field(default="", description="대용가")
-    per: SafeStr = Field(default="", description="PER [ 주의 ] PER, ROE 값들은 외부벤더사에서 제공되는 데이터이며 일주일에 한번 또는 실적발표 시즌에 업데이트 됨")
+    per: SafeStr = Field(
+        default="",
+        description="PER [ 주의 ] PER, ROE 값들은 외부벤더사에서 제공되는 데이터이며 일주일에 한번 또는 실적발표 시즌에 업데이트 됨",
+    )
     eps: SafeStr = Field(default="", description="EPS")
-    roe: SafeStr = Field(default="", description="ROE [ 주의 ]  PER, ROE 값들은 외부벤더사에서 제공되는 데이터이며 일주일에 한번 또는 실적발표 시즌에 업데이트 됨")
+    roe: SafeStr = Field(
+        default="",
+        description="ROE [ 주의 ]  PER, ROE 값들은 외부벤더사에서 제공되는 데이터이며 일주일에 한번 또는 실적발표 시즌에 업데이트 됨",
+    )
     pbr: SafeStr = Field(default="", description="PBR")
     ev: SafeStr = Field(default="", description="EV")
     bps: SafeStr = Field(default="", description="BPS")
@@ -5040,18 +7352,34 @@ class BasicStockInformation(BaseModel):
     dstr_stk: SafeStr = Field(default="", description="유통주식")
     dstr_rt: SafeStr = Field(default="", description="유통비율")
 
+
 class StockExchangeRequest(BaseModel):
     """[ka10002] 주식거래원요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class StockExchange(BaseModel):
     """[ka10002] 주식거래원요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     stk_nm: SafeStr = Field(default="", description="종목명")
     cur_prc: SafeStr = Field(default="", description="현재가")
@@ -5090,12 +7418,25 @@ class StockExchange(BaseModel):
     buy_trde_ori_5: SafeStr = Field(default="", description="매수거래원5")
     buy_trde_qty_5: SafeStr = Field(default="", description="매수거래량5")
 
+
 class ConclusionInformationRequest(BaseModel):
     """[ka10003] 체결정보요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class ConclusionInformation_CntrInfr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5112,21 +7453,40 @@ class ConclusionInformation_CntrInfr(BaseModel):
     cntr_str: SafeStr = Field(default="", description="체결강도")
     stex_tp: SafeStr = Field(default="", description="거래소구분 KRX , NXT , 통합")
 
+
 class ConclusionInformation(BaseModel):
     """[ka10003] 체결정보요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    cntr_infr: Annotated[List[ConclusionInformation_CntrInfr], BeforeValidator(_force_list)] = Field(default_factory=list, description="체결정보")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    cntr_infr: Annotated[List[ConclusionInformation_CntrInfr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="체결정보"
+    )
+
 
 class CreditTradingTrendRequest(BaseModel):
     """[ka10013] 신용매매동향요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     dt: SafeStr = Field(default="", description="일자 YYYYMMDD")
     qry_tp: SafeStr = Field(default="", description="조회구분 1:융자, 2:대주")
+
 
 class CreditTradingTrend_CrdTrdeTrend(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5143,20 +7503,39 @@ class CreditTradingTrend_CrdTrdeTrend(BaseModel):
     shr_rt: SafeStr = Field(default="", description="공여율")
     remn_rt: SafeStr = Field(default="", description="잔고율")
 
+
 class CreditTradingTrend(BaseModel):
     """[ka10013] 신용매매동향요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    crd_trde_trend: Annotated[List[CreditTradingTrend_CrdTrdeTrend], BeforeValidator(_force_list)] = Field(default_factory=list, description="신용매매동향")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    crd_trde_trend: Annotated[List[CreditTradingTrend_CrdTrdeTrend], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="신용매매동향"
+    )
+
 
 class DailyTransactionRequest(BaseModel):
     """[ka10015] 일별거래상세요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
+
 
 class DailyTransaction_DalyTrdeDtl(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5191,27 +7570,53 @@ class DailyTransaction_DalyTrdeDtl(BaseModel):
     af_mkrt_trde_prica: SafeStr = Field(default="", description="장후거래대금")
     af_mkrt_trde_prica_wght: SafeStr = Field(default="", description="장후거래대금비중")
 
+
 class DailyTransaction(BaseModel):
     """[ka10015] 일별거래상세요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    daly_trde_dtl: Annotated[List[DailyTransaction_DalyTrdeDtl], BeforeValidator(_force_list)] = Field(default_factory=list, description="일별거래상세")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    daly_trde_dtl: Annotated[List[DailyTransaction_DalyTrdeDtl], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="일별거래상세"
+    )
+
 
 class LowReportRequest(BaseModel):
     """[ka10016] 신고저가요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     ntl_tp: SafeStr = Field(default="", description="신고저구분 1:신고가,2:신저가")
     high_low_close_tp: SafeStr = Field(default="", description="고저종구분 1:고저기준, 2:종가기준")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기",
+    )
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
     updown_incls: SafeStr = Field(default="", description="상하한포함 0:미포함, 1:포함")
     dt: SafeStr = Field(default="", description="기간 5:5일, 10:10일, 20:20일, 60:60일, 250:250일, 250일까지 입력가능")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class LowReport_NtlPric(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5228,26 +7633,57 @@ class LowReport_NtlPric(BaseModel):
     high_pric: SafeStr = Field(default="", description="고가")
     low_pric: SafeStr = Field(default="", description="저가")
 
+
 class LowReport(BaseModel):
     """[ka10016] 신고저가요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    ntl_pric: Annotated[List[LowReport_NtlPric], BeforeValidator(_force_list)] = Field(default_factory=list, description="신고저가")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    ntl_pric: Annotated[List[LowReport_NtlPric], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="신고저가"
+    )
+
 
 class UpperLowerLimitsRequest(BaseModel):
     """[ka10017] 상하한가요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
-    updown_tp: SafeStr = Field(default="", description="상하한구분 1:상한, 2:상승, 3:보합, 4: 하한, 5:하락, 6:전일상한, 7:전일하한")
+    updown_tp: SafeStr = Field(
+        default="", description="상하한구분 1:상한, 2:상승, 3:보합, 4: 하한, 5:하락, 6:전일상한, 7:전일하한"
+    )
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:종목코드순, 2:연속횟수순(상위100개), 3:등락률순")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 4:우선주+관리종목제외, 5:증100제외, 6:증100만 보기, 7:증40만 보기, 8:증30만 보기, 9:증20만 보기, 10:우선주+관리종목+환기종목제외")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
-    trde_gold_tp: SafeStr = Field(default="", description="매매금구분 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~3천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상")
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 4:우선주+관리종목제외, 5:증100제외, 6:증100만 보기, 7:증40만 보기, 8:증30만 보기, 9:증20만 보기, 10:우선주+관리종목+환기종목제외",
+    )
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
+    trde_gold_tp: SafeStr = Field(
+        default="",
+        description="매매금구분 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~3천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class UpperLowerLimits_UpdownPric(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5266,25 +7702,51 @@ class UpperLowerLimits_UpdownPric(BaseModel):
     buy_req: SafeStr = Field(default="", description="매수잔량")
     cnt: SafeStr = Field(default="", description="횟수")
 
+
 class UpperLowerLimits(BaseModel):
     """[ka10017] 상하한가요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    updown_pric: Annotated[List[UpperLowerLimits_UpdownPric], BeforeValidator(_force_list)] = Field(default_factory=list, description="상하한가")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    updown_pric: Annotated[List[UpperLowerLimits_UpdownPric], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="상하한가"
+    )
+
 
 class HighLowPriceProximityRequest(BaseModel):
     """[ka10018] 고저가근접요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     high_low_tp: SafeStr = Field(default="", description="고저구분 1:고가, 2:저가")
     alacc_rt: SafeStr = Field(default="", description="근접율 05:0.5 10:1.0, 15:1.5, 20:2.0. 25:2.5, 30:3.0")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상",
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HighLowPriceProximity_HighLowPricAlacc(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5300,28 +7762,57 @@ class HighLowPriceProximity_HighLowPricAlacc(BaseModel):
     tdy_high_pric: SafeStr = Field(default="", description="당일고가")
     tdy_low_pric: SafeStr = Field(default="", description="당일저가")
 
+
 class HighLowPriceProximity(BaseModel):
     """[ka10018] 고저가근접요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    high_low_pric_alacc: Annotated[List[HighLowPriceProximity_HighLowPricAlacc], BeforeValidator(_force_list)] = Field(default_factory=list, description="고저가근접")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    high_low_pric_alacc: Annotated[List[HighLowPriceProximity_HighLowPricAlacc], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="고저가근접"
+    )
+
 
 class SuddenPriceFluctuationRequest(BaseModel):
     """[ka10019] 가격급등락요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥, 201:코스피200")
     flu_tp: SafeStr = Field(default="", description="등락구분 1:급등, 2:급락")
     tm_tp: SafeStr = Field(default="", description="시간구분 1:분전, 2:일전")
     tm: SafeStr = Field(default="", description="시간 분 혹은 일입력")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
-    pric_cnd: SafeStr = Field(default="", description="가격조건 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~3천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상")
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 00000:전체조회, 00010:만주이상, 00050:5만주이상, 00100:10만주이상, 00150:15만주이상, 00200:20만주이상, 00300:30만주이상, 00500:50만주이상, 01000:백만주이상",
+    )
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회,1:관리종목제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
+    pric_cnd: SafeStr = Field(
+        default="",
+        description="가격조건 0:전체조회, 1:1천원미만, 2:1천원~2천원, 3:2천원~3천원, 4:5천원~1만원, 5:1만원이상, 8:1천원이상",
+    )
     updown_incls: SafeStr = Field(default="", description="상하한포함 0:미포함, 1:포함")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class SuddenPriceFluctuation_PricJmpflu(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5337,22 +7828,42 @@ class SuddenPriceFluctuation_PricJmpflu(BaseModel):
     trde_qty: SafeStr = Field(default="", description="거래량")
     jmp_rt: SafeStr = Field(default="", description="급등률")
 
+
 class SuddenPriceFluctuation(BaseModel):
     """[ka10019] 가격급등락요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    pric_jmpflu: Annotated[List[SuddenPriceFluctuation_PricJmpflu], BeforeValidator(_force_list)] = Field(default_factory=list, description="가격급등락")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    pric_jmpflu: Annotated[List[SuddenPriceFluctuation_PricJmpflu], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="가격급등락"
+    )
+
 
 class TransactionVolumeUpdateRequest(BaseModel):
     """[ka10024] 거래량갱신요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     cycle_tp: SafeStr = Field(default="", description="주기구분 5:5일, 10:10일, 20:20일, 60:60일, 250:250일")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상")
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 5:5천주이상, 10:만주이상, 50:5만주이상, 100:10만주이상, 200:20만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class TransactionVolumeUpdate_TrdeQtyUpdt(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5367,24 +7878,45 @@ class TransactionVolumeUpdate_TrdeQtyUpdt(BaseModel):
     sel_bid: SafeStr = Field(default="", description="매도호가")
     buy_bid: SafeStr = Field(default="", description="매수호가")
 
+
 class TransactionVolumeUpdate(BaseModel):
     """[ka10024] 거래량갱신요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    trde_qty_updt: Annotated[List[TransactionVolumeUpdate_TrdeQtyUpdt], BeforeValidator(_force_list)] = Field(default_factory=list, description="거래량갱신")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    trde_qty_updt: Annotated[List[TransactionVolumeUpdate_TrdeQtyUpdt], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="거래량갱신"
+    )
+
 
 class ConcentrationPropertiesSaleRequest(BaseModel):
     """[ka10025] 매물대집중요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     prps_cnctr_rt: SafeStr = Field(default="", description="매물집중비율 0~100 입력")
-    cur_prc_entry: SafeStr = Field(default="", description="현재가진입 0:현재가 매물대 진입 포함안함, 1:현재가 매물대 진입포함")
+    cur_prc_entry: SafeStr = Field(
+        default="", description="현재가진입 0:현재가 매물대 진입 포함안함, 1:현재가 매물대 진입포함"
+    )
     prpscnt: SafeStr = Field(default="", description="매물대수 숫자입력")
-    cycle_tp: SafeStr = Field(default="", description="주기구분 50:50일, 100:100일, 150:150일, 200:200일, 250:250일, 300:300일")
+    cycle_tp: SafeStr = Field(
+        default="", description="주기구분 50:50일, 100:100일, 150:150일, 200:200일, 250:250일, 300:300일"
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class ConcentrationPropertiesSale_PrpsCnctr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5400,20 +7932,37 @@ class ConcentrationPropertiesSale_PrpsCnctr(BaseModel):
     prps_qty: SafeStr = Field(default="", description="매물량")
     prps_rt: SafeStr = Field(default="", description="매물비")
 
+
 class ConcentrationPropertiesSale(BaseModel):
     """[ka10025] 매물대집중요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    prps_cnctr: Annotated[List[ConcentrationPropertiesSale_PrpsCnctr], BeforeValidator(_force_list)] = Field(default_factory=list, description="매물대집중")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    prps_cnctr: Annotated[List[ConcentrationPropertiesSale_PrpsCnctr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="매물대집중"
+    )
+
 
 class HighLowPerRequest(BaseModel):
     """[ka10026] 고저PER요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     pertp: SafeStr = Field(default="", description="PER구분 1:저PBR, 2:고PBR, 3:저PER, 4:고PER, 5:저ROE, 6:고ROE")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class HighLowPer_HighLowPer(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5427,27 +7976,56 @@ class HighLowPer_HighLowPer(BaseModel):
     now_trde_qty: SafeStr = Field(default="", description="현재거래량")
     sel_bid: SafeStr = Field(default="", description="매도호가")
 
+
 class HighLowPer(BaseModel):
     """[ka10026] 고저PER요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    high_low_per: Annotated[List[HighLowPer_HighLowPer], BeforeValidator(_force_list)] = Field(default_factory=list, description="고저PER")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    high_low_per: Annotated[List[HighLowPer_HighLowPer], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="고저PER"
+    )
+
 
 class FluctuationRateComparedMarketPriceRequest(BaseModel):
     """[ka10028] 시가대비등락률요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:시가, 2:고가, 3:저가, 4:기준가")
-    trde_qty_cnd: SafeStr = Field(default="", description="거래량조건 0000:전체조회, 0010:만주이상, 0050:5만주이상, 0100:10만주이상, 0500:50만주이상, 1000:백만주이상")
+    trde_qty_cnd: SafeStr = Field(
+        default="",
+        description="거래량조건 0000:전체조회, 0010:만주이상, 0050:5만주이상, 0100:10만주이상, 0500:50만주이상, 1000:백만주이상",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     updown_incls: SafeStr = Field(default="", description="상하한포함 0:불 포함, 1:포함")
-    stk_cnd: SafeStr = Field(default="", description="종목조건 0:전체조회, 1:관리종목제외, 4:우선주+관리주제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기")
-    crd_cnd: SafeStr = Field(default="", description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체")
-    trde_prica_cnd: SafeStr = Field(default="", description="거래대금조건 0:전체조회, 3:3천만원이상, 5:5천만원이상, 10:1억원이상, 30:3억원이상, 50:5억원이상, 100:10억원이상, 300:30억원이상, 500:50억원이상, 1000:100억원이상, 3000:300억원이상, 5000:500억원이상")
+    stk_cnd: SafeStr = Field(
+        default="",
+        description="종목조건 0:전체조회, 1:관리종목제외, 4:우선주+관리주제외, 3:우선주제외, 5:증100제외, 6:증100만보기, 7:증40만보기, 8:증30만보기, 9:증20만보기",
+    )
+    crd_cnd: SafeStr = Field(
+        default="",
+        description="신용조건 0:전체조회, 1:신용융자A군, 2:신용융자B군, 3:신용융자C군, 4:신용융자D군, 7:신용융자E군, 9:신용융자전체",
+    )
+    trde_prica_cnd: SafeStr = Field(
+        default="",
+        description="거래대금조건 0:전체조회, 3:3천만원이상, 5:5천만원이상, 10:1억원이상, 30:3억원이상, 50:5억원이상, 100:10억원이상, 300:30억원이상, 500:50억원이상, 1000:100억원이상, 3000:300억원이상, 5000:500억원이상",
+    )
     flu_cnd: SafeStr = Field(default="", description="등락조건 1:상위, 2:하위")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class FluctuationRateComparedMarketPrice_OpenPricPreFluRt(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5464,19 +8042,37 @@ class FluctuationRateComparedMarketPrice_OpenPricPreFluRt(BaseModel):
     now_trde_qty: SafeStr = Field(default="", description="현재거래량")
     cntr_str: SafeStr = Field(default="", description="체결강도")
 
+
 class FluctuationRateComparedMarketPrice(BaseModel):
     """[ka10028] 시가대비등락률요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    open_pric_pre_flu_rt: Annotated[List[FluctuationRateComparedMarketPrice_OpenPricPreFluRt], BeforeValidator(_force_list)] = Field(default_factory=list, description="시가대비등락률")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    open_pric_pre_flu_rt: Annotated[
+        List[FluctuationRateComparedMarketPrice_OpenPricPreFluRt], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="시가대비등락률")
+
 
 class TransactionPriceAnalysisRequest(BaseModel):
     """[ka10043] 거래원매물대분석요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     qry_dt_tp: SafeStr = Field(default="", description="조회기간구분 0:기간으로 조회, 1:시작일자, 종료일자로 조회")
@@ -5485,6 +8081,7 @@ class TransactionPriceAnalysisRequest(BaseModel):
     sort_base: SafeStr = Field(default="", description="정렬기준 1:종가순, 2:날짜순")
     mmcm_cd: SafeStr = Field(default="", description="회원사코드 회원사 코드는 ka10102 조회")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class TransactionPriceAnalysis_TrdeOriPrpsAnly(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5498,24 +8095,49 @@ class TransactionPriceAnalysis_TrdeOriPrpsAnly(BaseModel):
     trde_qty_sum: SafeStr = Field(default="", description="거래량합")
     trde_wght: SafeStr = Field(default="", description="거래비중")
 
+
 class TransactionPriceAnalysis(BaseModel):
     """[ka10043] 거래원매물대분석요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    trde_ori_prps_anly: Annotated[List[TransactionPriceAnalysis_TrdeOriPrpsAnly], BeforeValidator(_force_list)] = Field(default_factory=list, description="거래원매물대분석")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    trde_ori_prps_anly: Annotated[List[TransactionPriceAnalysis_TrdeOriPrpsAnly], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="거래원매물대분석"
+    )
+
 
 class TraderInstantaneousTradingVolumeRequest(BaseModel):
     """[ka10052] 거래원순간거래량요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mmcm_cd: SafeStr = Field(default="", description="회원사코드 회원사 코드는 ka10102 조회")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 0:전체, 1:코스피, 2:코스닥, 3:종목")
-    qty_tp: SafeStr = Field(default="", description="수량구분 0:전체, 1:1000주, 2:2000주, 3:, 5:, 10:10000주, 30: 30000주, 50: 50000주, 100: 100000주")
-    pric_tp: SafeStr = Field(default="", description="가격구분 0:전체, 1:1천원 미만, 8:1천원 이상, 2:1천원 ~ 2천원, 3:2천원 ~ 5천원, 4:5천원 ~ 1만원, 5:1만원 이상")
+    qty_tp: SafeStr = Field(
+        default="",
+        description="수량구분 0:전체, 1:1000주, 2:2000주, 3:, 5:, 10:10000주, 30: 30000주, 50: 50000주, 100: 100000주",
+    )
+    pric_tp: SafeStr = Field(
+        default="",
+        description="가격구분 0:전체, 1:1천원 미만, 8:1천원 이상, 2:1천원 ~ 2천원, 3:2천원 ~ 5천원, 4:5천원 ~ 1만원, 5:1만원 이상",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class TraderInstantaneousTradingVolume_TrdeOriMontTrdeQty(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5531,31 +8153,60 @@ class TraderInstantaneousTradingVolume_TrdeOriMontTrdeQty(BaseModel):
     pred_pre: SafeStr = Field(default="", description="전일대비")
     flu_rt: SafeStr = Field(default="", description="등락율")
 
+
 class TraderInstantaneousTradingVolume(BaseModel):
     """[ka10052] 거래원순간거래량요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    trde_ori_mont_trde_qty: Annotated[List[TraderInstantaneousTradingVolume_TrdeOriMontTrdeQty], BeforeValidator(_force_list)] = Field(default_factory=list, description="거래원순간거래량")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    trde_ori_mont_trde_qty: Annotated[
+        List[TraderInstantaneousTradingVolume_TrdeOriMontTrdeQty], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="거래원순간거래량")
+
 
 class ItemsActivateVolatilityMitigationDeviceRequest(BaseModel):
     """[ka10054] 변동성완화장치발동종목요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001: 코스피, 101:코스닥")
     bf_mkrt_tp: SafeStr = Field(default="", description="장전구분 0:전체, 1:정규시장,2:시간외단일가")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL) 공백입력시 시장구분으로 설정한 전체종목조회")
+    stk_cd: SafeStr = Field(
+        default="",
+        description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL) 공백입력시 시장구분으로 설정한 전체종목조회",
+    )
     motn_tp: SafeStr = Field(default="", description="발동구분 0:전체, 1:정적VI, 2:동적VI, 3:동적VI + 정적VI")
-    skip_stk: SafeStr = Field(default="", description="제외종목 전종목포함 조회시 9개 0으로 설정(000000000),전종목제외 조회시 9개 1으로 설정(111111111),9개 종목조회여부를 조회포함(0), 조회제외(1)로 설정하며 종목순서는 우선주,관리종목,투자경고/위험,투자주의,환기종목,단기과열종목,증거금100%,ETF,ETN가 됨.우선주만 조회시'011111111'', 관리종목만 조회시 ''101111111'' 설정'")
+    skip_stk: SafeStr = Field(
+        default="",
+        description="제외종목 전종목포함 조회시 9개 0으로 설정(000000000),전종목제외 조회시 9개 1으로 설정(111111111),9개 종목조회여부를 조회포함(0), 조회제외(1)로 설정하며 종목순서는 우선주,관리종목,투자경고/위험,투자주의,환기종목,단기과열종목,증거금100%,ETF,ETN가 됨.우선주만 조회시'011111111'', 관리종목만 조회시 ''101111111'' 설정'",
+    )
     trde_qty_tp: SafeStr = Field(default="", description="거래량구분 0:사용안함, 1:사용")
     min_trde_qty: SafeStr = Field(default="", description="최소거래량 0 주 이상, 거래량구분이 1일때만 입력(공백허용)")
-    max_trde_qty: SafeStr = Field(default="", description="최대거래량 100000000 주 이하, 거래량구분이 1일때만 입력(공백허용)")
+    max_trde_qty: SafeStr = Field(
+        default="", description="최대거래량 100000000 주 이하, 거래량구분이 1일때만 입력(공백허용)"
+    )
     trde_prica_tp: SafeStr = Field(default="", description="거래대금구분 0:사용안함, 1:사용")
-    min_trde_prica: SafeStr = Field(default="", description="최소거래대금 0 백만원 이상, 거래대금구분 1일때만 입력(공백허용)")
-    max_trde_prica: SafeStr = Field(default="", description="최대거래대금 100000000 백만원 이하, 거래대금구분 1일때만 입력(공백허용)")
+    min_trde_prica: SafeStr = Field(
+        default="", description="최소거래대금 0 백만원 이상, 거래대금구분 1일때만 입력(공백허용)"
+    )
+    max_trde_prica: SafeStr = Field(
+        default="", description="최대거래대금 100000000 백만원 이하, 거래대금구분 1일때만 입력(공백허용)"
+    )
     motn_drc: SafeStr = Field(default="", description="발동방향 0:전체, 1:상승, 2:하락")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class ItemsActivateVolatilityMitigationDevice_MotnStk(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5574,20 +8225,39 @@ class ItemsActivateVolatilityMitigationDevice_MotnStk(BaseModel):
     vimotn_cnt: SafeStr = Field(default="", description="VI발동횟수")
     stex_tp: SafeStr = Field(default="", description="거래소구분")
 
+
 class ItemsActivateVolatilityMitigationDevice(BaseModel):
     """[ka10054] 변동성완화장치발동종목요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    motn_stk: Annotated[List[ItemsActivateVolatilityMitigationDevice_MotnStk], BeforeValidator(_force_list)] = Field(default_factory=list, description="발동종목")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    motn_stk: Annotated[List[ItemsActivateVolatilityMitigationDevice_MotnStk], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="발동종목"
+    )
+
 
 class SettlementDayBeforeDayRequest(BaseModel):
     """[ka10055] 당일전일체결량요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     tdy_pred: SafeStr = Field(default="", description="당일전일 1:당일, 2:전일")
+
 
 class SettlementDayBeforeDay_TdyPredCntrQty(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5600,24 +8270,44 @@ class SettlementDayBeforeDay_TdyPredCntrQty(BaseModel):
     acc_trde_qty: SafeStr = Field(default="", description="누적거래량")
     acc_trde_prica: SafeStr = Field(default="", description="누적거래대금")
 
+
 class SettlementDayBeforeDay(BaseModel):
     """[ka10055] 당일전일체결량요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    tdy_pred_cntr_qty: Annotated[List[SettlementDayBeforeDay_TdyPredCntrQty], BeforeValidator(_force_list)] = Field(default_factory=list, description="당일전일체결량")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    tdy_pred_cntr_qty: Annotated[List[SettlementDayBeforeDay_TdyPredCntrQty], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="당일전일체결량"
+    )
+
 
 class DailyTradingItemsByInvestorRequest(BaseModel):
     """[ka10058] 투자자별일별매매종목요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     trde_tp: SafeStr = Field(default="", description="매매구분 순매도:1, 순매수:2")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 001:코스피, 101:코스닥")
-    invsr_tp: SafeStr = Field(default="", description="투자자구분 8000:개인, 9000:외국인, 1000:금융투자, 3000:투신, 3100:사모펀드, 5000:기타금융, 4000:은행, 2000:보험, 6000:연기금, 7000:국가, 7100:기타법인, 9999:기관계")
+    invsr_tp: SafeStr = Field(
+        default="",
+        description="투자자구분 8000:개인, 9000:외국인, 1000:금융투자, 3000:투신, 3100:사모펀드, 5000:기타금융, 4000:은행, 2000:보험, 6000:연기금, 7000:국가, 7100:기타법인, 9999:기관계",
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class DailyTradingItemsByInvestor_InvsrDalyTrdeStk(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5633,23 +8323,42 @@ class DailyTradingItemsByInvestor_InvsrDalyTrdeStk(BaseModel):
     pre_rt: SafeStr = Field(default="", description="대비율")
     dt_trde_qty: SafeStr = Field(default="", description="기간거래량")
 
+
 class DailyTradingItemsByInvestor(BaseModel):
     """[ka10058] 투자자별일별매매종목요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    invsr_daly_trde_stk: Annotated[List[DailyTradingItemsByInvestor_InvsrDalyTrdeStk], BeforeValidator(_force_list)] = Field(default_factory=list, description="투자자별일별매매종목")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    invsr_daly_trde_stk: Annotated[List[DailyTradingItemsByInvestor_InvsrDalyTrdeStk], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="투자자별일별매매종목")
+    )
+
 
 class RequestsByItemInvestorInstitutionRequest(BaseModel):
     """[ka10059] 종목별투자자기관별요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dt: SafeStr = Field(default="", description="일자 YYYYMMDD")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
     trde_tp: SafeStr = Field(default="", description="매매구분 0:순매수, 1:매수, 2:매도")
     unit_tp: SafeStr = Field(default="", description="단위구분 1000:천주, 1:단주")
+
 
 class RequestsByItemInvestorInstitution_StkInvsrOrgn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5674,24 +8383,43 @@ class RequestsByItemInvestorInstitution_StkInvsrOrgn(BaseModel):
     etc_corp: SafeStr = Field(default="", description="기타법인")
     natfor: SafeStr = Field(default="", description="내외국인")
 
+
 class RequestsByItemInvestorInstitution(BaseModel):
     """[ka10059] 종목별투자자기관별요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    stk_invsr_orgn: Annotated[List[RequestsByItemInvestorInstitution_StkInvsrOrgn], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별투자자기관별")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    stk_invsr_orgn: Annotated[List[RequestsByItemInvestorInstitution_StkInvsrOrgn], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="종목별투자자기관별")
+    )
+
 
 class TotalByItemInvestorInstitutionRequest(BaseModel):
     """[ka10061] 종목별투자자기관별합계요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     strt_dt: SafeStr = Field(default="", description="시작일자 YYYYMMDD")
     end_dt: SafeStr = Field(default="", description="종료일자 YYYYMMDD")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
     trde_tp: SafeStr = Field(default="", description="매매구분 0:순매수")
     unit_tp: SafeStr = Field(default="", description="단위구분 1000:천주, 1:단주")
+
 
 class TotalByItemInvestorInstitution_StkInvsrOrgnTot(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5709,22 +8437,41 @@ class TotalByItemInvestorInstitution_StkInvsrOrgnTot(BaseModel):
     etc_corp: SafeStr = Field(default="", description="기타법인")
     natfor: SafeStr = Field(default="", description="내외국인")
 
+
 class TotalByItemInvestorInstitution(BaseModel):
     """[ka10061] 종목별투자자기관별합계요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    stk_invsr_orgn_tot: Annotated[List[TotalByItemInvestorInstitution_StkInvsrOrgnTot], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별투자자기관별합계")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    stk_invsr_orgn_tot: Annotated[
+        List[TotalByItemInvestorInstitution_StkInvsrOrgnTot], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="종목별투자자기관별합계")
+
 
 class SettlementDayBeforeSameDayRequest(BaseModel):
     """[ka10084] 당일전일체결요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     tdy_pred: SafeStr = Field(default="", description="당일전일 당일 : 1, 전일 : 2")
     tic_min: SafeStr = Field(default="", description="틱분 0:틱, 1:분")
     tm: SafeStr = Field(default="", description="시간 조회시간 4자리, 오전 9시일 경우 0900, 오후 2시 30분일 경우 1430")
+
 
 class SettlementDayBeforeSameDay_TdyPredCntr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5741,19 +8488,39 @@ class SettlementDayBeforeSameDay_TdyPredCntr(BaseModel):
     cntr_str: SafeStr = Field(default="", description="체결강도")
     stex_tp: SafeStr = Field(default="", description="거래소구분 KRX , NXT , 통합")
 
+
 class SettlementDayBeforeSameDay(BaseModel):
     """[ka10084] 당일전일체결요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    tdy_pred_cntr: Annotated[List[SettlementDayBeforeSameDay_TdyPredCntr], BeforeValidator(_force_list)] = Field(default_factory=list, description="당일전일체결")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    tdy_pred_cntr: Annotated[List[SettlementDayBeforeSameDay_TdyPredCntr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="당일전일체결"
+    )
+
 
 class InformationItemsInterestRequest(BaseModel):
     """[ka10095] 관심종목정보요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)여러개의 종목코드 입력시 | 로 구분")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="",
+        description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)여러개의 종목코드 입력시 | 로 구분",
+    )
+
 
 class InformationItemsInterest_AtnStkInfr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5821,19 +8588,39 @@ class InformationItemsInterest_AtnStkInfr(BaseModel):
     vega: SafeStr = Field(default="", description="베가")
     law: SafeStr = Field(default="", description="로")
 
+
 class InformationItemsInterest(BaseModel):
     """[ka10095] 관심종목정보요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    atn_stk_infr: Annotated[List[InformationItemsInterest_AtnStkInfr], BeforeValidator(_force_list)] = Field(default_factory=list, description="관심종목정보")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    atn_stk_infr: Annotated[List[InformationItemsInterest_AtnStkInfr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="관심종목정보"
+    )
+
 
 class StockInformationListRequest(BaseModel):
     """[ka10099] 종목정보 리스트 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    mrkt_tp: SafeStr = Field(default="", description="시장구분 0 : 코스피,  10 : 코스닥,  30 : K-OTC,  50 : 코넥스,  60 : ETN,  70 : 손실제한 ETN,  80 : 금현물,  90 : 변동성 ETN,  2 : 인프라투융자,  3 : ELW,  4 : 뮤추얼펀드,  5 : 신주인수권,  6 : 리츠종목,  7 : 신주인수권증서,  8 : ETF,  9 : 하이일드펀드")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    mrkt_tp: SafeStr = Field(
+        default="",
+        description="시장구분 0 : 코스피,  10 : 코스닥,  30 : K-OTC,  50 : 코넥스,  60 : ETN,  70 : 손실제한 ETN,  80 : 금현물,  90 : 변동성 ETN,  2 : 인프라투융자,  3 : ELW,  4 : 뮤추얼펀드,  5 : 신주인수권,  6 : 리츠종목,  7 : 신주인수권증서,  8 : ETF,  9 : 하이일드펀드",
+    )
+
 
 class StockInformationList_List(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5849,28 +8636,51 @@ class StockInformationList_List(BaseModel):
     upName: SafeStr = Field(default="", description="업종명")
     upSizeName: SafeStr = Field(default="", description="회사크기분류")
     companyClassName: SafeStr = Field(default="", description="회사분류 코스닥만 존재함")
-    orderWarning: SafeStr = Field(default="", description="투자유의종목여부 0: 해당없음, 2: 정리매매, 3: 단기과열, 4: 투자위험, 5: 투자경과, 1: ETF투자주의요망(ETF인 경우만 전달")
+    orderWarning: SafeStr = Field(
+        default="",
+        description="투자유의종목여부 0: 해당없음, 2: 정리매매, 3: 단기과열, 4: 투자위험, 5: 투자경과, 1: ETF투자주의요망(ETF인 경우만 전달",
+    )
     nxtEnable: SafeStr = Field(default="", description="NXT가능여부 Y: 가능")
+
 
 class StockInformationList(BaseModel):
     """[ka10099] 종목정보 리스트 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    list: Annotated[List[StockInformationList_List], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목리스트")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    list: Annotated[List[StockInformationList_List], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="종목리스트"
+    )
+
 
 class CheckStockInformationRequest(BaseModel):
     """[ka10100] 종목정보 조회 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class CheckStockInformation(BaseModel):
     """[ka10100] 종목정보 조회 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     code: SafeStr = Field(default="", description="종목코드 단축코드")
     name: SafeStr = Field(default="", description="종목명")
     listCount: SafeStr = Field(default="", description="상장주식수")
@@ -5883,15 +8693,31 @@ class CheckStockInformation(BaseModel):
     upName: SafeStr = Field(default="", description="업종명")
     upSizeName: SafeStr = Field(default="", description="회사크기분류")
     companyClassName: SafeStr = Field(default="", description="회사분류 코스닥만 존재함")
-    orderWarning: SafeStr = Field(default="", description="투자유의종목여부 0: 해당없음, 2: 정리매매, 3: 단기과열, 4: 투자위험, 5: 투자경과, 1: ETF투자주의요망(ETF인 경우만 전달")
+    orderWarning: SafeStr = Field(
+        default="",
+        description="투자유의종목여부 0: 해당없음, 2: 정리매매, 3: 단기과열, 4: 투자위험, 5: 투자경과, 1: ETF투자주의요망(ETF인 경우만 전달",
+    )
     nxtEnable: SafeStr = Field(default="", description="NXT가능여부 Y: 가능")
+
 
 class IndustryCodeListRequest(BaseModel):
     """[ka10101] 업종코드 리스트 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    mrkt_tp: SafeStr = Field(default="", description="시장구분 0:코스피(거래소),1:코스닥,2:KOSPI200,4:KOSPI100,7:KRX100(통합지수)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    mrkt_tp: SafeStr = Field(
+        default="", description="시장구분 0:코스피(거래소),1:코스닥,2:KOSPI200,4:KOSPI100,7:KRX100(통합지수)"
+    )
+
 
 class IndustryCodeList_List(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5900,18 +8726,35 @@ class IndustryCodeList_List(BaseModel):
     name: SafeStr = Field(default="", description="업종명")
     group: SafeStr = Field(default="", description="그룹")
 
+
 class IndustryCodeList(BaseModel):
     """[ka10101] 업종코드 리스트 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    list: Annotated[List[IndustryCodeList_List], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종코드리스트")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    list: Annotated[List[IndustryCodeList_List], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종코드리스트"
+    )
+
 
 class MemberCompanyListRequest(BaseModel):
     """[ka10102] 회원사 리스트 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+
 
 class MemberCompanyList_List(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5919,22 +8762,39 @@ class MemberCompanyList_List(BaseModel):
     name: SafeStr = Field(default="", description="업종명")
     gb: SafeStr = Field(default="", description="구분")
 
+
 class MemberCompanyList(BaseModel):
     """[ka10102] 회원사 리스트 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    list: Annotated[List[MemberCompanyList_List], BeforeValidator(_force_list)] = Field(default_factory=list, description="회원사코드리스트")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    list: Annotated[List[MemberCompanyList_List], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="회원사코드리스트"
+    )
+
 
 class Top50ProgramNetPurchasesRequest(BaseModel):
     """[ka90003] 프로그램순매수상위50요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     trde_upper_tp: SafeStr = Field(default="", description="매매상위구분 1:순매도상위, 2:순매수상위")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 P00101:코스피, P10102:코스닥")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class Top50ProgramNetPurchases_PrmNetprpsUpper50(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5950,21 +8810,38 @@ class Top50ProgramNetPurchases_PrmNetprpsUpper50(BaseModel):
     prm_buy_amt: SafeStr = Field(default="", description="프로그램매수금액")
     prm_netprps_amt: SafeStr = Field(default="", description="프로그램순매수금액")
 
+
 class Top50ProgramNetPurchases(BaseModel):
     """[ka90003] 프로그램순매수상위50요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    prm_netprps_upper_50: Annotated[List[Top50ProgramNetPurchases_PrmNetprpsUpper50], BeforeValidator(_force_list)] = Field(default_factory=list, description="프로그램순매수상위50")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    prm_netprps_upper_50: Annotated[List[Top50ProgramNetPurchases_PrmNetprpsUpper50], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="프로그램순매수상위50")
+    )
+
 
 class ProgramTradingByItemRequest(BaseModel):
     """[ka90004] 종목별프로그램매매현황요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dt: SafeStr = Field(default="", description="일자 YYYYMMDD")
     mrkt_tp: SafeStr = Field(default="", description="시장구분 P00101:코스피, P10102:코스닥")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class ProgramTradingByItem_StkPrmTrdePrst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -5980,27 +8857,46 @@ class ProgramTradingByItem_StkPrmTrdePrst(BaseModel):
     netprps_prica: SafeStr = Field(default="", description="순매수대금")
     all_trde_rt: SafeStr = Field(default="", description="전체거래비율")
 
+
 class ProgramTradingByItem(BaseModel):
     """[ka90004] 종목별프로그램매매현황요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     tot_1: SafeStr = Field(default="", description="매수체결수량합계")
     tot_2: SafeStr = Field(default="", description="매수체결금액합계")
     tot_3: SafeStr = Field(default="", description="매도체결수량합계")
     tot_4: SafeStr = Field(default="", description="매도체결금액합계")
     tot_5: SafeStr = Field(default="", description="순매수대금합계")
     tot_6: SafeStr = Field(default="", description="합계6")
-    stk_prm_trde_prst: Annotated[List[ProgramTradingByItem_StkPrmTrdePrst], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별프로그램매매현황")
+    stk_prm_trde_prst: Annotated[List[ProgramTradingByItem_StkPrmTrdePrst], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="종목별프로그램매매현황"
+    )
+
 
 class CreditLoanAvailableItemsRequest(BaseModel):
     """[kt20016] 신용융자 가능종목요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    crd_stk_grde_tp: SafeStr = Field(default="", description="신용종목등급구분 %:전체, A:A군, B:B군, C:C군, D:D군, E:E군")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    crd_stk_grde_tp: SafeStr = Field(
+        default="", description="신용종목등급구분 %:전체, A:A군, B:B군, C:C군, D:D군, E:E군"
+    )
     mrkt_deal_tp: SafeStr = Field(default="", description="시장거래구분 %:전체, 1:코스피, 0:코스닥")
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class CreditLoanAvailableItems_CrdLoanPosStk(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6012,73 +8908,137 @@ class CreditLoanAvailableItems_CrdLoanPosStk(BaseModel):
     crd_limit_over_yn: SafeStr = Field(default="", description="신용한도초과여부")
     crd_limit_over_txt: SafeStr = Field(default="", description="신용한도초과 N:공란,Y:회사한도 초과")
 
+
 class CreditLoanAvailableItems(BaseModel):
     """[kt20016] 신용융자 가능종목요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     crd_loan_able: SafeStr = Field(default="", description="신용융자가능여부")
-    crd_loan_pos_stk: Annotated[List[CreditLoanAvailableItems_CrdLoanPosStk], BeforeValidator(_force_list)] = Field(default_factory=list, description="신용융자가능종목")
+    crd_loan_pos_stk: Annotated[List[CreditLoanAvailableItems_CrdLoanPosStk], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="신용융자가능종목"
+    )
+
 
 class CreditLoanAvailabilityRequest(BaseModel):
     """[kt20017] 신용융자 가능문의 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class CreditLoanAvailability(BaseModel):
     """[kt20017] 신용융자 가능문의 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     crd_alow_yn: SafeStr = Field(default="", description="신용가능여부")
+
 
 class StockPurchaseOrderRequest(BaseModel):
     """[kt10000] 주식 매수주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     ord_qty: SafeStr = Field(default="", description="주문수량")
     ord_uv: SafeStr = Field(default="", description="주문단가")
-    trde_tp: SafeStr = Field(default="", description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)")
+    trde_tp: SafeStr = Field(
+        default="",
+        description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)",
+    )
     cond_uv: SafeStr = Field(default="", description="조건단가")
+
 
 class StockPurchaseOrder(BaseModel):
     """[kt10000] 주식 매수주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
 
+
 class StockSellOrderRequest(BaseModel):
     """[kt10001] 주식 매도주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     ord_qty: SafeStr = Field(default="", description="주문수량")
     ord_uv: SafeStr = Field(default="", description="주문단가")
-    trde_tp: SafeStr = Field(default="", description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)")
+    trde_tp: SafeStr = Field(
+        default="",
+        description="매매구분 0:보통 , 3:시장가 , 5:조건부지정가 , 81:장마감후시간외 , 61:장시작전시간외, 62:시간외단일가 , 6:최유리지정가 , 7:최우선지정가 , 10:보통(IOC) , 13:시장가(IOC) , 16:최유리(IOC) , 20:보통(FOK) , 23:시장가(FOK) , 26:최유리(FOK) , 28:스톱지정가,29:중간가,30:중간가(IOC),31:중간가(FOK)",
+    )
     cond_uv: SafeStr = Field(default="", description="조건단가")
+
 
 class StockSellOrder(BaseModel):
     """[kt10001] 주식 매도주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
 
+
 class StockCorrectionOrderRequest(BaseModel):
     """[kt10002] 주식 정정주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     orig_ord_no: SafeStr = Field(default="", description="원주문번호")
     stk_cd: SafeStr = Field(default="", description="종목코드")
@@ -6086,116 +9046,203 @@ class StockCorrectionOrderRequest(BaseModel):
     mdfy_uv: SafeStr = Field(default="", description="정정단가")
     mdfy_cond_uv: SafeStr = Field(default="", description="정정조건단가")
 
+
 class StockCorrectionOrder(BaseModel):
     """[kt10002] 주식 정정주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     base_orig_ord_no: SafeStr = Field(default="", description="모주문번호")
     mdfy_qty: SafeStr = Field(default="", description="정정수량")
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분")
 
+
 class StockCancellationOrderRequest(BaseModel):
     """[kt10003] 주식 취소주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dmst_stex_tp: SafeStr = Field(default="", description="국내거래소구분 KRX,NXT,SOR")
     orig_ord_no: SafeStr = Field(default="", description="원주문번호")
     stk_cd: SafeStr = Field(default="", description="종목코드")
     cncl_qty: SafeStr = Field(default="", description="취소수량 '0' 입력시 잔량 전부 취소")
 
+
 class StockCancellationOrder(BaseModel):
     """[kt10003] 주식 취소주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     base_orig_ord_no: SafeStr = Field(default="", description="모주문번호")
     cncl_qty: SafeStr = Field(default="", description="취소수량")
 
+
 class GoldSpotPurchaseOrderRequest(BaseModel):
     """[kt50000] 금현물 매수주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     ord_qty: SafeStr = Field(default="", description="주문수량")
     ord_uv: SafeStr = Field(default="", description="주문단가")
     trde_tp: SafeStr = Field(default="", description="매매구분 00:보통, 10:보통(IOC), 20:보통(FOK)")
+
 
 class GoldSpotPurchaseOrder(BaseModel):
     """[kt50000] 금현물 매수주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
+
 
 class GoldSpotSellOrderRequest(BaseModel):
     """[kt50001] 금현물 매도주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     ord_qty: SafeStr = Field(default="", description="주문수량")
     ord_uv: SafeStr = Field(default="", description="주문단가")
     trde_tp: SafeStr = Field(default="", description="매매구분 00:보통, 10:보통(IOC), 20:보통(FOK)")
 
+
 class GoldSpotSellOrder(BaseModel):
     """[kt50001] 금현물 매도주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
+
 
 class SpotGoldCorrectionOrderRequest(BaseModel):
     """[kt50002] 금현물 정정주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     orig_ord_no: SafeStr = Field(default="", description="원주문번호")
     mdfy_qty: SafeStr = Field(default="", description="정정수량")
     mdfy_uv: SafeStr = Field(default="", description="정정단가")
 
+
 class SpotGoldCorrectionOrder(BaseModel):
     """[kt50002] 금현물 정정주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     base_orig_ord_no: SafeStr = Field(default="", description="모주문번호")
     mdfy_qty: SafeStr = Field(default="", description="정정수량")
 
+
 class GoldSpotCancellationOrderRequest(BaseModel):
     """[kt50003] 금현물 취소주문 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     orig_ord_no: SafeStr = Field(default="", description="원주문번호")
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     cncl_qty: SafeStr = Field(default="", description="취소수량 '0' 입력시 잔량 전부 취소")
 
+
 class GoldSpotCancellationOrder(BaseModel):
     """[kt50003] 금현물 취소주문 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     ord_no: SafeStr = Field(default="", description="주문번호")
     base_orig_ord_no: SafeStr = Field(default="", description="모주문번호")
     cncl_qty: SafeStr = Field(default="", description="취소수량")
 
+
 class ChartByItemInvestorInstitutionRequest(BaseModel):
     """[ka10060] 종목별투자자기관별차트요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     dt: SafeStr = Field(default="", description="일자 YYYYMMDD")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
     trde_tp: SafeStr = Field(default="", description="매매구분 0:순매수, 1:매수, 2:매도")
     unit_tp: SafeStr = Field(default="", description="단위구분 1000:천주, 1:단주")
+
 
 class ChartByItemInvestorInstitution_StkInvsrOrgnChart(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6217,22 +9264,41 @@ class ChartByItemInvestorInstitution_StkInvsrOrgnChart(BaseModel):
     etc_corp: SafeStr = Field(default="", description="기타법인")
     natfor: SafeStr = Field(default="", description="내외국인")
 
+
 class ChartByItemInvestorInstitution(BaseModel):
     """[ka10060] 종목별투자자기관별차트요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    stk_invsr_orgn_chart: Annotated[List[ChartByItemInvestorInstitution_StkInvsrOrgnChart], BeforeValidator(_force_list)] = Field(default_factory=list, description="종목별투자자기관별차트")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    stk_invsr_orgn_chart: Annotated[
+        List[ChartByItemInvestorInstitution_StkInvsrOrgnChart], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="종목별투자자기관별차트")
+
 
 class IntradayInvestorSpecificTradingChartRequest(BaseModel):
     """[ka10064] 장중투자자별매매차트요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     mrkt_tp: SafeStr = Field(default="", description="시장구분 000:전체, 001:코스피, 101:코스닥")
     amt_qty_tp: SafeStr = Field(default="", description="금액수량구분 1:금액, 2:수량")
     trde_tp: SafeStr = Field(default="", description="매매구분 0:순매수, 1:매수, 2:매도")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+
 
 class IntradayInvestorSpecificTradingChart_OpmrInvsrTrdeChart(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6246,21 +9312,40 @@ class IntradayInvestorSpecificTradingChart_OpmrInvsrTrdeChart(BaseModel):
     etc_corp: SafeStr = Field(default="", description="기타법인")
     natn: SafeStr = Field(default="", description="국가")
 
+
 class IntradayInvestorSpecificTradingChart(BaseModel):
     """[ka10064] 장중투자자별매매차트요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    opmr_invsr_trde_chart: Annotated[List[IntradayInvestorSpecificTradingChart_OpmrInvsrTrdeChart], BeforeValidator(_force_list)] = Field(default_factory=list, description="장중투자자별매매차트")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    opmr_invsr_trde_chart: Annotated[
+        List[IntradayInvestorSpecificTradingChart_OpmrInvsrTrdeChart], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="장중투자자별매매차트")
+
 
 class StockTickChartRequest(BaseModel):
     """[ka10079] 주식틱차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     tic_scope: SafeStr = Field(default="", description="틱범위 1:1틱, 3:3틱, 5:5틱, 10:10틱, 30:30틱")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class StockTickChart_StkTicChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6273,24 +9358,45 @@ class StockTickChart_StkTicChartQry(BaseModel):
     pred_pre: SafeStr = Field(default="", description="전일대비 현재가 - 전일종가")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비 기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
 
+
 class StockTickChart(BaseModel):
     """[ka10079] 주식틱차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     last_tic_cnt: SafeStr = Field(default="", description="마지막틱갯수")
-    stk_tic_chart_qry: Annotated[List[StockTickChart_StkTicChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식틱차트조회")
+    stk_tic_chart_qry: Annotated[List[StockTickChart_StkTicChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식틱차트조회"
+    )
+
 
 class StockChartRequest(BaseModel):
     """[ka10080] 주식분봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
-    tic_scope: SafeStr = Field(default="", description="틱범위 1:1분, 3:3분, 5:5분, 10:10분, 15:15분, 30:30분, 45:45분, 60:60분")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
+    tic_scope: SafeStr = Field(
+        default="", description="틱범위 1:1분, 3:3분, 5:5분, 10:10분, 15:15분, 30:30분, 45:45분, 60:60분"
+    )
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class StockChart_StkMinPoleChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6304,22 +9410,41 @@ class StockChart_StkMinPoleChartQry(BaseModel):
     pred_pre_sig: SafeStr = Field(default="", description="전일대비 기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
     acc_trde_qty: SafeStr = Field(default="", description="누적거래량 (공식문서 누락 수동 패치)")
 
+
 class StockChart(BaseModel):
     """[ka10080] 주식분봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
-    stk_min_pole_chart_qry: Annotated[List[StockChart_StkMinPoleChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식분봉차트조회")
+    stk_min_pole_chart_qry: Annotated[List[StockChart_StkMinPoleChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식분봉차트조회"
+    )
+
 
 class StockDailyChartRequest(BaseModel):
     """[ka10081] 주식일봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class StockDailyChart_StkDtPoleChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6334,22 +9459,41 @@ class StockDailyChart_StkDtPoleChartQry(BaseModel):
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
     trde_tern_rt: SafeStr = Field(default="", description="거래회전율")
 
+
 class StockDailyChart(BaseModel):
     """[ka10081] 주식일봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
-    stk_dt_pole_chart_qry: Annotated[List[StockDailyChart_StkDtPoleChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식일봉차트조회")
+    stk_dt_pole_chart_qry: Annotated[List[StockDailyChart_StkDtPoleChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식일봉차트조회"
+    )
+
 
 class StockWeeklyChartRequest(BaseModel):
     """[ka10082] 주식주봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class StockWeeklyChart_StkStkPoleChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6364,22 +9508,41 @@ class StockWeeklyChart_StkStkPoleChartQry(BaseModel):
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
     trde_tern_rt: SafeStr = Field(default="", description="거래회전율")
 
+
 class StockWeeklyChart(BaseModel):
     """[ka10082] 주식주봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
-    stk_stk_pole_chart_qry: Annotated[List[StockWeeklyChart_StkStkPoleChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식주봉차트조회")
+    stk_stk_pole_chart_qry: Annotated[List[StockWeeklyChart_StkStkPoleChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식주봉차트조회"
+    )
+
 
 class StockMonthlyChartRequest(BaseModel):
     """[ka10083] 주식월봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class StockMonthlyChart_StkMthPoleChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6394,22 +9557,41 @@ class StockMonthlyChart_StkMthPoleChartQry(BaseModel):
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
     trde_tern_rt: SafeStr = Field(default="", description="거래회전율")
 
+
 class StockMonthlyChart(BaseModel):
     """[ka10083] 주식월봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
-    stk_mth_pole_chart_qry: Annotated[List[StockMonthlyChart_StkMthPoleChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식월봉차트조회")
+    stk_mth_pole_chart_qry: Annotated[List[StockMonthlyChart_StkMthPoleChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식월봉차트조회"
+    )
+
 
 class StockAnnualChartRequest(BaseModel):
     """[ka10094] 주식년봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    stk_cd: SafeStr = Field(default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    stk_cd: SafeStr = Field(
+        default="", description="종목코드 거래소별 종목코드(KRX:039490,NXT:039490_NX,SOR:039490_AL)"
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class StockAnnualChart_StkYrPoleChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6421,21 +9603,41 @@ class StockAnnualChart_StkYrPoleChartQry(BaseModel):
     high_pric: SafeStr = Field(default="", description="고가")
     low_pric: SafeStr = Field(default="", description="저가")
 
+
 class StockAnnualChart(BaseModel):
     """[ka10094] 주식년봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
-    stk_yr_pole_chart_qry: Annotated[List[StockAnnualChart_StkYrPoleChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="주식년봉차트조회")
+    stk_yr_pole_chart_qry: Annotated[List[StockAnnualChart_StkYrPoleChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="주식년봉차트조회"
+    )
+
 
 class IndustryTickChartRequest(BaseModel):
     """[ka20004] 업종틱차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
     tic_scope: SafeStr = Field(default="", description="틱범위 1:1틱, 3:3틱, 5:5틱, 10:10틱, 30:30틱")
+
 
 class IndustryTickChart_IndsTicChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6448,22 +9650,42 @@ class IndustryTickChart_IndsTicChartQry(BaseModel):
     pred_pre: SafeStr = Field(default="", description="전일대비 현재가 - 전일종가")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비 기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
 
+
 class IndustryTickChart(BaseModel):
     """[ka20004] 업종틱차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     inds_cd: SafeStr = Field(default="", description="업종코드")
-    inds_tic_chart_qry: Annotated[List[IndustryTickChart_IndsTicChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종틱차트조회")
+    inds_tic_chart_qry: Annotated[List[IndustryTickChart_IndsTicChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종틱차트조회"
+    )
+
 
 class IndustryDivisionRequest(BaseModel):
     """[ka20005] 업종분봉조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
     tic_scope: SafeStr = Field(default="", description="틱범위 1:1틱, 3:3틱, 5:5틱, 10:10틱, 30:30틱")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class IndustryDivision_IndsMinPoleQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6477,21 +9699,41 @@ class IndustryDivision_IndsMinPoleQry(BaseModel):
     pred_pre: SafeStr = Field(default="", description="전일대비 현재가 - 전일종가")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비 기호 1: 상한가, 2:상승, 3:보합, 4:하한가, 5:하락")
 
+
 class IndustryDivision(BaseModel):
     """[ka20005] 업종분봉조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     inds_cd: SafeStr = Field(default="", description="업종코드")
-    inds_min_pole_qry: Annotated[List[IndustryDivision_IndsMinPoleQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종분봉조회")
+    inds_min_pole_qry: Annotated[List[IndustryDivision_IndsMinPoleQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종분봉조회"
+    )
+
 
 class IndustryDailySalaryRequest(BaseModel):
     """[ka20006] 업종일봉조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class IndustryDailySalary_IndsDtPoleQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6503,21 +9745,41 @@ class IndustryDailySalary_IndsDtPoleQry(BaseModel):
     low_pric: SafeStr = Field(default="", description="저가 지수 값은 소수점 제거 후 100배 값으로 반환")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class IndustryDailySalary(BaseModel):
     """[ka20006] 업종일봉조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     inds_cd: SafeStr = Field(default="", description="업종코드")
-    inds_dt_pole_qry: Annotated[List[IndustryDailySalary_IndsDtPoleQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종일봉조회")
+    inds_dt_pole_qry: Annotated[List[IndustryDailySalary_IndsDtPoleQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종일봉조회"
+    )
+
 
 class IndustrySalaryRequest(BaseModel):
     """[ka20007] 업종주봉조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class IndustrySalary_IndsStkPoleQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6529,21 +9791,41 @@ class IndustrySalary_IndsStkPoleQry(BaseModel):
     low_pric: SafeStr = Field(default="", description="저가 지수 값은 소수점 제거 후 100배 값으로 반환")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class IndustrySalary(BaseModel):
     """[ka20007] 업종주봉조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     inds_cd: SafeStr = Field(default="", description="업종코드")
-    inds_stk_pole_qry: Annotated[List[IndustrySalary_IndsStkPoleQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종주봉조회")
+    inds_stk_pole_qry: Annotated[List[IndustrySalary_IndsStkPoleQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종주봉조회"
+    )
+
 
 class IndustryMonthlySalaryRequest(BaseModel):
     """[ka20008] 업종월봉조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class IndustryMonthlySalary_IndsMthPoleQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6555,21 +9837,41 @@ class IndustryMonthlySalary_IndsMthPoleQry(BaseModel):
     low_pric: SafeStr = Field(default="", description="저가 지수 값은 소수점 제거 후 100배 값으로 반환")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class IndustryMonthlySalary(BaseModel):
     """[ka20008] 업종월봉조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     inds_cd: SafeStr = Field(default="", description="업종코드")
-    inds_mth_pole_qry: Annotated[List[IndustryMonthlySalary_IndsMthPoleQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종월봉조회")
+    inds_mth_pole_qry: Annotated[List[IndustryMonthlySalary_IndsMthPoleQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종월봉조회"
+    )
+
 
 class IndustryYearSalaryRequest(BaseModel):
     """[ka20019] 업종년봉조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    inds_cd: SafeStr = Field(default="", description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    inds_cd: SafeStr = Field(
+        default="",
+        description="업종코드 001:종합(KOSPI), 002:대형주, 003:중형주, 004:소형주 101:종합(KOSDAQ), 201:KOSPI200, 302:KOSTAR, 701: KRX100 나머지 ※ 업종코드 참고",
+    )
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class IndustryYearSalary_IndsYrPoleQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6581,22 +9883,39 @@ class IndustryYearSalary_IndsYrPoleQry(BaseModel):
     low_pric: SafeStr = Field(default="", description="저가 지수 값은 소수점 제거 후 100배 값으로 반환")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class IndustryYearSalary(BaseModel):
     """[ka20019] 업종년봉조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     inds_cd: SafeStr = Field(default="", description="업종코드")
-    inds_yr_pole_qry: Annotated[List[IndustryYearSalary_IndsYrPoleQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="업종년봉조회")
+    inds_yr_pole_qry: Annotated[List[IndustryYearSalary_IndsYrPoleQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="업종년봉조회"
+    )
+
 
 class GoldSpotTickChartRequest(BaseModel):
     """[ka50079] 금현물틱차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     tic_scope: SafeStr = Field(default="", description="틱범위 1:1틱, 3:3틱, 5:5틱, 10:10틱, 30:30틱")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class GoldSpotTickChart_GdsTicChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6610,21 +9929,40 @@ class GoldSpotTickChart_GdsTicChartQry(BaseModel):
     dt: SafeStr = Field(default="", description="일자")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
 
+
 class GoldSpotTickChart(BaseModel):
     """[ka50079] 금현물틱차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gds_tic_chart_qry: Annotated[List[GoldSpotTickChart_GdsTicChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물틱차트조회")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gds_tic_chart_qry: Annotated[List[GoldSpotTickChart_GdsTicChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물틱차트조회"
+    )
+
 
 class GoldSpotFractionalChartRequest(BaseModel):
     """[ka50080] 금현물분봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
-    tic_scope: SafeStr = Field(default="", description="틱범위 1:1분, 3:3분, 5:5분, 10:10분, 15:15분, 30:30분, 45:45분, 60:60분")
+    tic_scope: SafeStr = Field(
+        default="", description="틱범위 1:1분, 3:3분, 5:5분, 10:10분, 15:15분, 30:30분, 45:45분, 60:60분"
+    )
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class GoldSpotFractionalChart_GdsMinChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6639,21 +9977,38 @@ class GoldSpotFractionalChart_GdsMinChartQry(BaseModel):
     dt: SafeStr = Field(default="", description="일자")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
 
+
 class GoldSpotFractionalChart(BaseModel):
     """[ka50080] 금현물분봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gds_min_chart_qry: Annotated[List[GoldSpotFractionalChart_GdsMinChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물분봉차트조회")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gds_min_chart_qry: Annotated[List[GoldSpotFractionalChart_GdsMinChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물분봉차트조회"
+    )
+
 
 class GoldSpotDailyChartRequest(BaseModel):
     """[ka50081] 금현물일봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class GoldSpotDailyChart_GdsDayChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6666,21 +10021,38 @@ class GoldSpotDailyChart_GdsDayChartQry(BaseModel):
     dt: SafeStr = Field(default="", description="일자")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
 
+
 class GoldSpotDailyChart(BaseModel):
     """[ka50081] 금현물일봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gds_day_chart_qry: Annotated[List[GoldSpotDailyChart_GdsDayChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물일봉차트조회")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gds_day_chart_qry: Annotated[List[GoldSpotDailyChart_GdsDayChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물일봉차트조회"
+    )
+
 
 class GoldSpotWeeklyChartRequest(BaseModel):
     """[ka50082] 금현물주봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class GoldSpotWeeklyChart_GdsWeekChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6692,21 +10064,38 @@ class GoldSpotWeeklyChart_GdsWeekChartQry(BaseModel):
     low_pric: SafeStr = Field(default="", description="저가")
     dt: SafeStr = Field(default="", description="일자")
 
+
 class GoldSpotWeeklyChart(BaseModel):
     """[ka50082] 금현물주봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gds_week_chart_qry: Annotated[List[GoldSpotWeeklyChart_GdsWeekChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물일봉차트조회")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gds_week_chart_qry: Annotated[List[GoldSpotWeeklyChart_GdsWeekChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물일봉차트조회"
+    )
+
 
 class GoldSpotMonthlyChartRequest(BaseModel):
     """[ka50083] 금현물월봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
     upd_stkpc_tp: SafeStr = Field(default="", description="수정주가구분 0 or 1")
+
 
 class GoldSpotMonthlyChart_GdsMonthChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6718,20 +10107,37 @@ class GoldSpotMonthlyChart_GdsMonthChartQry(BaseModel):
     low_pric: SafeStr = Field(default="", description="저가")
     dt: SafeStr = Field(default="", description="일자")
 
+
 class GoldSpotMonthlyChart(BaseModel):
     """[ka50083] 금현물월봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gds_month_chart_qry: Annotated[List[GoldSpotMonthlyChart_GdsMonthChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물일봉차트조회")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gds_month_chart_qry: Annotated[List[GoldSpotMonthlyChart_GdsMonthChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물일봉차트조회"
+    )
+
 
 class GoldSpotDailyTickChartRequest(BaseModel):
     """[ka50091] 금현물당일틱차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     tic_scope: SafeStr = Field(default="", description="틱범위 1:1틱, 3:3틱, 5:5틱, 10:10틱, 30:30틱")
+
 
 class GoldSpotDailyTickChart_GdsTicChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6745,22 +10151,39 @@ class GoldSpotDailyTickChart_GdsTicChartQry(BaseModel):
     dt: SafeStr = Field(default="", description="일자")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
 
+
 class GoldSpotDailyTickChart(BaseModel):
     """[ka50091] 금현물당일틱차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gds_tic_chart_qry: Annotated[List[GoldSpotDailyTickChart_GdsTicChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물일봉차트조회")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gds_tic_chart_qry: Annotated[List[GoldSpotDailyTickChart_GdsTicChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물일봉차트조회"
+    )
 
-class GoldSpotDailyChartRequest(BaseModel):
+
+class GoldSpotDailyChart2Request(BaseModel):
     """[ka50092] 금현물당일분봉차트조회요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드 M04020000 금 99.99_1kg, M04020100 미니금 99.99_100g")
     tic_scope: SafeStr = Field(default="", description="틱범위 1:1틱, 3:3틱, 5:5틱, 10:10틱, 30:30틱")
 
-class GoldSpotDailyChart_GdsMinChartQry(BaseModel):
+
+class GoldSpotDailyChart2_GdsMinChartQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     cntr_pric: SafeStr = Field(default="", description="체결가")
     pred_pre: SafeStr = Field(default="", description="전일 대비(원)")
@@ -6774,24 +10197,43 @@ class GoldSpotDailyChart_GdsMinChartQry(BaseModel):
     dt: SafeStr = Field(default="", description="일자")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
 
-class GoldSpotDailyChart(BaseModel):
+
+class GoldSpotDailyChart2(BaseModel):
     """[ka50092] 금현물당일분봉차트조회요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    gds_min_chart_qry: Annotated[List[GoldSpotDailyChart_GdsMinChartQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="금현물일봉차트조회")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    gds_min_chart_qry: Annotated[List[GoldSpotDailyChart2_GdsMinChartQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="금현물일봉차트조회"
+    )
+
 
 class RequestsByThemeGroupRequest(BaseModel):
     """[ka90001] 테마그룹별요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     qry_tp: SafeStr = Field(default="", description="검색구분 0:전체검색, 1:테마검색, 2:종목검색")
     stk_cd: SafeStr = Field(default="", description="종목코드 검색하려는 종목코드")
     date_tp: SafeStr = Field(default="", description="날짜구분 n일전 (1일 ~ 99일 날짜입력)")
     thema_nm: SafeStr = Field(default="", description="테마명 검색하려는 테마명")
-    flu_pl_amt_tp: SafeStr = Field(default="", description="등락수익구분 1:상위기간수익률, 2:하위기간수익률, 3:상위등락률, 4:하위등락률")
+    flu_pl_amt_tp: SafeStr = Field(
+        default="", description="등락수익구분 1:상위기간수익률, 2:하위기간수익률, 3:상위등락률, 4:하위등락률"
+    )
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class RequestsByThemeGroup_ThemaGrp(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6805,21 +10247,38 @@ class RequestsByThemeGroup_ThemaGrp(BaseModel):
     dt_prft_rt: SafeStr = Field(default="", description="기간수익률")
     main_stk: SafeStr = Field(default="", description="주요종목")
 
+
 class RequestsByThemeGroup(BaseModel):
     """[ka90001] 테마그룹별요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    thema_grp: Annotated[List[RequestsByThemeGroup_ThemaGrp], BeforeValidator(_force_list)] = Field(default_factory=list, description="테마그룹별")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    thema_grp: Annotated[List[RequestsByThemeGroup_ThemaGrp], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="테마그룹별"
+    )
+
 
 class ThemeItemsRequest(BaseModel):
     """[ka90002] 테마구성종목요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     date_tp: SafeStr = Field(default="", description="날짜구분 1일 ~ 99일 날짜입력")
     thema_grp_cd: SafeStr = Field(default="", description="테마그룹코드 테마그룹코드 번호")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT 3.통합")
+
 
 class ThemeItems_ThemaCompStk(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6836,21 +10295,38 @@ class ThemeItems_ThemaCompStk(BaseModel):
     buy_req: SafeStr = Field(default="", description="매수잔량")
     dt_prft_rt_n: SafeStr = Field(default="", description="기간수익률n")
 
+
 class ThemeItems(BaseModel):
     """[ka90002] 테마구성종목요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     flu_rt: SafeStr = Field(default="", description="등락률")
     dt_prft_rt: SafeStr = Field(default="", description="기간수익률")
-    thema_comp_stk: Annotated[List[ThemeItems_ThemaCompStk], BeforeValidator(_force_list)] = Field(default_factory=list, description="테마구성종목")
+    thema_comp_stk: Annotated[List[ThemeItems_ThemaCompStk], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="테마구성종목"
+    )
+
 
 class ElwDailySensitivityIndicatorRequest(BaseModel):
     """[ka10048] ELW일별민감도지표요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class ElwDailySensitivityIndicator_ElwdalySnstIx(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6863,19 +10339,36 @@ class ElwDailySensitivityIndicator_ElwdalySnstIx(BaseModel):
     law: SafeStr = Field(default="", description="로")
     lp: SafeStr = Field(default="", description="LP")
 
+
 class ElwDailySensitivityIndicator(BaseModel):
     """[ka10048] ELW일별민감도지표요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwdaly_snst_ix: Annotated[List[ElwDailySensitivityIndicator_ElwdalySnstIx], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW일별민감도지표")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwdaly_snst_ix: Annotated[List[ElwDailySensitivityIndicator_ElwdalySnstIx], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW일별민감도지표"
+    )
+
 
 class ElwSensitivityIndicatorRequest(BaseModel):
     """[ka10050] ELW민감도지표요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class ElwSensitivityIndicator_ElwsnstIxArray(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6890,27 +10383,58 @@ class ElwSensitivityIndicator_ElwsnstIxArray(BaseModel):
     law: SafeStr = Field(default="", description="로")
     lp: SafeStr = Field(default="", description="LP")
 
+
 class ElwSensitivityIndicator(BaseModel):
     """[ka10050] ELW민감도지표요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwsnst_ix_array: Annotated[List[ElwSensitivityIndicator_ElwsnstIxArray], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW민감도지표배열")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwsnst_ix_array: Annotated[List[ElwSensitivityIndicator_ElwsnstIxArray], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW민감도지표배열"
+    )
+
 
 class SuddenFluctuationElwPriceRequest(BaseModel):
     """[ka30001] ELW가격급등락요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     flu_tp: SafeStr = Field(default="", description="등락구분 1:급등, 2:급락")
     tm_tp: SafeStr = Field(default="", description="시간구분 1:분전, 2:일전")
     tm: SafeStr = Field(default="", description="시간 분 혹은 일입력 (예 1, 3, 5)")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 0:전체, 10:만주이상, 50:5만주이상, 100:10만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상")
-    isscomp_cd: SafeStr = Field(default="", description="발행사코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17")
-    bsis_aset_cd: SafeStr = Field(default="", description="기초자산코드 전체:000000000000, KOSPI200:201, KOSDAQ150:150, 삼성전자:005930, KT:030200..")
-    rght_tp: SafeStr = Field(default="", description="권리구분 000:전체, 001:콜, 002:풋, 003:DC, 004:DP, 005:EX, 006:조기종료콜, 007:조기종료풋")
-    lpcd: SafeStr = Field(default="", description="LP코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17")
+    trde_qty_tp: SafeStr = Field(
+        default="",
+        description="거래량구분 0:전체, 10:만주이상, 50:5만주이상, 100:10만주이상, 300:30만주이상, 500:50만주이상, 1000:백만주이상",
+    )
+    isscomp_cd: SafeStr = Field(
+        default="",
+        description="발행사코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17",
+    )
+    bsis_aset_cd: SafeStr = Field(
+        default="",
+        description="기초자산코드 전체:000000000000, KOSPI200:201, KOSDAQ150:150, 삼성전자:005930, KT:030200..",
+    )
+    rght_tp: SafeStr = Field(
+        default="",
+        description="권리구분 000:전체, 001:콜, 002:풋, 003:DC, 004:DP, 005:EX, 006:조기종료콜, 007:조기종료풋",
+    )
+    lpcd: SafeStr = Field(
+        default="", description="LP코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17"
+    )
     trde_end_elwskip: SafeStr = Field(default="", description="거래종료ELW제외 0:포함, 1:제외")
+
 
 class SuddenFluctuationElwPrice_ElwpricJmpflu(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6925,24 +10449,46 @@ class SuddenFluctuationElwPrice_ElwpricJmpflu(BaseModel):
     trde_qty: SafeStr = Field(default="", description="거래량")
     jmp_rt: SafeStr = Field(default="", description="급등율")
 
+
 class SuddenFluctuationElwPrice(BaseModel):
     """[ka30001] ELW가격급등락요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     base_pric_tm: SafeStr = Field(default="", description="기준가시간")
-    elwpric_jmpflu: Annotated[List[SuddenFluctuationElwPrice_ElwpricJmpflu], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW가격급등락")
+    elwpric_jmpflu: Annotated[List[SuddenFluctuationElwPrice_ElwpricJmpflu], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW가격급등락"
+    )
+
 
 class ElwNetSalesTopByTraderRequest(BaseModel):
     """[ka30002] 거래원별ELW순매매상위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    isscomp_cd: SafeStr = Field(default="", description="발행사코드 3자리, 영웅문4 0273화면참조 (교보:001, 신한금융투자:002, 한국투자증권:003, 대신:004, 미래대우:005, ,,,)")
-    trde_qty_tp: SafeStr = Field(default="", description="거래량구분 0:전체, 5:5천주, 10:만주, 50:5만주, 100:10만주, 500:50만주, 1000:백만주")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    isscomp_cd: SafeStr = Field(
+        default="",
+        description="발행사코드 3자리, 영웅문4 0273화면참조 (교보:001, 신한금융투자:002, 한국투자증권:003, 대신:004, 미래대우:005, ,,,)",
+    )
+    trde_qty_tp: SafeStr = Field(
+        default="", description="거래량구분 0:전체, 5:5천주, 10:만주, 50:5만주, 100:10만주, 500:50만주, 1000:백만주"
+    )
     trde_tp: SafeStr = Field(default="", description="매매구분 1:순매수, 2:순매도")
     dt: SafeStr = Field(default="", description="기간 1:전일, 5:5일, 10:10일, 40:40일, 60:60일")
     trde_end_elwskip: SafeStr = Field(default="", description="거래종료ELW제외 0:포함, 1:제외")
+
 
 class ElwNetSalesTopByTrader_TrdeOriElwnettrdeUpper(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6955,20 +10501,37 @@ class ElwNetSalesTopByTrader_TrdeOriElwnettrdeUpper(BaseModel):
     buy_trde_qty: SafeStr = Field(default="", description="매수거래량")
     sel_trde_qty: SafeStr = Field(default="", description="매도거래량")
 
+
 class ElwNetSalesTopByTrader(BaseModel):
     """[ka30002] 거래원별ELW순매매상위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    trde_ori_elwnettrde_upper: Annotated[List[ElwNetSalesTopByTrader_TrdeOriElwnettrdeUpper], BeforeValidator(_force_list)] = Field(default_factory=list, description="거래원별ELW순매매상위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    trde_ori_elwnettrde_upper: Annotated[
+        List[ElwNetSalesTopByTrader_TrdeOriElwnettrdeUpper], BeforeValidator(_force_list)
+    ] = Field(default_factory=list, description="거래원별ELW순매매상위")
+
 
 class DailyTrendElwlpHoldingsRequest(BaseModel):
     """[ka30003] ELWLP보유일별추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     bsis_aset_cd: SafeStr = Field(default="", description="기초자산코드")
     base_dt: SafeStr = Field(default="", description="기준일자 YYYYMMDD")
+
 
 class DailyTrendElwlpHoldings_ElwlppossDalyTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -6983,23 +10546,51 @@ class DailyTrendElwlpHoldings_ElwlppossDalyTrnsn(BaseModel):
     lprmnd_qty: SafeStr = Field(default="", description="LP보유수량")
     wght: SafeStr = Field(default="", description="비중")
 
+
 class DailyTrendElwlpHoldings(BaseModel):
     """[ka30003] ELWLP보유일별추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwlpposs_daly_trnsn: Annotated[List[DailyTrendElwlpHoldings_ElwlppossDalyTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELWLP보유일별추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwlpposs_daly_trnsn: Annotated[List[DailyTrendElwlpHoldings_ElwlppossDalyTrnsn], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="ELWLP보유일별추이")
+    )
+
 
 class ElwDisparityRateRequest(BaseModel):
     """[ka30004] ELW괴리율요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    isscomp_cd: SafeStr = Field(default="", description="발행사코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17")
-    bsis_aset_cd: SafeStr = Field(default="", description="기초자산코드 전체:000000000000, KOSPI200:201, KOSDAQ150:150, 삼성전자:005930, KT:030200..")
-    rght_tp: SafeStr = Field(default="", description="권리구분 000: 전체, 001: 콜, 002: 풋, 003: DC, 004: DP, 005: EX, 006: 조기종료콜, 007: 조기종료풋")
-    lpcd: SafeStr = Field(default="", description="LP코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    isscomp_cd: SafeStr = Field(
+        default="",
+        description="발행사코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17",
+    )
+    bsis_aset_cd: SafeStr = Field(
+        default="",
+        description="기초자산코드 전체:000000000000, KOSPI200:201, KOSDAQ150:150, 삼성전자:005930, KT:030200..",
+    )
+    rght_tp: SafeStr = Field(
+        default="",
+        description="권리구분 000: 전체, 001: 콜, 002: 풋, 003: DC, 004: DP, 005: EX, 006: 조기종료콜, 007: 조기종료풋",
+    )
+    lpcd: SafeStr = Field(
+        default="", description="LP코드 전체:000000000000, 한국투자증권:3, 미래대우:5, 신영:6, NK투자증권:12, KB증권:17"
+    )
     trde_end_elwskip: SafeStr = Field(default="", description="거래종료ELW제외 1:거래종료ELW제외, 0:거래종료ELW포함")
+
 
 class ElwDisparityRate_ElwdisptyRt(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7019,23 +10610,54 @@ class ElwDisparityRate_ElwdisptyRt(BaseModel):
     trde_qty: SafeStr = Field(default="", description="거래량")
     stk_nm: SafeStr = Field(default="", description="종목명")
 
+
 class ElwDisparityRate(BaseModel):
     """[ka30004] ELW괴리율요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwdispty_rt: Annotated[List[ElwDisparityRate_ElwdisptyRt], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW괴리율")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwdispty_rt: Annotated[List[ElwDisparityRate_ElwdisptyRt], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW괴리율"
+    )
+
 
 class ElwConditionSearchRequest(BaseModel):
     """[ka30005] ELW조건검색요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    isscomp_cd: SafeStr = Field(default="", description="발행사코드 12자리입력(전체:000000000000, 한국투자증권:000,,,3, 미래대우:000,,,5, 신영:000,,,6, NK투자증권:000,,,12, KB증권:000,,,17)")
-    bsis_aset_cd: SafeStr = Field(default="", description="기초자산코드 전체일때만 12자리입력(전체:000000000000, KOSPI200:201, KOSDAQ150:150, 삼정전자:005930, KT:030200,,)")
-    rght_tp: SafeStr = Field(default="", description="권리구분 0:전체, 1:콜, 2:풋, 3:DC, 4:DP, 5:EX, 6:조기종료콜, 7:조기종료풋")
-    lpcd: SafeStr = Field(default="", description="LP코드 전체일때만 12자리입력(전체:000000000000, 한국투자증권:003, 미래대우:005, 신영:006, NK투자증권:012, KB증권:017)")
-    sort_tp: SafeStr = Field(default="", description="정렬구분 0:정렬없음, 1:상승율순, 2:상승폭순, 3:하락율순, 4:하락폭순, 5:거래량순, 6:거래대금순, 7:잔존일순")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    isscomp_cd: SafeStr = Field(
+        default="",
+        description="발행사코드 12자리입력(전체:000000000000, 한국투자증권:000,,,3, 미래대우:000,,,5, 신영:000,,,6, NK투자증권:000,,,12, KB증권:000,,,17)",
+    )
+    bsis_aset_cd: SafeStr = Field(
+        default="",
+        description="기초자산코드 전체일때만 12자리입력(전체:000000000000, KOSPI200:201, KOSDAQ150:150, 삼정전자:005930, KT:030200,,)",
+    )
+    rght_tp: SafeStr = Field(
+        default="", description="권리구분 0:전체, 1:콜, 2:풋, 3:DC, 4:DP, 5:EX, 6:조기종료콜, 7:조기종료풋"
+    )
+    lpcd: SafeStr = Field(
+        default="",
+        description="LP코드 전체일때만 12자리입력(전체:000000000000, 한국투자증권:003, 미래대우:005, 신영:006, NK투자증권:012, KB증권:017)",
+    )
+    sort_tp: SafeStr = Field(
+        default="",
+        description="정렬구분 0:정렬없음, 1:상승율순, 2:상승폭순, 3:하락율순, 4:하락폭순, 5:거래량순, 6:거래대금순, 7:잔존일순",
+    )
+
 
 class ElwConditionSearch_ElwcndQry(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7079,21 +10701,40 @@ class ElwConditionSearch_ElwcndQry(BaseModel):
     xraymont_cntr_qty_arng_trde_tp: SafeStr = Field(default="", description="Xray순간체결량정리매매구분")
     xraymont_cntr_qty_profa_100tp: SafeStr = Field(default="", description="Xray순간체결량증거금100구분")
 
+
 class ElwConditionSearch(BaseModel):
     """[ka30005] ELW조건검색요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwcnd_qry: Annotated[List[ElwConditionSearch_ElwcndQry], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW조건검색")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwcnd_qry: Annotated[List[ElwConditionSearch_ElwcndQry], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW조건검색"
+    )
+
 
 class ElwFluctuationRateRankingRequest(BaseModel):
     """[ka30009] ELW등락율순위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:상승률, 2:상승폭, 3:하락률, 4:하락폭")
-    rght_tp: SafeStr = Field(default="", description="권리구분 000:전체, 001:콜, 002:풋, 003:DC, 004:DP, 006:조기종료콜, 007:조기종료풋")
+    rght_tp: SafeStr = Field(
+        default="", description="권리구분 000:전체, 001:콜, 002:풋, 003:DC, 004:DP, 006:조기종료콜, 007:조기종료풋"
+    )
     trde_end_skip: SafeStr = Field(default="", description="거래종료제외 1:거래종료제외, 0:거래종료포함")
+
 
 class ElwFluctuationRateRanking_ElwfluRtRank(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7109,21 +10750,41 @@ class ElwFluctuationRateRanking_ElwfluRtRank(BaseModel):
     trde_qty: SafeStr = Field(default="", description="거래량")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class ElwFluctuationRateRanking(BaseModel):
     """[ka30009] ELW등락율순위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwflu_rt_rank: Annotated[List[ElwFluctuationRateRanking_ElwfluRtRank], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW등락율순위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwflu_rt_rank: Annotated[List[ElwFluctuationRateRanking_ElwfluRtRank], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW등락율순위"
+    )
+
 
 class ElwRemainingBalanceRankingRequest(BaseModel):
     """[ka30010] ELW잔량순위요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     sort_tp: SafeStr = Field(default="", description="정렬구분 1:순매수잔량상위, 2: 순매도 잔량상위")
-    rght_tp: SafeStr = Field(default="", description="권리구분 000: 전체, 001: 콜, 002: 풋, 003: DC, 004: DP, 006: 조기종료콜, 007: 조기종료풋")
+    rght_tp: SafeStr = Field(
+        default="",
+        description="권리구분 000: 전체, 001: 콜, 002: 풋, 003: DC, 004: DP, 006: 조기종료콜, 007: 조기종료풋",
+    )
     trde_end_skip: SafeStr = Field(default="", description="거래종료제외 1:거래종료제외, 0:거래종료포함")
+
 
 class ElwRemainingBalanceRanking_ElwreqRank(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7140,19 +10801,36 @@ class ElwRemainingBalanceRanking_ElwreqRank(BaseModel):
     netprps_req: SafeStr = Field(default="", description="순매수잔량")
     trde_prica: SafeStr = Field(default="", description="거래대금")
 
+
 class ElwRemainingBalanceRanking(BaseModel):
     """[ka30010] ELW잔량순위요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwreq_rank: Annotated[List[ElwRemainingBalanceRanking_ElwreqRank], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW잔량순위")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwreq_rank: Annotated[List[ElwRemainingBalanceRanking_ElwreqRank], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW잔량순위"
+    )
+
 
 class ElwProximityRateRequest(BaseModel):
     """[ka30011] ELW근접율요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class ElwProximityRate_ElwalaccRt(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7165,25 +10843,45 @@ class ElwProximityRate_ElwalaccRt(BaseModel):
     acc_trde_qty: SafeStr = Field(default="", description="누적거래량")
     alacc_rt: SafeStr = Field(default="", description="근접율")
 
+
 class ElwProximityRate(BaseModel):
     """[ka30011] ELW근접율요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    elwalacc_rt: Annotated[List[ElwProximityRate_ElwalaccRt], BeforeValidator(_force_list)] = Field(default_factory=list, description="ELW근접율")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    elwalacc_rt: Annotated[List[ElwProximityRate_ElwalaccRt], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ELW근접율"
+    )
+
 
 class DetailedInformationElwItemsRequest(BaseModel):
     """[ka30012] ELW종목상세정보요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class DetailedInformationElwItems(BaseModel):
     """[ka30012] ELW종목상세정보요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     aset_cd: SafeStr = Field(default="", description="자산코드")
     cur_prc: SafeStr = Field(default="", description="현재가")
     pred_pre_sig: SafeStr = Field(default="", description="전일대비기호")
@@ -7250,14 +10948,25 @@ class DetailedInformationElwItems(BaseModel):
     sndhalf_mrkt_hgst_pric: SafeStr = Field(default="", description="후반장최고가")
     sndhalf_mrkt_lwst_pric: SafeStr = Field(default="", description="후반장최저가")
 
+
 class EtfReturnRateRequest(BaseModel):
     """[ka40001] ETF수익율요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
     etfobjt_idex_cd: SafeStr = Field(default="", description="ETF대상지수코드")
     dt: SafeStr = Field(default="", description="기간 0:1주, 1:1달, 2:6개월, 3:1년")
+
 
 class EtfReturnRate_EtfprftRtLst(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7266,37 +10975,68 @@ class EtfReturnRate_EtfprftRtLst(BaseModel):
     for_netprps_qty: SafeStr = Field(default="", description="외인순매수수량")
     orgn_netprps_qty: SafeStr = Field(default="", description="기관순매수수량")
 
+
 class EtfReturnRate(BaseModel):
     """[ka40001] ETF수익율요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    etfprft_rt_lst: Annotated[List[EtfReturnRate_EtfprftRtLst], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETF수익율")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    etfprft_rt_lst: Annotated[List[EtfReturnRate_EtfprftRtLst], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ETF수익율"
+    )
+
 
 class EtfItemInformationRequest(BaseModel):
     """[ka40002] ETF종목정보요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class EtfItemInformation(BaseModel):
     """[ka40002] ETF종목정보요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_nm: SafeStr = Field(default="", description="종목명")
     etfobjt_idex_nm: SafeStr = Field(default="", description="ETF대상지수명")
     wonju_pric: SafeStr = Field(default="", description="원주가격")
     etftxon_type: SafeStr = Field(default="", description="ETF과세유형")
     etntxon_type: SafeStr = Field(default="", description="ETN과세유형")
 
+
 class EtfDailyTrendRequest(BaseModel):
     """[ka40003] ETF일별추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class EtfDailyTrend_EtfdalyTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7315,24 +11055,47 @@ class EtfDailyTrend_EtfdalyTrnsn(BaseModel):
     trace_pred_pre: SafeStr = Field(default="", description="추적전일대비")
     trace_pre_sig: SafeStr = Field(default="", description="추적대비기호")
 
+
 class EtfDailyTrend(BaseModel):
     """[ka40003] ETF일별추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    etfdaly_trnsn: Annotated[List[EtfDailyTrend_EtfdalyTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETF일별추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    etfdaly_trnsn: Annotated[List[EtfDailyTrend_EtfdalyTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ETF일별추이"
+    )
+
 
 class FullEtfRequest(BaseModel):
     """[ka40004] ETF전체시세요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
-    txon_type: SafeStr = Field(default="", description="과세유형 0:전체, 1:비과세, 2:보유기간과세, 3:회사형, 4:외국, 5:비과세해외(보유기간관세)")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
+    txon_type: SafeStr = Field(
+        default="",
+        description="과세유형 0:전체, 1:비과세, 2:보유기간과세, 3:회사형, 4:외국, 5:비과세해외(보유기간관세)",
+    )
     navpre: SafeStr = Field(default="", description="NAV대비 0:전체, 1:NAV > 전일종가, 2:NAV < 전일종가")
-    mngmcomp: SafeStr = Field(default="", description="운용사 0000:전체, 3020:KODEX(삼성), 3027:KOSEF(키움), 3191:TIGER(미래에셋), 3228:KINDEX(한국투자), 3023:KStar(KB), 3022:아리랑(한화), 9999:기타운용사")
+    mngmcomp: SafeStr = Field(
+        default="",
+        description="운용사 0000:전체, 3020:KODEX(삼성), 3027:KOSEF(키움), 3191:TIGER(미래에셋), 3228:KINDEX(한국투자), 3023:KStar(KB), 3022:아리랑(한화), 9999:기타운용사",
+    )
     txon_yn: SafeStr = Field(default="", description="과세여부 0:전체, 1:과세, 2:비과세")
     trace_idex: SafeStr = Field(default="", description="추적지수 0:전체")
     stex_tp: SafeStr = Field(default="", description="거래소구분 1:KRX, 2:NXT, 3:통합")
+
 
 class FullEtf_EtfallMrpr(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7355,19 +11118,36 @@ class FullEtf_EtfallMrpr(BaseModel):
     trace_idex: SafeStr = Field(default="", description="추적지수")
     trace_flu_rt: SafeStr = Field(default="", description="추적등락율")
 
+
 class FullEtf(BaseModel):
     """[ka40004] ETF전체시세요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    etfall_mrpr: Annotated[List[FullEtf_EtfallMrpr], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETF전체시세")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    etfall_mrpr: Annotated[List[FullEtf_EtfallMrpr], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ETF전체시세"
+    )
+
 
 class EtfTimeZoneTrendRequest(BaseModel):
     """[ka40006] ETF시간대별추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class EtfTimeZoneTrend_EtftislTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7386,24 +11166,41 @@ class EtfTimeZoneTrend_EtftislTrnsn(BaseModel):
     trace_idex_pred_pre: SafeStr = Field(default="", description="추적지수전일대비")
     trace_idex_pred_pre_sig: SafeStr = Field(default="", description="추적지수전일대비기호")
 
+
 class EtfTimeZoneTrend(BaseModel):
     """[ka40006] ETF시간대별추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_nm: SafeStr = Field(default="", description="종목명")
     etfobjt_idex_nm: SafeStr = Field(default="", description="ETF대상지수명")
     wonju_pric: SafeStr = Field(default="", description="원주가격")
     etftxon_type: SafeStr = Field(default="", description="ETF과세유형")
     etntxon_type: SafeStr = Field(default="", description="ETN과세유형")
-    etftisl_trnsn: Annotated[List[EtfTimeZoneTrend_EtftislTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETF시간대별추이")
+    etftisl_trnsn: Annotated[List[EtfTimeZoneTrend_EtftislTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ETF시간대별추이"
+    )
+
 
 class EtfTradingByTimeSlotRequest(BaseModel):
     """[ka40007] ETF시간대별체결요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class EtfTradingByTimeSlot_EtftislCntrArray(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7414,25 +11211,42 @@ class EtfTradingByTimeSlot_EtftislCntrArray(BaseModel):
     trde_qty: SafeStr = Field(default="", description="거래량")
     stex_tp: SafeStr = Field(default="", description="거래소구분 KRX , NXT , 통합")
 
+
 class EtfTradingByTimeSlot(BaseModel):
     """[ka40007] ETF시간대별체결요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     stk_cls: SafeStr = Field(default="", description="종목분류")
     stk_nm: SafeStr = Field(default="", description="종목명")
     etfobjt_idex_nm: SafeStr = Field(default="", description="ETF대상지수명")
     etfobjt_idex_cd: SafeStr = Field(default="", description="ETF대상지수코드")
     objt_idex_pre_rt: SafeStr = Field(default="", description="대상지수대비율")
     wonju_pric: SafeStr = Field(default="", description="원주가격")
-    etftisl_cntr_array: Annotated[List[EtfTradingByTimeSlot_EtftislCntrArray], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETF시간대별체결배열")
+    etftisl_cntr_array: Annotated[List[EtfTradingByTimeSlot_EtftislCntrArray], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ETF시간대별체결배열"
+    )
+
 
 class EtfTransactionByDateRequest(BaseModel):
     """[ka40008] ETF일자별체결요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class EtfTransactionByDate_EtfnetprpsQtyArray(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7444,24 +11258,41 @@ class EtfTransactionByDate_EtfnetprpsQtyArray(BaseModel):
     for_netprps_qty: SafeStr = Field(default="", description="외인순매수수량")
     orgn_netprps_qty: SafeStr = Field(default="", description="기관순매수수량")
 
+
 class EtfTransactionByDate(BaseModel):
     """[ka40008] ETF일자별체결요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
     cntr_tm: SafeStr = Field(default="", description="체결시간")
     cur_prc: SafeStr = Field(default="", description="현재가")
     pre_sig: SafeStr = Field(default="", description="대비기호")
     pred_pre: SafeStr = Field(default="", description="전일대비")
     trde_qty: SafeStr = Field(default="", description="거래량")
-    etfnetprps_qty_array: Annotated[List[EtfTransactionByDate_EtfnetprpsQtyArray], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETF순매수수량배열")
+    etfnetprps_qty_array: Annotated[List[EtfTransactionByDate_EtfnetprpsQtyArray], BeforeValidator(_force_list)] = (
+        Field(default_factory=list, description="ETF순매수수량배열")
+    )
+
 
 class EtfTradingByTimeSlot1Request(BaseModel):
     """[ka40009] ETF시간대별체결요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class EtfTradingByTimeSlot1_Etfnavarray(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7478,19 +11309,36 @@ class EtfTradingByTimeSlot1_Etfnavarray(BaseModel):
     drstk: SafeStr = Field(default="", description="DR/주")
     wonju_pric: SafeStr = Field(default="", description="원주가격")
 
+
 class EtfTradingByTimeSlot1(BaseModel):
     """[ka40009] ETF시간대별체결요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    etfnavarray: Annotated[List[EtfTradingByTimeSlot1_Etfnavarray], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETFNAV배열")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    etfnavarray: Annotated[List[EtfTradingByTimeSlot1_Etfnavarray], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ETFNAV배열"
+    )
+
 
 class EtfTimeZoneTrendRequest1Request(BaseModel):
     """[ka40010] ETF시간대별추이요청 요청 모델 (내부 검증 및 Playground UI 용)"""
+
     model_config = ConfigDict(populate_by_name=True)
-    cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅")
+    cont_yn: SafeStr = Field(
+        default="",
+        alias="cont-yn",
+        description="연속조회여부 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 cont-yn값 세팅",
+    )
+    next_key: SafeStr = Field(
+        default="",
+        alias="next-key",
+        description="연속조회키 응답 Header의 연속조회여부값이 Y일 경우 다음데이터 요청시 응답 Header의 next-key값 세팅",
+    )
     stk_cd: SafeStr = Field(default="", description="종목코드")
+
 
 class EtfTimeZoneTrendRequest1_EtftislTrnsn(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -7500,22 +11348,31 @@ class EtfTimeZoneTrendRequest1_EtftislTrnsn(BaseModel):
     trde_qty: SafeStr = Field(default="", description="거래량")
     for_netprps: SafeStr = Field(default="", description="외인순매수")
 
+
 class EtfTimeZoneTrendRequest1(BaseModel):
     """[ka40010] ETF시간대별추이요청 응답 데이터 모델"""
+
     model_config = ConfigDict(populate_by_name=True)
     cont_yn: SafeStr = Field(default="", alias="cont-yn", description="연속조회여부 다음 데이터가 있을시 Y값 전달")
-    next_key: SafeStr = Field(default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달")
-    etftisl_trnsn: Annotated[List[EtfTimeZoneTrendRequest1_EtftislTrnsn], BeforeValidator(_force_list)] = Field(default_factory=list, description="ETF시간대별추이")
+    next_key: SafeStr = Field(
+        default="", alias="next-key", description="연속조회키 다음 데이터가 있을시 다음 키값 전달"
+    )
+    etftisl_trnsn: Annotated[List[EtfTimeZoneTrendRequest1_EtftislTrnsn], BeforeValidator(_force_list)] = Field(
+        default_factory=list, description="ETF시간대별추이"
+    )
+
 
 # ====================================================================
 # 2. Generated API Client (자동 생성된 중수준 레이어)
 # ====================================================================
+
 
 class KiwoomGeneratedClient:
     """
     명시적 파라미터(Named Arguments)를 통해 IDE 자동완성을 완벽하게 지원하는 중수준 클라이언트입니다.
     입력값은 자동으로 Pydantic 내부 검증을 거치며, 응답은 타입이 보장된 객체(BaseModel)로 반환됩니다.
     """
+
     def __init__(self, core: KiwoomCore):
         self.core = core
 
@@ -7530,7 +11387,7 @@ class KiwoomGeneratedClient:
         [au10001] 접근토큰 발급
         분류: OAuth 인증 - 접근토큰발급
         """
-        req = IssueAccessTokenRequest(grant_type=grant_type, appkey=appkey, secretkey=secretkey)
+        req = IssueAccessTokenRequest(**{"grant_type": grant_type, "appkey": appkey, "secretkey": secretkey})  # type: ignore
         raw_response = self.core.call("au10001", **req.model_dump(by_alias=True, exclude_none=True))
         return IssueAccessToken(**raw_response)
 
@@ -7539,7 +11396,7 @@ class KiwoomGeneratedClient:
         [au10002] 접근토큰폐기
         분류: OAuth 인증 - 접근토큰폐기
         """
-        req = RevokeAccessTokenRequest(appkey=appkey, secretkey=secretkey, token=token)
+        req = RevokeAccessTokenRequest(**{"appkey": appkey, "secretkey": secretkey, "token": token})  # type: ignore
         raw_response = self.core.call("au10002", **req.model_dump(by_alias=True, exclude_none=True))
         return RevokeAccessToken(**raw_response)
 
@@ -7548,70 +11405,122 @@ class KiwoomGeneratedClient:
         [ka00001] 계좌번호조회
         분류: 국내주식 - 계좌
         """
-        req = AccountNumberRequest(cont_yn=cont_yn, next_key=next_key)
+        req = AccountNumberRequest(**{"cont-yn": cont_yn, "next-key": next_key})  # type: ignore
         raw_response = self.core.call("ka00001", **req.model_dump(by_alias=True, exclude_none=True))
         return AccountNumber(**raw_response)
 
-    def daily_balance_return_rate(self, cont_yn: str = "", next_key: str = "", qry_dt: str = "") -> DailyBalanceReturnRate:
+    def daily_balance_return_rate(
+        self, cont_yn: str = "", next_key: str = "", qry_dt: str = ""
+    ) -> DailyBalanceReturnRate:
         """
         [ka01690] 일별잔고수익률
         분류: 국내주식 - 계좌
         """
-        req = DailyBalanceReturnRateRequest(cont_yn=cont_yn, next_key=next_key, qry_dt=qry_dt)
+        req = DailyBalanceReturnRateRequest(**{"cont-yn": cont_yn, "next-key": next_key, "qry_dt": qry_dt})  # type: ignore
         raw_response = self.core.call("ka01690", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyBalanceReturnRate(**raw_response)
 
-    def realized_profit_loss_by_date_item_date(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "") -> RealizedProfitLossByDateItemDate:
+    def realized_profit_loss_by_date_item_date(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = ""
+    ) -> RealizedProfitLossByDateItemDate:
         """
         [ka10072] 일자별종목별실현손익요청_일자
         분류: 국내주식 - 계좌
         """
-        req = RealizedProfitLossByDateItemDateRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt)
+        req = RealizedProfitLossByDateItemDateRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "strt_dt": strt_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka10072", **req.model_dump(by_alias=True, exclude_none=True))
         return RealizedProfitLossByDateItemDate(**raw_response)
 
-    def realized_profit_loss_by_date_item_period(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = "") -> RealizedProfitLossByDateItemPeriod:
+    def realized_profit_loss_by_date_item_period(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = ""
+    ) -> RealizedProfitLossByDateItemPeriod:
         """
         [ka10073] 일자별종목별실현손익요청_기간
         분류: 국내주식 - 계좌
         """
-        req = RealizedProfitLossByDateItemPeriodRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt, end_dt=end_dt)
+        req = RealizedProfitLossByDateItemPeriodRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "strt_dt": strt_dt, "end_dt": end_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka10073", **req.model_dump(by_alias=True, exclude_none=True))
         return RealizedProfitLossByDateItemPeriod(**raw_response)
 
-    def realized_profit_loss_by_date(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "") -> RealizedProfitLossByDate:
+    def realized_profit_loss_by_date(
+        self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = ""
+    ) -> RealizedProfitLossByDate:
         """
         [ka10074] 일자별실현손익요청
         분류: 국내주식 - 계좌
         """
-        req = RealizedProfitLossByDateRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt)
+        req = RealizedProfitLossByDateRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "strt_dt": strt_dt, "end_dt": end_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka10074", **req.model_dump(by_alias=True, exclude_none=True))
         return RealizedProfitLossByDate(**raw_response)
 
-    def non_confirmation(self, cont_yn: str = "", next_key: str = "", all_stk_tp: str = "", trde_tp: str = "", stk_cd: str = "", stex_tp: str = "") -> NonConfirmation:
+    def non_confirmation(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        all_stk_tp: str = "",
+        trde_tp: str = "",
+        stk_cd: str = "",
+        stex_tp: str = "",
+    ) -> NonConfirmation:
         """
         [ka10075] 미체결요청
         분류: 국내주식 - 계좌
         """
-        req = NonConfirmationRequest(cont_yn=cont_yn, next_key=next_key, all_stk_tp=all_stk_tp, trde_tp=trde_tp, stk_cd=stk_cd, stex_tp=stex_tp)
+        req = NonConfirmationRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "all_stk_tp": all_stk_tp,
+                "trde_tp": trde_tp,
+                "stk_cd": stk_cd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10075", **req.model_dump(by_alias=True, exclude_none=True))
         return NonConfirmation(**raw_response)
 
-    def conclusion(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", qry_tp: str = "", sell_tp: str = "", ord_no: str = "", stex_tp: str = "") -> Conclusion:
+    def conclusion(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        qry_tp: str = "",
+        sell_tp: str = "",
+        ord_no: str = "",
+        stex_tp: str = "",
+    ) -> Conclusion:
         """
         [ka10076] 체결요청
         분류: 국내주식 - 계좌
         """
-        req = ConclusionRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, qry_tp=qry_tp, sell_tp=sell_tp, ord_no=ord_no, stex_tp=stex_tp)
+        req = ConclusionRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "qry_tp": qry_tp,
+                "sell_tp": sell_tp,
+                "ord_no": ord_no,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10076", **req.model_dump(by_alias=True, exclude_none=True))
         return Conclusion(**raw_response)
 
-    def same_day_realized_profit_loss(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> SameDayRealizedProfitLoss:
+    def same_day_realized_profit_loss(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> SameDayRealizedProfitLoss:
         """
         [ka10077] 당일실현손익상세요청
         분류: 국내주식 - 계좌
         """
-        req = SameDayRealizedProfitLossRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = SameDayRealizedProfitLossRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10077", **req.model_dump(by_alias=True, exclude_none=True))
         return SameDayRealizedProfitLoss(**raw_response)
 
@@ -7620,25 +11529,37 @@ class KiwoomGeneratedClient:
         [ka10085] 계좌수익률요청
         분류: 국내주식 - 계좌
         """
-        req = AccountYieldRequest(cont_yn=cont_yn, next_key=next_key, stex_tp=stex_tp)
+        req = AccountYieldRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stex_tp": stex_tp})  # type: ignore
         raw_response = self.core.call("ka10085", **req.model_dump(by_alias=True, exclude_none=True))
         return AccountYield(**raw_response)
 
-    def unfilled_split_order_details(self, cont_yn: str = "", next_key: str = "", ord_no: str = "") -> UnfilledSplitOrderDetails:
+    def unfilled_split_order_details(
+        self, cont_yn: str = "", next_key: str = "", ord_no: str = ""
+    ) -> UnfilledSplitOrderDetails:
         """
         [ka10088] 미체결 분할주문 상세
         분류: 국내주식 - 계좌
         """
-        req = UnfilledSplitOrderDetailsRequest(cont_yn=cont_yn, next_key=next_key, ord_no=ord_no)
+        req = UnfilledSplitOrderDetailsRequest(**{"cont-yn": cont_yn, "next-key": next_key, "ord_no": ord_no})  # type: ignore
         raw_response = self.core.call("ka10088", **req.model_dump(by_alias=True, exclude_none=True))
         return UnfilledSplitOrderDetails(**raw_response)
 
-    def same_day_sales_log(self, cont_yn: str = "", next_key: str = "", base_dt: str = "", ottks_tp: str = "", ch_crd_tp: str = "") -> SameDaySalesLog:
+    def same_day_sales_log(
+        self, cont_yn: str = "", next_key: str = "", base_dt: str = "", ottks_tp: str = "", ch_crd_tp: str = ""
+    ) -> SameDaySalesLog:
         """
         [ka10170] 당일매매일지요청
         분류: 국내주식 - 계좌
         """
-        req = SameDaySalesLogRequest(cont_yn=cont_yn, next_key=next_key, base_dt=base_dt, ottks_tp=ottks_tp, ch_crd_tp=ch_crd_tp)
+        req = SameDaySalesLogRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "base_dt": base_dt,
+                "ottks_tp": ottks_tp,
+                "ch_crd_tp": ch_crd_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10170", **req.model_dump(by_alias=True, exclude_none=True))
         return SameDaySalesLog(**raw_response)
 
@@ -7647,16 +11568,20 @@ class KiwoomGeneratedClient:
         [kt00001] 예수금상세현황요청
         분류: 국내주식 - 계좌
         """
-        req = DetailedDepositRequest(cont_yn=cont_yn, next_key=next_key, qry_tp=qry_tp)
+        req = DetailedDepositRequest(**{"cont-yn": cont_yn, "next-key": next_key, "qry_tp": qry_tp})  # type: ignore
         raw_response = self.core.call("kt00001", **req.model_dump(by_alias=True, exclude_none=True))
         return DetailedDeposit(**raw_response)
 
-    def daily_estimated_deposited_asset(self, cont_yn: str = "", next_key: str = "", start_dt: str = "", end_dt: str = "") -> DailyEstimatedDepositedAsset:
+    def daily_estimated_deposited_asset(
+        self, cont_yn: str = "", next_key: str = "", start_dt: str = "", end_dt: str = ""
+    ) -> DailyEstimatedDepositedAsset:
         """
         [kt00002] 일별추정예탁자산현황요청
         분류: 국내주식 - 계좌
         """
-        req = DailyEstimatedDepositedAssetRequest(cont_yn=cont_yn, next_key=next_key, start_dt=start_dt, end_dt=end_dt)
+        req = DailyEstimatedDepositedAssetRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "start_dt": start_dt, "end_dt": end_dt}
+        )  # type: ignore
         raw_response = self.core.call("kt00002", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyEstimatedDepositedAsset(**raw_response)
 
@@ -7665,16 +11590,20 @@ class KiwoomGeneratedClient:
         [kt00003] 추정자산조회요청
         분류: 국내주식 - 계좌
         """
-        req = EstimatedAssetRequest(cont_yn=cont_yn, next_key=next_key, qry_tp=qry_tp)
+        req = EstimatedAssetRequest(**{"cont-yn": cont_yn, "next-key": next_key, "qry_tp": qry_tp})  # type: ignore
         raw_response = self.core.call("kt00003", **req.model_dump(by_alias=True, exclude_none=True))
         return EstimatedAsset(**raw_response)
 
-    def account_evaluation(self, cont_yn: str = "", next_key: str = "", qry_tp: str = "", dmst_stex_tp: str = "") -> AccountEvaluation:
+    def account_evaluation(
+        self, cont_yn: str = "", next_key: str = "", qry_tp: str = "", dmst_stex_tp: str = ""
+    ) -> AccountEvaluation:
         """
         [kt00004] 계좌평가현황요청
         분류: 국내주식 - 계좌
         """
-        req = AccountEvaluationRequest(cont_yn=cont_yn, next_key=next_key, qry_tp=qry_tp, dmst_stex_tp=dmst_stex_tp)
+        req = AccountEvaluationRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "qry_tp": qry_tp, "dmst_stex_tp": dmst_stex_tp}
+        )  # type: ignore
         raw_response = self.core.call("kt00004", **req.model_dump(by_alias=True, exclude_none=True))
         return AccountEvaluation(**raw_response)
 
@@ -7683,61 +11612,142 @@ class KiwoomGeneratedClient:
         [kt00005] 체결잔고요청
         분류: 국내주식 - 계좌
         """
-        req = TransactionBalanceRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp)
+        req = TransactionBalanceRequest(**{"cont-yn": cont_yn, "next-key": next_key, "dmst_stex_tp": dmst_stex_tp})  # type: ignore
         raw_response = self.core.call("kt00005", **req.model_dump(by_alias=True, exclude_none=True))
         return TransactionBalance(**raw_response)
 
-    def order_details_by_account(self, cont_yn: str = "", next_key: str = "", ord_dt: str = "", qry_tp: str = "", stk_bond_tp: str = "", sell_tp: str = "", stk_cd: str = "", fr_ord_no: str = "", dmst_stex_tp: str = "") -> OrderDetailsByAccount:
+    def order_details_by_account(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        ord_dt: str = "",
+        qry_tp: str = "",
+        stk_bond_tp: str = "",
+        sell_tp: str = "",
+        stk_cd: str = "",
+        fr_ord_no: str = "",
+        dmst_stex_tp: str = "",
+    ) -> OrderDetailsByAccount:
         """
         [kt00007] 계좌별주문체결내역상세요청
         분류: 국내주식 - 계좌
         """
-        req = OrderDetailsByAccountRequest(cont_yn=cont_yn, next_key=next_key, ord_dt=ord_dt, qry_tp=qry_tp, stk_bond_tp=stk_bond_tp, sell_tp=sell_tp, stk_cd=stk_cd, fr_ord_no=fr_ord_no, dmst_stex_tp=dmst_stex_tp)
+        req = OrderDetailsByAccountRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "ord_dt": ord_dt,
+                "qry_tp": qry_tp,
+                "stk_bond_tp": stk_bond_tp,
+                "sell_tp": sell_tp,
+                "stk_cd": stk_cd,
+                "fr_ord_no": fr_ord_no,
+                "dmst_stex_tp": dmst_stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt00007", **req.model_dump(by_alias=True, exclude_none=True))
         return OrderDetailsByAccount(**raw_response)
 
-    def next_day_payment_schedule_details_by_account(self, cont_yn: str = "", next_key: str = "", strt_dcd_seq: str = "") -> NextDayPaymentScheduleDetailsByAccount:
+    def next_day_payment_schedule_details_by_account(
+        self, cont_yn: str = "", next_key: str = "", strt_dcd_seq: str = ""
+    ) -> NextDayPaymentScheduleDetailsByAccount:
         """
         [kt00008] 계좌별익일결제예정내역요청
         분류: 국내주식 - 계좌
         """
-        req = NextDayPaymentScheduleDetailsByAccountRequest(cont_yn=cont_yn, next_key=next_key, strt_dcd_seq=strt_dcd_seq)
+        req = NextDayPaymentScheduleDetailsByAccountRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "strt_dcd_seq": strt_dcd_seq}
+        )  # type: ignore
         raw_response = self.core.call("kt00008", **req.model_dump(by_alias=True, exclude_none=True))
         return NextDayPaymentScheduleDetailsByAccount(**raw_response)
 
-    def order_execution_by_account(self, cont_yn: str = "", next_key: str = "", ord_dt: str = "", stk_bond_tp: str = "", mrkt_tp: str = "", sell_tp: str = "", qry_tp: str = "", stk_cd: str = "", fr_ord_no: str = "", dmst_stex_tp: str = "") -> OrderExecutionByAccount:
+    def order_execution_by_account(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        ord_dt: str = "",
+        stk_bond_tp: str = "",
+        mrkt_tp: str = "",
+        sell_tp: str = "",
+        qry_tp: str = "",
+        stk_cd: str = "",
+        fr_ord_no: str = "",
+        dmst_stex_tp: str = "",
+    ) -> OrderExecutionByAccount:
         """
         [kt00009] 계좌별주문체결현황요청
         분류: 국내주식 - 계좌
         """
-        req = OrderExecutionByAccountRequest(cont_yn=cont_yn, next_key=next_key, ord_dt=ord_dt, stk_bond_tp=stk_bond_tp, mrkt_tp=mrkt_tp, sell_tp=sell_tp, qry_tp=qry_tp, stk_cd=stk_cd, fr_ord_no=fr_ord_no, dmst_stex_tp=dmst_stex_tp)
+        req = OrderExecutionByAccountRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "ord_dt": ord_dt,
+                "stk_bond_tp": stk_bond_tp,
+                "mrkt_tp": mrkt_tp,
+                "sell_tp": sell_tp,
+                "qry_tp": qry_tp,
+                "stk_cd": stk_cd,
+                "fr_ord_no": fr_ord_no,
+                "dmst_stex_tp": dmst_stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt00009", **req.model_dump(by_alias=True, exclude_none=True))
         return OrderExecutionByAccount(**raw_response)
 
-    def order_withdrawal_amount(self, cont_yn: str = "", next_key: str = "", io_amt: str = "", stk_cd: str = "", trde_tp: str = "", trde_qty: str = "", uv: str = "", exp_buy_unp: str = "") -> OrderWithdrawalAmount:
+    def order_withdrawal_amount(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        io_amt: str = "",
+        stk_cd: str = "",
+        trde_tp: str = "",
+        trde_qty: str = "",
+        uv: str = "",
+        exp_buy_unp: str = "",
+    ) -> OrderWithdrawalAmount:
         """
         [kt00010] 주문인출가능금액요청
         분류: 국내주식 - 계좌
         """
-        req = OrderWithdrawalAmountRequest(cont_yn=cont_yn, next_key=next_key, io_amt=io_amt, stk_cd=stk_cd, trde_tp=trde_tp, trde_qty=trde_qty, uv=uv, exp_buy_unp=exp_buy_unp)
+        req = OrderWithdrawalAmountRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "io_amt": io_amt,
+                "stk_cd": stk_cd,
+                "trde_tp": trde_tp,
+                "trde_qty": trde_qty,
+                "uv": uv,
+                "exp_buy_unp": exp_buy_unp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt00010", **req.model_dump(by_alias=True, exclude_none=True))
         return OrderWithdrawalAmount(**raw_response)
 
-    def quantity_available_order_by_margin_rate(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", uv: str = "") -> QuantityAvailableOrderByMarginRate:
+    def quantity_available_order_by_margin_rate(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", uv: str = ""
+    ) -> QuantityAvailableOrderByMarginRate:
         """
         [kt00011] 증거금율별주문가능수량조회요청
         분류: 국내주식 - 계좌
         """
-        req = QuantityAvailableOrderByMarginRateRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, uv=uv)
+        req = QuantityAvailableOrderByMarginRateRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "uv": uv}
+        )  # type: ignore
         raw_response = self.core.call("kt00011", **req.model_dump(by_alias=True, exclude_none=True))
         return QuantityAvailableOrderByMarginRate(**raw_response)
 
-    def quantity_available_order_by_credit_deposit_rate(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", uv: str = "") -> QuantityAvailableOrderByCreditDepositRate:
+    def quantity_available_order_by_credit_deposit_rate(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", uv: str = ""
+    ) -> QuantityAvailableOrderByCreditDepositRate:
         """
         [kt00012] 신용보증금율별주문가능수량조회요청
         분류: 국내주식 - 계좌
         """
-        req = QuantityAvailableOrderByCreditDepositRateRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, uv=uv)
+        req = QuantityAvailableOrderByCreditDepositRateRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "uv": uv}
+        )  # type: ignore
         raw_response = self.core.call("kt00012", **req.model_dump(by_alias=True, exclude_none=True))
         return QuantityAvailableOrderByCreditDepositRate(**raw_response)
 
@@ -7746,25 +11756,54 @@ class KiwoomGeneratedClient:
         [kt00013] 증거금세부내역조회요청
         분류: 국내주식 - 계좌
         """
-        req = MarginDetailsRequest(cont_yn=cont_yn, next_key=next_key)
+        req = MarginDetailsRequest(**{"cont-yn": cont_yn, "next-key": next_key})  # type: ignore
         raw_response = self.core.call("kt00013", **req.model_dump(by_alias=True, exclude_none=True))
         return MarginDetails(**raw_response)
 
-    def comprehensive_consignment_transaction_details(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", tp: str = "", stk_cd: str = "", crnc_cd: str = "", gds_tp: str = "", frgn_stex_code: str = "", dmst_stex_tp: str = "") -> ComprehensiveConsignmentTransactionDetails:
+    def comprehensive_consignment_transaction_details(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        tp: str = "",
+        stk_cd: str = "",
+        crnc_cd: str = "",
+        gds_tp: str = "",
+        frgn_stex_code: str = "",
+        dmst_stex_tp: str = "",
+    ) -> ComprehensiveConsignmentTransactionDetails:
         """
         [kt00015] 위탁종합거래내역요청
         분류: 국내주식 - 계좌
         """
-        req = ComprehensiveConsignmentTransactionDetailsRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, tp=tp, stk_cd=stk_cd, crnc_cd=crnc_cd, gds_tp=gds_tp, frgn_stex_code=frgn_stex_code, dmst_stex_tp=dmst_stex_tp)
+        req = ComprehensiveConsignmentTransactionDetailsRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "tp": tp,
+                "stk_cd": stk_cd,
+                "crnc_cd": crnc_cd,
+                "gds_tp": gds_tp,
+                "frgn_stex_code": frgn_stex_code,
+                "dmst_stex_tp": dmst_stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt00015", **req.model_dump(by_alias=True, exclude_none=True))
         return ComprehensiveConsignmentTransactionDetails(**raw_response)
 
-    def detailed_daily_account_returns(self, cont_yn: str = "", next_key: str = "", fr_dt: str = "", to_dt: str = "") -> DetailedDailyAccountReturns:
+    def detailed_daily_account_returns(
+        self, cont_yn: str = "", next_key: str = "", fr_dt: str = "", to_dt: str = ""
+    ) -> DetailedDailyAccountReturns:
         """
         [kt00016] 일별계좌수익률상세현황요청
         분류: 국내주식 - 계좌
         """
-        req = DetailedDailyAccountReturnsRequest(cont_yn=cont_yn, next_key=next_key, fr_dt=fr_dt, to_dt=to_dt)
+        req = DetailedDailyAccountReturnsRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "fr_dt": fr_dt, "to_dt": to_dt}
+        )  # type: ignore
         raw_response = self.core.call("kt00016", **req.model_dump(by_alias=True, exclude_none=True))
         return DetailedDailyAccountReturns(**raw_response)
 
@@ -7773,16 +11812,20 @@ class KiwoomGeneratedClient:
         [kt00017] 계좌별당일현황요청
         분류: 국내주식 - 계좌
         """
-        req = DailyByAccountRequest(cont_yn=cont_yn, next_key=next_key)
+        req = DailyByAccountRequest(**{"cont-yn": cont_yn, "next-key": next_key})  # type: ignore
         raw_response = self.core.call("kt00017", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyByAccount(**raw_response)
 
-    def account_evaluation_balance_details(self, cont_yn: str = "", next_key: str = "", qry_tp: str = "", dmst_stex_tp: str = "") -> AccountEvaluationBalanceDetails:
+    def account_evaluation_balance_details(
+        self, cont_yn: str = "", next_key: str = "", qry_tp: str = "", dmst_stex_tp: str = ""
+    ) -> AccountEvaluationBalanceDetails:
         """
         [kt00018] 계좌평가잔고내역요청
         분류: 국내주식 - 계좌
         """
-        req = AccountEvaluationBalanceDetailsRequest(cont_yn=cont_yn, next_key=next_key, qry_tp=qry_tp, dmst_stex_tp=dmst_stex_tp)
+        req = AccountEvaluationBalanceDetailsRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "qry_tp": qry_tp, "dmst_stex_tp": dmst_stex_tp}
+        )  # type: ignore
         raw_response = self.core.call("kt00018", **req.model_dump(by_alias=True, exclude_none=True))
         return AccountEvaluationBalanceDetails(**raw_response)
 
@@ -7791,7 +11834,7 @@ class KiwoomGeneratedClient:
         [kt50020] 금현물 잔고확인
         분류: 국내주식 - 계좌
         """
-        req = CheckGoldSpotBalanceRequest(cont_yn=cont_yn, next_key=next_key)
+        req = CheckGoldSpotBalanceRequest(**{"cont-yn": cont_yn, "next-key": next_key})  # type: ignore
         raw_response = self.core.call("kt50020", **req.model_dump(by_alias=True, exclude_none=True))
         return CheckGoldSpotBalance(**raw_response)
 
@@ -7800,61 +11843,164 @@ class KiwoomGeneratedClient:
         [kt50021] 금현물 예수금
         분류: 국내주식 - 계좌
         """
-        req = GoldSpotDepositRequest(cont_yn=cont_yn, next_key=next_key)
+        req = GoldSpotDepositRequest(**{"cont-yn": cont_yn, "next-key": next_key})  # type: ignore
         raw_response = self.core.call("kt50021", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotDeposit(**raw_response)
 
-    def all_gold_spot_orders(self, cont_yn: str = "", next_key: str = "", ord_dt: str = "", qry_tp: str = "", mrkt_deal_tp: str = "", stk_bond_tp: str = "", slby_tp: str = "", stk_cd: str = "", fr_ord_no: str = "", dmst_stex_tp: str = "") -> AllGoldSpotOrders:
+    def all_gold_spot_orders(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        ord_dt: str = "",
+        qry_tp: str = "",
+        mrkt_deal_tp: str = "",
+        stk_bond_tp: str = "",
+        slby_tp: str = "",
+        stk_cd: str = "",
+        fr_ord_no: str = "",
+        dmst_stex_tp: str = "",
+    ) -> AllGoldSpotOrders:
         """
         [kt50030] 금현물 주문체결전체조회
         분류: 국내주식 - 계좌
         """
-        req = AllGoldSpotOrdersRequest(cont_yn=cont_yn, next_key=next_key, ord_dt=ord_dt, qry_tp=qry_tp, mrkt_deal_tp=mrkt_deal_tp, stk_bond_tp=stk_bond_tp, slby_tp=slby_tp, stk_cd=stk_cd, fr_ord_no=fr_ord_no, dmst_stex_tp=dmst_stex_tp)
+        req = AllGoldSpotOrdersRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "ord_dt": ord_dt,
+                "qry_tp": qry_tp,
+                "mrkt_deal_tp": mrkt_deal_tp,
+                "stk_bond_tp": stk_bond_tp,
+                "slby_tp": slby_tp,
+                "stk_cd": stk_cd,
+                "fr_ord_no": fr_ord_no,
+                "dmst_stex_tp": dmst_stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50030", **req.model_dump(by_alias=True, exclude_none=True))
         return AllGoldSpotOrders(**raw_response)
 
-    def gold_spot_order_execution(self, cont_yn: str = "", next_key: str = "", ord_dt: str = "", qry_tp: str = "", stk_bond_tp: str = "", sell_tp: str = "", stk_cd: str = "", fr_ord_no: str = "", dmst_stex_tp: str = "") -> GoldSpotOrderExecution:
+    def gold_spot_order_execution(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        ord_dt: str = "",
+        qry_tp: str = "",
+        stk_bond_tp: str = "",
+        sell_tp: str = "",
+        stk_cd: str = "",
+        fr_ord_no: str = "",
+        dmst_stex_tp: str = "",
+    ) -> GoldSpotOrderExecution:
         """
         [kt50031] 금현물 주문체결조회
         분류: 국내주식 - 계좌
         """
-        req = GoldSpotOrderExecutionRequest(cont_yn=cont_yn, next_key=next_key, ord_dt=ord_dt, qry_tp=qry_tp, stk_bond_tp=stk_bond_tp, sell_tp=sell_tp, stk_cd=stk_cd, fr_ord_no=fr_ord_no, dmst_stex_tp=dmst_stex_tp)
+        req = GoldSpotOrderExecutionRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "ord_dt": ord_dt,
+                "qry_tp": qry_tp,
+                "stk_bond_tp": stk_bond_tp,
+                "sell_tp": sell_tp,
+                "stk_cd": stk_cd,
+                "fr_ord_no": fr_ord_no,
+                "dmst_stex_tp": dmst_stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50031", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotOrderExecution(**raw_response)
 
-    def gold_spot_transaction_history(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", tp: str = "", stk_cd: str = "") -> GoldSpotTransactionHistory:
+    def gold_spot_transaction_history(
+        self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", tp: str = "", stk_cd: str = ""
+    ) -> GoldSpotTransactionHistory:
         """
         [kt50032] 금현물 거래내역조회
         분류: 국내주식 - 계좌
         """
-        req = GoldSpotTransactionHistoryRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, tp=tp, stk_cd=stk_cd)
+        req = GoldSpotTransactionHistoryRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "tp": tp,
+                "stk_cd": stk_cd,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50032", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotTransactionHistory(**raw_response)
 
-    def gold_spot_non_trading(self, cont_yn: str = "", next_key: str = "", ord_dt: str = "", qry_tp: str = "", mrkt_deal_tp: str = "", stk_bond_tp: str = "", sell_tp: str = "", stk_cd: str = "", fr_ord_no: str = "", dmst_stex_tp: str = "") -> GoldSpotNonTrading:
+    def gold_spot_non_trading(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        ord_dt: str = "",
+        qry_tp: str = "",
+        mrkt_deal_tp: str = "",
+        stk_bond_tp: str = "",
+        sell_tp: str = "",
+        stk_cd: str = "",
+        fr_ord_no: str = "",
+        dmst_stex_tp: str = "",
+    ) -> GoldSpotNonTrading:
         """
         [kt50075] 금현물 미체결조회
         분류: 국내주식 - 계좌
         """
-        req = GoldSpotNonTradingRequest(cont_yn=cont_yn, next_key=next_key, ord_dt=ord_dt, qry_tp=qry_tp, mrkt_deal_tp=mrkt_deal_tp, stk_bond_tp=stk_bond_tp, sell_tp=sell_tp, stk_cd=stk_cd, fr_ord_no=fr_ord_no, dmst_stex_tp=dmst_stex_tp)
+        req = GoldSpotNonTradingRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "ord_dt": ord_dt,
+                "qry_tp": qry_tp,
+                "mrkt_deal_tp": mrkt_deal_tp,
+                "stk_bond_tp": stk_bond_tp,
+                "sell_tp": sell_tp,
+                "stk_cd": stk_cd,
+                "fr_ord_no": fr_ord_no,
+                "dmst_stex_tp": dmst_stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50075", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotNonTrading(**raw_response)
 
-    def short_selling_trend(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tm_tp: str = "", strt_dt: str = "", end_dt: str = "") -> ShortSellingTrend:
+    def short_selling_trend(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        tm_tp: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+    ) -> ShortSellingTrend:
         """
         [ka10014] 공매도추이요청
         분류: 국내주식 - 공매도
         """
-        req = ShortSellingTrendRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tm_tp=tm_tp, strt_dt=strt_dt, end_dt=end_dt)
+        req = ShortSellingTrendRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "tm_tp": tm_tp,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10014", **req.model_dump(by_alias=True, exclude_none=True))
         return ShortSellingTrend(**raw_response)
 
-    def foreign_stock_trading_trends_by_item(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> ForeignStockTradingTrendsByItem:
+    def foreign_stock_trading_trends_by_item(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> ForeignStockTradingTrendsByItem:
         """
         [ka10008] 주식외국인종목별매매동향
         분류: 국내주식 - 기관/외국인
         """
-        req = ForeignStockTradingTrendsByItemRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = ForeignStockTradingTrendsByItemRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10008", **req.model_dump(by_alias=True, exclude_none=True))
         return ForeignStockTradingTrendsByItem(**raw_response)
 
@@ -7863,16 +12009,41 @@ class KiwoomGeneratedClient:
         [ka10009] 주식기관요청
         분류: 국내주식 - 기관/외국인
         """
-        req = StockInstitutionRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = StockInstitutionRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10009", **req.model_dump(by_alias=True, exclude_none=True))
         return StockInstitution(**raw_response)
 
-    def continuous_trading_by_institutional_foreigners(self, cont_yn: str = "", next_key: str = "", dt: str = "", strt_dt: str = "", end_dt: str = "", mrkt_tp: str = "", netslmt_tp: str = "", stk_inds_tp: str = "", amt_qty_tp: str = "", stex_tp: str = "") -> ContinuousTradingByInstitutionalForeigners:
+    def continuous_trading_by_institutional_foreigners(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dt: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        mrkt_tp: str = "",
+        netslmt_tp: str = "",
+        stk_inds_tp: str = "",
+        amt_qty_tp: str = "",
+        stex_tp: str = "",
+    ) -> ContinuousTradingByInstitutionalForeigners:
         """
         [ka10131] 기관외국인연속매매현황요청
         분류: 국내주식 - 기관/외국인
         """
-        req = ContinuousTradingByInstitutionalForeignersRequest(cont_yn=cont_yn, next_key=next_key, dt=dt, strt_dt=strt_dt, end_dt=end_dt, mrkt_tp=mrkt_tp, netslmt_tp=netslmt_tp, stk_inds_tp=stk_inds_tp, amt_qty_tp=amt_qty_tp, stex_tp=stex_tp)
+        req = ContinuousTradingByInstitutionalForeignersRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dt": dt,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "mrkt_tp": mrkt_tp,
+                "netslmt_tp": netslmt_tp,
+                "stk_inds_tp": stk_inds_tp,
+                "amt_qty_tp": amt_qty_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10131", **req.model_dump(by_alias=True, exclude_none=True))
         return ContinuousTradingByInstitutionalForeigners(**raw_response)
 
@@ -7881,250 +12052,696 @@ class KiwoomGeneratedClient:
         [ka52301] 금현물투자자현황
         분류: 국내주식 - 기관/외국인
         """
-        req = CurrentGoldSpotInvestorsRequest(cont_yn=cont_yn, next_key=next_key)
+        req = CurrentGoldSpotInvestorsRequest(**{"cont-yn": cont_yn, "next-key": next_key})  # type: ignore
         raw_response = self.core.call("ka52301", **req.model_dump(by_alias=True, exclude_none=True))
         return CurrentGoldSpotInvestors(**raw_response)
 
-    def loan_lending_transaction_trend(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", all_tp: str = "") -> LoanLendingTransactionTrend:
+    def loan_lending_transaction_trend(
+        self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", all_tp: str = ""
+    ) -> LoanLendingTransactionTrend:
         """
         [ka10068] 대차거래추이요청
         분류: 국내주식 - 대차거래
         """
-        req = LoanLendingTransactionTrendRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, all_tp=all_tp)
+        req = LoanLendingTransactionTrendRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "strt_dt": strt_dt, "end_dt": end_dt, "all_tp": all_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka10068", **req.model_dump(by_alias=True, exclude_none=True))
         return LoanLendingTransactionTrend(**raw_response)
 
-    def top10_borrowing_stocks(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", mrkt_tp: str = "") -> Top10BorrowingStocks:
+    def top10_borrowing_stocks(
+        self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", mrkt_tp: str = ""
+    ) -> Top10BorrowingStocks:
         """
         [ka10069] 대차거래상위10종목요청
         분류: 국내주식 - 대차거래
         """
-        req = Top10BorrowingStocksRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, mrkt_tp=mrkt_tp)
+        req = Top10BorrowingStocksRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "strt_dt": strt_dt, "end_dt": end_dt, "mrkt_tp": mrkt_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka10069", **req.model_dump(by_alias=True, exclude_none=True))
         return Top10BorrowingStocks(**raw_response)
 
-    def loan_lending_transaction_trend_by_item(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", all_tp: str = "", stk_cd: str = "") -> LoanLendingTransactionTrendByItem:
+    def loan_lending_transaction_trend_by_item(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        all_tp: str = "",
+        stk_cd: str = "",
+    ) -> LoanLendingTransactionTrendByItem:
         """
         [ka20068] 대차거래추이요청(종목별)
         분류: 국내주식 - 대차거래
         """
-        req = LoanLendingTransactionTrendByItemRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, all_tp=all_tp, stk_cd=stk_cd)
+        req = LoanLendingTransactionTrendByItemRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "all_tp": all_tp,
+                "stk_cd": stk_cd,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka20068", **req.model_dump(by_alias=True, exclude_none=True))
         return LoanLendingTransactionTrendByItem(**raw_response)
 
-    def loan_transaction_details(self, cont_yn: str = "", next_key: str = "", dt: str = "", mrkt_tp: str = "") -> LoanTransactionDetails:
+    def loan_transaction_details(
+        self, cont_yn: str = "", next_key: str = "", dt: str = "", mrkt_tp: str = ""
+    ) -> LoanTransactionDetails:
         """
         [ka90012] 대차거래내역요청
         분류: 국내주식 - 대차거래
         """
-        req = LoanTransactionDetailsRequest(cont_yn=cont_yn, next_key=next_key, dt=dt, mrkt_tp=mrkt_tp)
+        req = LoanTransactionDetailsRequest(**{"cont-yn": cont_yn, "next-key": next_key, "dt": dt, "mrkt_tp": mrkt_tp})  # type: ignore
         raw_response = self.core.call("ka90012", **req.model_dump(by_alias=True, exclude_none=True))
         return LoanTransactionDetails(**raw_response)
 
-    def higher_quota_balance(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", sort_tp: str = "", trde_qty_tp: str = "", stk_cnd: str = "", crd_cnd: str = "", stex_tp: str = "") -> HigherQuotaBalance:
+    def higher_quota_balance(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        sort_tp: str = "",
+        trde_qty_tp: str = "",
+        stk_cnd: str = "",
+        crd_cnd: str = "",
+        stex_tp: str = "",
+    ) -> HigherQuotaBalance:
         """
         [ka10020] 호가잔량상위요청
         분류: 국내주식 - 순위정보
         """
-        req = HigherQuotaBalanceRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, sort_tp=sort_tp, trde_qty_tp=trde_qty_tp, stk_cnd=stk_cnd, crd_cnd=crd_cnd, stex_tp=stex_tp)
+        req = HigherQuotaBalanceRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "sort_tp": sort_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "stk_cnd": stk_cnd,
+                "crd_cnd": crd_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10020", **req.model_dump(by_alias=True, exclude_none=True))
         return HigherQuotaBalance(**raw_response)
 
-    def sudden_increase_quotation_balance(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", trde_tp: str = "", sort_tp: str = "", tm_tp: str = "", trde_qty_tp: str = "", stk_cnd: str = "", stex_tp: str = "") -> SuddenIncreaseQuotationBalance:
+    def sudden_increase_quotation_balance(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        trde_tp: str = "",
+        sort_tp: str = "",
+        tm_tp: str = "",
+        trde_qty_tp: str = "",
+        stk_cnd: str = "",
+        stex_tp: str = "",
+    ) -> SuddenIncreaseQuotationBalance:
         """
         [ka10021] 호가잔량급증요청
         분류: 국내주식 - 순위정보
         """
-        req = SuddenIncreaseQuotationBalanceRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, trde_tp=trde_tp, sort_tp=sort_tp, tm_tp=tm_tp, trde_qty_tp=trde_qty_tp, stk_cnd=stk_cnd, stex_tp=stex_tp)
+        req = SuddenIncreaseQuotationBalanceRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "trde_tp": trde_tp,
+                "sort_tp": sort_tp,
+                "tm_tp": tm_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "stk_cnd": stk_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10021", **req.model_dump(by_alias=True, exclude_none=True))
         return SuddenIncreaseQuotationBalance(**raw_response)
 
-    def sudden_increase_remaining_capacity(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", rt_tp: str = "", tm_tp: str = "", trde_qty_tp: str = "", stk_cnd: str = "", stex_tp: str = "") -> SuddenIncreaseRemainingCapacity:
+    def sudden_increase_remaining_capacity(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        rt_tp: str = "",
+        tm_tp: str = "",
+        trde_qty_tp: str = "",
+        stk_cnd: str = "",
+        stex_tp: str = "",
+    ) -> SuddenIncreaseRemainingCapacity:
         """
         [ka10022] 잔량율급증요청
         분류: 국내주식 - 순위정보
         """
-        req = SuddenIncreaseRemainingCapacityRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, rt_tp=rt_tp, tm_tp=tm_tp, trde_qty_tp=trde_qty_tp, stk_cnd=stk_cnd, stex_tp=stex_tp)
+        req = SuddenIncreaseRemainingCapacityRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "rt_tp": rt_tp,
+                "tm_tp": tm_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "stk_cnd": stk_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10022", **req.model_dump(by_alias=True, exclude_none=True))
         return SuddenIncreaseRemainingCapacity(**raw_response)
 
-    def sudden_increase_trading_volume(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", sort_tp: str = "", tm_tp: str = "", trde_qty_tp: str = "", tm: str = "", stk_cnd: str = "", pric_tp: str = "", stex_tp: str = "") -> SuddenIncreaseTradingVolume:
+    def sudden_increase_trading_volume(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        sort_tp: str = "",
+        tm_tp: str = "",
+        trde_qty_tp: str = "",
+        tm: str = "",
+        stk_cnd: str = "",
+        pric_tp: str = "",
+        stex_tp: str = "",
+    ) -> SuddenIncreaseTradingVolume:
         """
         [ka10023] 거래량급증요청
         분류: 국내주식 - 순위정보
         """
-        req = SuddenIncreaseTradingVolumeRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, sort_tp=sort_tp, tm_tp=tm_tp, trde_qty_tp=trde_qty_tp, tm=tm, stk_cnd=stk_cnd, pric_tp=pric_tp, stex_tp=stex_tp)
+        req = SuddenIncreaseTradingVolumeRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "sort_tp": sort_tp,
+                "tm_tp": tm_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "tm": tm,
+                "stk_cnd": stk_cnd,
+                "pric_tp": pric_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10023", **req.model_dump(by_alias=True, exclude_none=True))
         return SuddenIncreaseTradingVolume(**raw_response)
 
-    def higher_fluctuation_rate_compared_previous_day(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", sort_tp: str = "", trde_qty_cnd: str = "", stk_cnd: str = "", crd_cnd: str = "", updown_incls: str = "", pric_cnd: str = "", trde_prica_cnd: str = "", stex_tp: str = "") -> HigherFluctuationRateComparedPreviousDay:
+    def higher_fluctuation_rate_compared_previous_day(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        sort_tp: str = "",
+        trde_qty_cnd: str = "",
+        stk_cnd: str = "",
+        crd_cnd: str = "",
+        updown_incls: str = "",
+        pric_cnd: str = "",
+        trde_prica_cnd: str = "",
+        stex_tp: str = "",
+    ) -> HigherFluctuationRateComparedPreviousDay:
         """
         [ka10027] 전일대비등락률상위요청
         분류: 국내주식 - 순위정보
         """
-        req = HigherFluctuationRateComparedPreviousDayRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, sort_tp=sort_tp, trde_qty_cnd=trde_qty_cnd, stk_cnd=stk_cnd, crd_cnd=crd_cnd, updown_incls=updown_incls, pric_cnd=pric_cnd, trde_prica_cnd=trde_prica_cnd, stex_tp=stex_tp)
+        req = HigherFluctuationRateComparedPreviousDayRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "sort_tp": sort_tp,
+                "trde_qty_cnd": trde_qty_cnd,
+                "stk_cnd": stk_cnd,
+                "crd_cnd": crd_cnd,
+                "updown_incls": updown_incls,
+                "pric_cnd": pric_cnd,
+                "trde_prica_cnd": trde_prica_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10027", **req.model_dump(by_alias=True, exclude_none=True))
         return HigherFluctuationRateComparedPreviousDay(**raw_response)
 
-    def higher_expected_transaction_rate(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", sort_tp: str = "", trde_qty_cnd: str = "", stk_cnd: str = "", crd_cnd: str = "", pric_cnd: str = "", stex_tp: str = "") -> HigherExpectedTransactionRate:
+    def higher_expected_transaction_rate(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        sort_tp: str = "",
+        trde_qty_cnd: str = "",
+        stk_cnd: str = "",
+        crd_cnd: str = "",
+        pric_cnd: str = "",
+        stex_tp: str = "",
+    ) -> HigherExpectedTransactionRate:
         """
         [ka10029] 예상체결등락률상위요청
         분류: 국내주식 - 순위정보
         """
-        req = HigherExpectedTransactionRateRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, sort_tp=sort_tp, trde_qty_cnd=trde_qty_cnd, stk_cnd=stk_cnd, crd_cnd=crd_cnd, pric_cnd=pric_cnd, stex_tp=stex_tp)
+        req = HigherExpectedTransactionRateRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "sort_tp": sort_tp,
+                "trde_qty_cnd": trde_qty_cnd,
+                "stk_cnd": stk_cnd,
+                "crd_cnd": crd_cnd,
+                "pric_cnd": pric_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10029", **req.model_dump(by_alias=True, exclude_none=True))
         return HigherExpectedTransactionRate(**raw_response)
 
-    def high_transaction_volume_day(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", sort_tp: str = "", mang_stk_incls: str = "", crd_tp: str = "", trde_qty_tp: str = "", pric_tp: str = "", trde_prica_tp: str = "", mrkt_open_tp: str = "", stex_tp: str = "") -> HighTransactionVolumeDay:
+    def high_transaction_volume_day(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        sort_tp: str = "",
+        mang_stk_incls: str = "",
+        crd_tp: str = "",
+        trde_qty_tp: str = "",
+        pric_tp: str = "",
+        trde_prica_tp: str = "",
+        mrkt_open_tp: str = "",
+        stex_tp: str = "",
+    ) -> HighTransactionVolumeDay:
         """
         [ka10030] 당일거래량상위요청
         분류: 국내주식 - 순위정보
         """
-        req = HighTransactionVolumeDayRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, sort_tp=sort_tp, mang_stk_incls=mang_stk_incls, crd_tp=crd_tp, trde_qty_tp=trde_qty_tp, pric_tp=pric_tp, trde_prica_tp=trde_prica_tp, mrkt_open_tp=mrkt_open_tp, stex_tp=stex_tp)
+        req = HighTransactionVolumeDayRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "sort_tp": sort_tp,
+                "mang_stk_incls": mang_stk_incls,
+                "crd_tp": crd_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "pric_tp": pric_tp,
+                "trde_prica_tp": trde_prica_tp,
+                "mrkt_open_tp": mrkt_open_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10030", **req.model_dump(by_alias=True, exclude_none=True))
         return HighTransactionVolumeDay(**raw_response)
 
-    def previous_day_highest_trading_volume(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", qry_tp: str = "", rank_strt: str = "", rank_end: str = "", stex_tp: str = "") -> PreviousDayHighestTradingVolume:
+    def previous_day_highest_trading_volume(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        qry_tp: str = "",
+        rank_strt: str = "",
+        rank_end: str = "",
+        stex_tp: str = "",
+    ) -> PreviousDayHighestTradingVolume:
         """
         [ka10031] 전일거래량상위요청
         분류: 국내주식 - 순위정보
         """
-        req = PreviousDayHighestTradingVolumeRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, qry_tp=qry_tp, rank_strt=rank_strt, rank_end=rank_end, stex_tp=stex_tp)
+        req = PreviousDayHighestTradingVolumeRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "qry_tp": qry_tp,
+                "rank_strt": rank_strt,
+                "rank_end": rank_end,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10031", **req.model_dump(by_alias=True, exclude_none=True))
         return PreviousDayHighestTradingVolume(**raw_response)
 
-    def higher_transaction_amount(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", mang_stk_incls: str = "", stex_tp: str = "") -> HigherTransactionAmount:
+    def higher_transaction_amount(
+        self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", mang_stk_incls: str = "", stex_tp: str = ""
+    ) -> HigherTransactionAmount:
         """
         [ka10032] 거래대금상위요청
         분류: 국내주식 - 순위정보
         """
-        req = HigherTransactionAmountRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, mang_stk_incls=mang_stk_incls, stex_tp=stex_tp)
+        req = HigherTransactionAmountRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "mang_stk_incls": mang_stk_incls,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10032", **req.model_dump(by_alias=True, exclude_none=True))
         return HigherTransactionAmount(**raw_response)
 
-    def higher_credit_ratio(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", trde_qty_tp: str = "", stk_cnd: str = "", updown_incls: str = "", crd_cnd: str = "", stex_tp: str = "") -> HigherCreditRatio:
+    def higher_credit_ratio(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        trde_qty_tp: str = "",
+        stk_cnd: str = "",
+        updown_incls: str = "",
+        crd_cnd: str = "",
+        stex_tp: str = "",
+    ) -> HigherCreditRatio:
         """
         [ka10033] 신용비율상위요청
         분류: 국내주식 - 순위정보
         """
-        req = HigherCreditRatioRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, trde_qty_tp=trde_qty_tp, stk_cnd=stk_cnd, updown_incls=updown_incls, crd_cnd=crd_cnd, stex_tp=stex_tp)
+        req = HigherCreditRatioRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "stk_cnd": stk_cnd,
+                "updown_incls": updown_incls,
+                "crd_cnd": crd_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10033", **req.model_dump(by_alias=True, exclude_none=True))
         return HigherCreditRatio(**raw_response)
 
-    def external_transaction_top_sales_by_period(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", trde_tp: str = "", dt: str = "", stex_tp: str = "") -> ExternalTransactionTopSalesByPeriod:
+    def external_transaction_top_sales_by_period(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        trde_tp: str = "",
+        dt: str = "",
+        stex_tp: str = "",
+    ) -> ExternalTransactionTopSalesByPeriod:
         """
         [ka10034] 외인기간별매매상위요청
         분류: 국내주식 - 순위정보
         """
-        req = ExternalTransactionTopSalesByPeriodRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, trde_tp=trde_tp, dt=dt, stex_tp=stex_tp)
+        req = ExternalTransactionTopSalesByPeriodRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "trde_tp": trde_tp,
+                "dt": dt,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10034", **req.model_dump(by_alias=True, exclude_none=True))
         return ExternalTransactionTopSalesByPeriod(**raw_response)
 
-    def foreign_continuous_net_sales_top(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", trde_tp: str = "", base_dt_tp: str = "", stex_tp: str = "") -> ForeignContinuousNetSalesTop:
+    def foreign_continuous_net_sales_top(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        trde_tp: str = "",
+        base_dt_tp: str = "",
+        stex_tp: str = "",
+    ) -> ForeignContinuousNetSalesTop:
         """
         [ka10035] 외인연속순매매상위요청
         분류: 국내주식 - 순위정보
         """
-        req = ForeignContinuousNetSalesTopRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, trde_tp=trde_tp, base_dt_tp=base_dt_tp, stex_tp=stex_tp)
+        req = ForeignContinuousNetSalesTopRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "trde_tp": trde_tp,
+                "base_dt_tp": base_dt_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10035", **req.model_dump(by_alias=True, exclude_none=True))
         return ForeignContinuousNetSalesTop(**raw_response)
 
-    def top_foreign_limit_burnout_rate_increase(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", dt: str = "", stex_tp: str = "") -> TopForeignLimitBurnoutRateIncrease:
+    def top_foreign_limit_burnout_rate_increase(
+        self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", dt: str = "", stex_tp: str = ""
+    ) -> TopForeignLimitBurnoutRateIncrease:
         """
         [ka10036] 외인한도소진율증가상위
         분류: 국내주식 - 순위정보
         """
-        req = TopForeignLimitBurnoutRateIncreaseRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, dt=dt, stex_tp=stex_tp)
+        req = TopForeignLimitBurnoutRateIncreaseRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "mrkt_tp": mrkt_tp, "dt": dt, "stex_tp": stex_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka10036", **req.model_dump(by_alias=True, exclude_none=True))
         return TopForeignLimitBurnoutRateIncrease(**raw_response)
 
-    def foreign_over_counter_sales(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", dt: str = "", trde_tp: str = "", sort_tp: str = "", stex_tp: str = "") -> ForeignOverCounterSales:
+    def foreign_over_counter_sales(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        dt: str = "",
+        trde_tp: str = "",
+        sort_tp: str = "",
+        stex_tp: str = "",
+    ) -> ForeignOverCounterSales:
         """
         [ka10037] 외국계창구매매상위요청
         분류: 국내주식 - 순위정보
         """
-        req = ForeignOverCounterSalesRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, dt=dt, trde_tp=trde_tp, sort_tp=sort_tp, stex_tp=stex_tp)
+        req = ForeignOverCounterSalesRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "dt": dt,
+                "trde_tp": trde_tp,
+                "sort_tp": sort_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10037", **req.model_dump(by_alias=True, exclude_none=True))
         return ForeignOverCounterSales(**raw_response)
 
-    def ranking_securities_companies_by_stock(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = "", qry_tp: str = "", dt: str = "") -> RankingSecuritiesCompaniesByStock:
+    def ranking_securities_companies_by_stock(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        qry_tp: str = "",
+        dt: str = "",
+    ) -> RankingSecuritiesCompaniesByStock:
         """
         [ka10038] 종목별증권사순위요청
         분류: 국내주식 - 순위정보
         """
-        req = RankingSecuritiesCompaniesByStockRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt, end_dt=end_dt, qry_tp=qry_tp, dt=dt)
+        req = RankingSecuritiesCompaniesByStockRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "qry_tp": qry_tp,
+                "dt": dt,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10038", **req.model_dump(by_alias=True, exclude_none=True))
         return RankingSecuritiesCompaniesByStock(**raw_response)
 
-    def top_trading_by_securities_company(self, cont_yn: str = "", next_key: str = "", mmcm_cd: str = "", trde_qty_tp: str = "", trde_tp: str = "", dt: str = "", stex_tp: str = "") -> TopTradingBySecuritiesCompany:
+    def top_trading_by_securities_company(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mmcm_cd: str = "",
+        trde_qty_tp: str = "",
+        trde_tp: str = "",
+        dt: str = "",
+        stex_tp: str = "",
+    ) -> TopTradingBySecuritiesCompany:
         """
         [ka10039] 증권사별매매상위요청
         분류: 국내주식 - 순위정보
         """
-        req = TopTradingBySecuritiesCompanyRequest(cont_yn=cont_yn, next_key=next_key, mmcm_cd=mmcm_cd, trde_qty_tp=trde_qty_tp, trde_tp=trde_tp, dt=dt, stex_tp=stex_tp)
+        req = TopTradingBySecuritiesCompanyRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mmcm_cd": mmcm_cd,
+                "trde_qty_tp": trde_qty_tp,
+                "trde_tp": trde_tp,
+                "dt": dt,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10039", **req.model_dump(by_alias=True, exclude_none=True))
         return TopTradingBySecuritiesCompany(**raw_response)
 
-    def same_day_major_transaction(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> SameDayMajorTransaction:
+    def same_day_major_transaction(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> SameDayMajorTransaction:
         """
         [ka10040] 당일주요거래원요청
         분류: 국내주식 - 순위정보
         """
-        req = SameDayMajorTransactionRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = SameDayMajorTransactionRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10040", **req.model_dump(by_alias=True, exclude_none=True))
         return SameDayMajorTransaction(**raw_response)
 
-    def net_buying_trader_ranking(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = "", qry_dt_tp: str = "", pot_tp: str = "", dt: str = "", sort_base: str = "") -> NetBuyingTraderRanking:
+    def net_buying_trader_ranking(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        qry_dt_tp: str = "",
+        pot_tp: str = "",
+        dt: str = "",
+        sort_base: str = "",
+    ) -> NetBuyingTraderRanking:
         """
         [ka10042] 순매수거래원순위요청
         분류: 국내주식 - 순위정보
         """
-        req = NetBuyingTraderRankingRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt, end_dt=end_dt, qry_dt_tp=qry_dt_tp, pot_tp=pot_tp, dt=dt, sort_base=sort_base)
+        req = NetBuyingTraderRankingRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "qry_dt_tp": qry_dt_tp,
+                "pot_tp": pot_tp,
+                "dt": dt,
+                "sort_base": sort_base,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10042", **req.model_dump(by_alias=True, exclude_none=True))
         return NetBuyingTraderRanking(**raw_response)
 
-    def same_day_high_withdrawal(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> SameDayHighWithdrawal:
+    def same_day_high_withdrawal(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> SameDayHighWithdrawal:
         """
         [ka10053] 당일상위이탈원요청
         분류: 국내주식 - 순위정보
         """
-        req = SameDayHighWithdrawalRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = SameDayHighWithdrawalRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10053", **req.model_dump(by_alias=True, exclude_none=True))
         return SameDayHighWithdrawal(**raw_response)
 
-    def same_net_sales_ranking(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", mrkt_tp: str = "", trde_tp: str = "", sort_cnd: str = "", unit_tp: str = "", stex_tp: str = "") -> SameNetSalesRanking:
+    def same_net_sales_ranking(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        mrkt_tp: str = "",
+        trde_tp: str = "",
+        sort_cnd: str = "",
+        unit_tp: str = "",
+        stex_tp: str = "",
+    ) -> SameNetSalesRanking:
         """
         [ka10062] 동일순매매순위요청
         분류: 국내주식 - 순위정보
         """
-        req = SameNetSalesRankingRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, mrkt_tp=mrkt_tp, trde_tp=trde_tp, sort_cnd=sort_cnd, unit_tp=unit_tp, stex_tp=stex_tp)
+        req = SameNetSalesRankingRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "mrkt_tp": mrkt_tp,
+                "trde_tp": trde_tp,
+                "sort_cnd": sort_cnd,
+                "unit_tp": unit_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10062", **req.model_dump(by_alias=True, exclude_none=True))
         return SameNetSalesRanking(**raw_response)
 
-    def intraday_trading_by_investor(self, cont_yn: str = "", next_key: str = "", trde_tp: str = "", mrkt_tp: str = "", orgn_tp: str = "", amt_qty_tp: str = "") -> IntradayTradingByInvestor:
+    def intraday_trading_by_investor(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        trde_tp: str = "",
+        mrkt_tp: str = "",
+        orgn_tp: str = "",
+        amt_qty_tp: str = "",
+    ) -> IntradayTradingByInvestor:
         """
         [ka10065] 장중투자자별매매상위요청
         분류: 국내주식 - 순위정보
         """
-        req = IntradayTradingByInvestorRequest(cont_yn=cont_yn, next_key=next_key, trde_tp=trde_tp, mrkt_tp=mrkt_tp, orgn_tp=orgn_tp, amt_qty_tp=amt_qty_tp)
+        req = IntradayTradingByInvestorRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "trde_tp": trde_tp,
+                "mrkt_tp": mrkt_tp,
+                "orgn_tp": orgn_tp,
+                "amt_qty_tp": amt_qty_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10065", **req.model_dump(by_alias=True, exclude_none=True))
         return IntradayTradingByInvestor(**raw_response)
 
-    def ranking_out_hours_single_price_fluctuation_rate(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", sort_base: str = "", stk_cnd: str = "", trde_qty_cnd: str = "", crd_cnd: str = "", trde_prica: str = "") -> RankingOutHoursSinglePriceFluctuationRate:
+    def ranking_out_hours_single_price_fluctuation_rate(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        sort_base: str = "",
+        stk_cnd: str = "",
+        trde_qty_cnd: str = "",
+        crd_cnd: str = "",
+        trde_prica: str = "",
+    ) -> RankingOutHoursSinglePriceFluctuationRate:
         """
         [ka10098] 시간외단일가등락율순위요청
         분류: 국내주식 - 순위정보
         """
-        req = RankingOutHoursSinglePriceFluctuationRateRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, sort_base=sort_base, stk_cnd=stk_cnd, trde_qty_cnd=trde_qty_cnd, crd_cnd=crd_cnd, trde_prica=trde_prica)
+        req = RankingOutHoursSinglePriceFluctuationRateRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "sort_base": sort_base,
+                "stk_cnd": stk_cnd,
+                "trde_qty_cnd": trde_qty_cnd,
+                "crd_cnd": crd_cnd,
+                "trde_prica": trde_prica,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10098", **req.model_dump(by_alias=True, exclude_none=True))
         return RankingOutHoursSinglePriceFluctuationRate(**raw_response)
 
-    def foreign_institutional_trading_top(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", amt_qty_tp: str = "", qry_dt_tp: str = "", date: str = "", stex_tp: str = "") -> ForeignInstitutionalTradingTop:
+    def foreign_institutional_trading_top(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        amt_qty_tp: str = "",
+        qry_dt_tp: str = "",
+        date: str = "",
+        stex_tp: str = "",
+    ) -> ForeignInstitutionalTradingTop:
         """
         [ka90009] 외국인기관매매상위요청
         분류: 국내주식 - 순위정보
         """
-        req = ForeignInstitutionalTradingTopRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, amt_qty_tp=amt_qty_tp, qry_dt_tp=qry_dt_tp, date=date, stex_tp=stex_tp)
+        req = ForeignInstitutionalTradingTopRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "amt_qty_tp": amt_qty_tp,
+                "qry_dt_tp": qry_dt_tp,
+                "date": date,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka90009", **req.model_dump(by_alias=True, exclude_none=True))
         return ForeignInstitutionalTradingTop(**raw_response)
 
@@ -8133,16 +12750,18 @@ class KiwoomGeneratedClient:
         [ka10004] 주식호가요청
         분류: 국내주식 - 시세
         """
-        req = StockQuoteRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = StockQuoteRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10004", **req.model_dump(by_alias=True, exclude_none=True))
         return StockQuote(**raw_response)
 
-    def stock_weekly_monthly_hourly_minutes(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> StockWeeklyMonthlyHourlyMinutes:
+    def stock_weekly_monthly_hourly_minutes(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> StockWeeklyMonthlyHourlyMinutes:
         """
         [ka10005] 주식일주월시분요청
         분류: 국내주식 - 시세
         """
-        req = StockWeeklyMonthlyHourlyMinutesRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = StockWeeklyMonthlyHourlyMinutesRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10005", **req.model_dump(by_alias=True, exclude_none=True))
         return StockWeeklyMonthlyHourlyMinutes(**raw_response)
 
@@ -8151,7 +12770,7 @@ class KiwoomGeneratedClient:
         [ka10006] 주식시분요청
         분류: 국내주식 - 시세
         """
-        req = StockTimeRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = StockTimeRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10006", **req.model_dump(by_alias=True, exclude_none=True))
         return StockTime(**raw_response)
 
@@ -8160,88 +12779,193 @@ class KiwoomGeneratedClient:
         [ka10007] 시세표성정보요청
         분류: 국내주식 - 시세
         """
-        req = PriceInformationRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = PriceInformationRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10007", **req.model_dump(by_alias=True, exclude_none=True))
         return PriceInformation(**raw_response)
 
-    def all_new_stock_warrants(self, cont_yn: str = "", next_key: str = "", newstk_recvrht_tp: str = "") -> AllNewStockWarrants:
+    def all_new_stock_warrants(
+        self, cont_yn: str = "", next_key: str = "", newstk_recvrht_tp: str = ""
+    ) -> AllNewStockWarrants:
         """
         [ka10011] 신주인수권전체시세요청
         분류: 국내주식 - 시세
         """
-        req = AllNewStockWarrantsRequest(cont_yn=cont_yn, next_key=next_key, newstk_recvrht_tp=newstk_recvrht_tp)
+        req = AllNewStockWarrantsRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "newstk_recvrht_tp": newstk_recvrht_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka10011", **req.model_dump(by_alias=True, exclude_none=True))
         return AllNewStockWarrants(**raw_response)
 
-    def daily_institutional_trading_items(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", trde_tp: str = "", mrkt_tp: str = "", stex_tp: str = "") -> DailyInstitutionalTradingItems:
+    def daily_institutional_trading_items(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        trde_tp: str = "",
+        mrkt_tp: str = "",
+        stex_tp: str = "",
+    ) -> DailyInstitutionalTradingItems:
         """
         [ka10044] 일별기관매매종목요청
         분류: 국내주식 - 시세
         """
-        req = DailyInstitutionalTradingItemsRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, trde_tp=trde_tp, mrkt_tp=mrkt_tp, stex_tp=stex_tp)
+        req = DailyInstitutionalTradingItemsRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "trde_tp": trde_tp,
+                "mrkt_tp": mrkt_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10044", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyInstitutionalTradingItems(**raw_response)
 
-    def institutional_trading_trend_by_item(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = "", orgn_prsm_unp_tp: str = "", for_prsm_unp_tp: str = "") -> InstitutionalTradingTrendByItem:
+    def institutional_trading_trend_by_item(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        orgn_prsm_unp_tp: str = "",
+        for_prsm_unp_tp: str = "",
+    ) -> InstitutionalTradingTrendByItem:
         """
         [ka10045] 종목별기관매매추이요청
         분류: 국내주식 - 시세
         """
-        req = InstitutionalTradingTrendByItemRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt, end_dt=end_dt, orgn_prsm_unp_tp=orgn_prsm_unp_tp, for_prsm_unp_tp=for_prsm_unp_tp)
+        req = InstitutionalTradingTrendByItemRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "orgn_prsm_unp_tp": orgn_prsm_unp_tp,
+                "for_prsm_unp_tp": for_prsm_unp_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10045", **req.model_dump(by_alias=True, exclude_none=True))
         return InstitutionalTradingTrendByItem(**raw_response)
 
-    def fastening_strength_trend_by_time(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> FasteningStrengthTrendByTime:
+    def fastening_strength_trend_by_time(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> FasteningStrengthTrendByTime:
         """
         [ka10046] 체결강도추이시간별요청
         분류: 국내주식 - 시세
         """
-        req = FasteningStrengthTrendByTimeRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = FasteningStrengthTrendByTimeRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10046", **req.model_dump(by_alias=True, exclude_none=True))
         return FasteningStrengthTrendByTime(**raw_response)
 
-    def daily_tightening_strength_trend(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> DailyTighteningStrengthTrend:
+    def daily_tightening_strength_trend(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> DailyTighteningStrengthTrend:
         """
         [ka10047] 체결강도추이일별요청
         분류: 국내주식 - 시세
         """
-        req = DailyTighteningStrengthTrendRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = DailyTighteningStrengthTrendRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10047", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyTighteningStrengthTrend(**raw_response)
 
-    def intraday_investor_specific_trading(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", amt_qty_tp: str = "", invsr: str = "", frgn_all: str = "", smtm_netprps_tp: str = "", stex_tp: str = "") -> IntradayInvestorSpecificTrading:
+    def intraday_investor_specific_trading(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        amt_qty_tp: str = "",
+        invsr: str = "",
+        frgn_all: str = "",
+        smtm_netprps_tp: str = "",
+        stex_tp: str = "",
+    ) -> IntradayInvestorSpecificTrading:
         """
         [ka10063] 장중투자자별매매요청
         분류: 국내주식 - 시세
         """
-        req = IntradayInvestorSpecificTradingRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, amt_qty_tp=amt_qty_tp, invsr=invsr, frgn_all=frgn_all, smtm_netprps_tp=smtm_netprps_tp, stex_tp=stex_tp)
+        req = IntradayInvestorSpecificTradingRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "amt_qty_tp": amt_qty_tp,
+                "invsr": invsr,
+                "frgn_all": frgn_all,
+                "smtm_netprps_tp": smtm_netprps_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10063", **req.model_dump(by_alias=True, exclude_none=True))
         return IntradayInvestorSpecificTrading(**raw_response)
 
-    def trading_by_investor_after_market_close(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", amt_qty_tp: str = "", trde_tp: str = "", stex_tp: str = "") -> TradingByInvestorAfterMarketClose:
+    def trading_by_investor_after_market_close(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        amt_qty_tp: str = "",
+        trde_tp: str = "",
+        stex_tp: str = "",
+    ) -> TradingByInvestorAfterMarketClose:
         """
         [ka10066] 장마감후투자자별매매요청
         분류: 국내주식 - 시세
         """
-        req = TradingByInvestorAfterMarketCloseRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, amt_qty_tp=amt_qty_tp, trde_tp=trde_tp, stex_tp=stex_tp)
+        req = TradingByInvestorAfterMarketCloseRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "amt_qty_tp": amt_qty_tp,
+                "trde_tp": trde_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10066", **req.model_dump(by_alias=True, exclude_none=True))
         return TradingByInvestorAfterMarketClose(**raw_response)
 
-    def stock_trading_trends_by_securities_company(self, cont_yn: str = "", next_key: str = "", mmcm_cd: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = "") -> StockTradingTrendsBySecuritiesCompany:
+    def stock_trading_trends_by_securities_company(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mmcm_cd: str = "",
+        stk_cd: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+    ) -> StockTradingTrendsBySecuritiesCompany:
         """
         [ka10078] 증권사별종목매매동향요청
         분류: 국내주식 - 시세
         """
-        req = StockTradingTrendsBySecuritiesCompanyRequest(cont_yn=cont_yn, next_key=next_key, mmcm_cd=mmcm_cd, stk_cd=stk_cd, strt_dt=strt_dt, end_dt=end_dt)
+        req = StockTradingTrendsBySecuritiesCompanyRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mmcm_cd": mmcm_cd,
+                "stk_cd": stk_cd,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10078", **req.model_dump(by_alias=True, exclude_none=True))
         return StockTradingTrendsBySecuritiesCompany(**raw_response)
 
-    def daily_stock(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", qry_dt: str = "", indc_tp: str = "") -> DailyStock:
+    def daily_stock(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", qry_dt: str = "", indc_tp: str = ""
+    ) -> DailyStock:
         """
         [ka10086] 일별주가요청
         분류: 국내주식 - 시세
         """
-        req = DailyStockRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, qry_dt=qry_dt, indc_tp=indc_tp)
+        req = DailyStockRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "qry_dt": qry_dt, "indc_tp": indc_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka10086", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyStock(**raw_response)
 
@@ -8250,7 +12974,7 @@ class KiwoomGeneratedClient:
         [ka10087] 시간외단일가요청
         분류: 국내주식 - 시세
         """
-        req = SingleAfterHoursRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = SingleAfterHoursRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10087", **req.model_dump(by_alias=True, exclude_none=True))
         return SingleAfterHours(**raw_response)
 
@@ -8259,286 +12983,453 @@ class KiwoomGeneratedClient:
         [ka50010] 금현물체결추이
         분류: 국내주식 - 시세
         """
-        req = GoldSpotTradingTrendRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = GoldSpotTradingTrendRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka50010", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotTradingTrend(**raw_response)
 
-    def spot_gold_daily_trend(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "") -> SpotGoldDailyTrend:
+    def spot_gold_daily_trend(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = ""
+    ) -> SpotGoldDailyTrend:
         """
         [ka50012] 금현물일별추이
         분류: 국내주식 - 시세
         """
-        req = SpotGoldDailyTrendRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt)
+        req = SpotGoldDailyTrendRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "base_dt": base_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka50012", **req.model_dump(by_alias=True, exclude_none=True))
         return SpotGoldDailyTrend(**raw_response)
 
-    def gold_spot_expected_transaction(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> GoldSpotExpectedTransaction:
+    def gold_spot_expected_transaction(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> GoldSpotExpectedTransaction:
         """
         [ka50087] 금현물예상체결
         분류: 국내주식 - 시세
         """
-        req = GoldSpotExpectedTransactionRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = GoldSpotExpectedTransactionRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka50087", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotExpectedTransaction(**raw_response)
 
-    def gold_spot_price_information(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> GoldSpotPriceInformation:
+    def gold_spot_price_information(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> GoldSpotPriceInformation:
         """
         [ka50100] 금현물 시세정보
         분류: 국내주식 - 시세
         """
-        req = GoldSpotPriceInformationRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = GoldSpotPriceInformationRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka50100", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotPriceInformation(**raw_response)
 
-    def gold_spot_quote(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "") -> GoldSpotQuote:
+    def gold_spot_quote(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = ""
+    ) -> GoldSpotQuote:
         """
         [ka50101] 금현물 호가
         분류: 국내주식 - 시세
         """
-        req = GoldSpotQuoteRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tic_scope=tic_scope)
+        req = GoldSpotQuoteRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "tic_scope": tic_scope}
+        )  # type: ignore
         raw_response = self.core.call("ka50101", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotQuote(**raw_response)
 
-    def program_trading_trend_by_time_zone(self, cont_yn: str = "", next_key: str = "", date: str = "", amt_qty_tp: str = "", mrkt_tp: str = "", min_tic_tp: str = "", stex_tp: str = "") -> ProgramTradingTrendByTimeZone:
+    def program_trading_trend_by_time_zone(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        date: str = "",
+        amt_qty_tp: str = "",
+        mrkt_tp: str = "",
+        min_tic_tp: str = "",
+        stex_tp: str = "",
+    ) -> ProgramTradingTrendByTimeZone:
         """
         [ka90005] 프로그램매매추이요청 시간대별
         분류: 국내주식 - 시세
         """
-        req = ProgramTradingTrendByTimeZoneRequest(cont_yn=cont_yn, next_key=next_key, date=date, amt_qty_tp=amt_qty_tp, mrkt_tp=mrkt_tp, min_tic_tp=min_tic_tp, stex_tp=stex_tp)
+        req = ProgramTradingTrendByTimeZoneRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "date": date,
+                "amt_qty_tp": amt_qty_tp,
+                "mrkt_tp": mrkt_tp,
+                "min_tic_tp": min_tic_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka90005", **req.model_dump(by_alias=True, exclude_none=True))
         return ProgramTradingTrendByTimeZone(**raw_response)
 
-    def program_trading_profit_balance_trend(self, cont_yn: str = "", next_key: str = "", date: str = "", stex_tp: str = "") -> ProgramTradingProfitBalanceTrend:
+    def program_trading_profit_balance_trend(
+        self, cont_yn: str = "", next_key: str = "", date: str = "", stex_tp: str = ""
+    ) -> ProgramTradingProfitBalanceTrend:
         """
         [ka90006] 프로그램매매차익잔고추이요청
         분류: 국내주식 - 시세
         """
-        req = ProgramTradingProfitBalanceTrendRequest(cont_yn=cont_yn, next_key=next_key, date=date, stex_tp=stex_tp)
+        req = ProgramTradingProfitBalanceTrendRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "date": date, "stex_tp": stex_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka90006", **req.model_dump(by_alias=True, exclude_none=True))
         return ProgramTradingProfitBalanceTrend(**raw_response)
 
-    def cumulative_program_trading_trend(self, cont_yn: str = "", next_key: str = "", date: str = "", amt_qty_tp: str = "", mrkt_tp: str = "", stex_tp: str = "") -> CumulativeProgramTradingTrend:
+    def cumulative_program_trading_trend(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        date: str = "",
+        amt_qty_tp: str = "",
+        mrkt_tp: str = "",
+        stex_tp: str = "",
+    ) -> CumulativeProgramTradingTrend:
         """
         [ka90007] 프로그램매매누적추이요청
         분류: 국내주식 - 시세
         """
-        req = CumulativeProgramTradingTrendRequest(cont_yn=cont_yn, next_key=next_key, date=date, amt_qty_tp=amt_qty_tp, mrkt_tp=mrkt_tp, stex_tp=stex_tp)
+        req = CumulativeProgramTradingTrendRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "date": date,
+                "amt_qty_tp": amt_qty_tp,
+                "mrkt_tp": mrkt_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka90007", **req.model_dump(by_alias=True, exclude_none=True))
         return CumulativeProgramTradingTrend(**raw_response)
 
-    def program_trading_trend_by_item_time(self, cont_yn: str = "", next_key: str = "", amt_qty_tp: str = "", stk_cd: str = "", date: str = "") -> ProgramTradingTrendByItemTime:
+    def program_trading_trend_by_item_time(
+        self, cont_yn: str = "", next_key: str = "", amt_qty_tp: str = "", stk_cd: str = "", date: str = ""
+    ) -> ProgramTradingTrendByItemTime:
         """
         [ka90008] 종목시간별프로그램매매추이요청
         분류: 국내주식 - 시세
         """
-        req = ProgramTradingTrendByItemTimeRequest(cont_yn=cont_yn, next_key=next_key, amt_qty_tp=amt_qty_tp, stk_cd=stk_cd, date=date)
+        req = ProgramTradingTrendByItemTimeRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "amt_qty_tp": amt_qty_tp, "stk_cd": stk_cd, "date": date}
+        )  # type: ignore
         raw_response = self.core.call("ka90008", **req.model_dump(by_alias=True, exclude_none=True))
         return ProgramTradingTrendByItemTime(**raw_response)
 
-    def program_trading_trend_date(self, cont_yn: str = "", next_key: str = "", date: str = "", amt_qty_tp: str = "", mrkt_tp: str = "", min_tic_tp: str = "", stex_tp: str = "") -> ProgramTradingTrendDate:
+    def program_trading_trend_date(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        date: str = "",
+        amt_qty_tp: str = "",
+        mrkt_tp: str = "",
+        min_tic_tp: str = "",
+        stex_tp: str = "",
+    ) -> ProgramTradingTrendDate:
         """
         [ka90010] 프로그램매매추이요청 일자별
         분류: 국내주식 - 시세
         """
-        req = ProgramTradingTrendDateRequest(cont_yn=cont_yn, next_key=next_key, date=date, amt_qty_tp=amt_qty_tp, mrkt_tp=mrkt_tp, min_tic_tp=min_tic_tp, stex_tp=stex_tp)
+        req = ProgramTradingTrendDateRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "date": date,
+                "amt_qty_tp": amt_qty_tp,
+                "mrkt_tp": mrkt_tp,
+                "min_tic_tp": min_tic_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka90010", **req.model_dump(by_alias=True, exclude_none=True))
         return ProgramTradingTrendDate(**raw_response)
 
-    def daily_program_trading_trend_items(self, cont_yn: str = "", next_key: str = "", amt_qty_tp: str = "", stk_cd: str = "", date: str = "") -> DailyProgramTradingTrendItems:
+    def daily_program_trading_trend_items(
+        self, cont_yn: str = "", next_key: str = "", amt_qty_tp: str = "", stk_cd: str = "", date: str = ""
+    ) -> DailyProgramTradingTrendItems:
         """
         [ka90013] 종목일별프로그램매매추이요청
         분류: 국내주식 - 시세
         """
-        req = DailyProgramTradingTrendItemsRequest(cont_yn=cont_yn, next_key=next_key, amt_qty_tp=amt_qty_tp, stk_cd=stk_cd, date=date)
+        req = DailyProgramTradingTrendItemsRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "amt_qty_tp": amt_qty_tp, "stk_cd": stk_cd, "date": date}
+        )  # type: ignore
         raw_response = self.core.call("ka90013", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyProgramTradingTrendItems(**raw_response)
 
-    def credit_buy_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", stk_cd: str = "", ord_qty: str = "", ord_uv: str = "", trde_tp: str = "", cond_uv: str = "") -> CreditBuyOrder:
+    def credit_buy_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        stk_cd: str = "",
+        ord_qty: str = "",
+        ord_uv: str = "",
+        trde_tp: str = "",
+        cond_uv: str = "",
+    ) -> CreditBuyOrder:
         """
         [kt10006] 신용 매수주문
         분류: 국내주식 - 신용주문
         """
-        req = CreditBuyOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, stk_cd=stk_cd, ord_qty=ord_qty, ord_uv=ord_uv, trde_tp=trde_tp, cond_uv=cond_uv)
+        req = CreditBuyOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "stk_cd": stk_cd,
+                "ord_qty": ord_qty,
+                "ord_uv": ord_uv,
+                "trde_tp": trde_tp,
+                "cond_uv": cond_uv,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10006", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditBuyOrder(**raw_response)
 
-    def credit_sell_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", stk_cd: str = "", ord_qty: str = "", ord_uv: str = "", trde_tp: str = "", crd_deal_tp: str = "", crd_loan_dt: str = "", cond_uv: str = "") -> CreditSellOrder:
+    def credit_sell_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        stk_cd: str = "",
+        ord_qty: str = "",
+        ord_uv: str = "",
+        trde_tp: str = "",
+        crd_deal_tp: str = "",
+        crd_loan_dt: str = "",
+        cond_uv: str = "",
+    ) -> CreditSellOrder:
         """
         [kt10007] 신용 매도주문
         분류: 국내주식 - 신용주문
         """
-        req = CreditSellOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, stk_cd=stk_cd, ord_qty=ord_qty, ord_uv=ord_uv, trde_tp=trde_tp, crd_deal_tp=crd_deal_tp, crd_loan_dt=crd_loan_dt, cond_uv=cond_uv)
+        req = CreditSellOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "stk_cd": stk_cd,
+                "ord_qty": ord_qty,
+                "ord_uv": ord_uv,
+                "trde_tp": trde_tp,
+                "crd_deal_tp": crd_deal_tp,
+                "crd_loan_dt": crd_loan_dt,
+                "cond_uv": cond_uv,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10007", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditSellOrder(**raw_response)
 
-    def credit_correction_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", orig_ord_no: str = "", stk_cd: str = "", mdfy_qty: str = "", mdfy_uv: str = "", mdfy_cond_uv: str = "") -> CreditCorrectionOrder:
+    def credit_correction_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        orig_ord_no: str = "",
+        stk_cd: str = "",
+        mdfy_qty: str = "",
+        mdfy_uv: str = "",
+        mdfy_cond_uv: str = "",
+    ) -> CreditCorrectionOrder:
         """
         [kt10008] 신용 정정주문
         분류: 국내주식 - 신용주문
         """
-        req = CreditCorrectionOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, orig_ord_no=orig_ord_no, stk_cd=stk_cd, mdfy_qty=mdfy_qty, mdfy_uv=mdfy_uv, mdfy_cond_uv=mdfy_cond_uv)
+        req = CreditCorrectionOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "orig_ord_no": orig_ord_no,
+                "stk_cd": stk_cd,
+                "mdfy_qty": mdfy_qty,
+                "mdfy_uv": mdfy_uv,
+                "mdfy_cond_uv": mdfy_cond_uv,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10008", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditCorrectionOrder(**raw_response)
 
-    def credit_cancellation_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", orig_ord_no: str = "", stk_cd: str = "", cncl_qty: str = "") -> CreditCancellationOrder:
+    def credit_cancellation_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        orig_ord_no: str = "",
+        stk_cd: str = "",
+        cncl_qty: str = "",
+    ) -> CreditCancellationOrder:
         """
         [kt10009] 신용 취소주문
         분류: 국내주식 - 신용주문
         """
-        req = CreditCancellationOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, orig_ord_no=orig_ord_no, stk_cd=stk_cd, cncl_qty=cncl_qty)
+        req = CreditCancellationOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "orig_ord_no": orig_ord_no,
+                "stk_cd": stk_cd,
+                "cncl_qty": cncl_qty,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10009", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditCancellationOrder(**raw_response)
 
-    async def order_execution(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def order_execution(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [00] 주문체결
         분류: 국내주식 - 실시간시세
         """
-        req = OrderExecutionRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = OrderExecutionRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def balance(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def balance(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [04] 잔고
         분류: 국내주식 - 실시간시세
         """
-        req = BalanceRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = BalanceRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_momentum(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_momentum(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0A] 주식기세
         분류: 국내주식 - 실시간시세
         """
-        req = StockMomentumRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockMomentumRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_signing(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_signing(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0B] 주식체결
         분류: 국내주식 - 실시간시세
         """
-        req = StockSigningRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockSigningRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_preferred_price(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_preferred_price(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0C] 주식우선호가
         분류: 국내주식 - 실시간시세
         """
-        req = StockPreferredPriceRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockPreferredPriceRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_quote_balance(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_quote_balance(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0D] 주식호가잔량
         분류: 국내주식 - 실시간시세
         """
-        req = StockQuoteBalanceRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockQuoteBalanceRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_after_hours_quote(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_after_hours_quote(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0E] 주식시간외호가
         분류: 국내주식 - 실시간시세
         """
-        req = StockAfterHoursQuoteRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockAfterHoursQuoteRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_day_trader(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_day_trader(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0F] 주식당일거래원
         분류: 국내주식 - 실시간시세
         """
-        req = StockDayTraderRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockDayTraderRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def etf_nav(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def etf_nav(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0G] ETF NAV
         분류: 국내주식 - 실시간시세
         """
-        req = EtfNavRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = EtfNavRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_expected_execution(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_expected_execution(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0H] 주식예상체결
         분류: 국내주식 - 실시간시세
         """
-        req = StockExpectedExecutionRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockExpectedExecutionRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def international_gold_conversion_price(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def international_gold_conversion_price(
+        self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None
+    ):
         """
         [0I] 국제금환산가격
         분류: 국내주식 - 실시간시세
         """
-        req = InternationalGoldConversionPriceRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = InternationalGoldConversionPriceRequest(
+            **{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data}
+        )  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def sector_index(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def sector_index(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0J] 업종지수
         분류: 국내주식 - 실시간시세
         """
-        req = SectorIndexRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = SectorIndexRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def industry_fluctuations(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def industry_fluctuations(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0U] 업종등락
         분류: 국내주식 - 실시간시세
         """
-        req = IndustryFluctuationsRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = IndustryFluctuationsRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_item_information(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_item_information(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0g] 주식종목정보
         분류: 국내주식 - 실시간시세
         """
-        req = StockItemInformationRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockItemInformationRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def elw_theorist(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def elw_theorist(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0m] ELW 이론가
         분류: 국내주식 - 실시간시세
         """
-        req = ElwTheoristRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = ElwTheoristRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def long_start_time(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def long_start_time(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0s] 장시작시간
         분류: 국내주식 - 실시간시세
         """
-        req = LongStartTimeRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = LongStartTimeRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def elw_indicator(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def elw_indicator(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0u] ELW 지표
         분류: 국내주식 - 실시간시세
         """
-        req = ElwIndicatorRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = ElwIndicatorRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def stock_program_trading(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def stock_program_trading(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [0w] 종목프로그램매매
         분류: 국내주식 - 실시간시세
         """
-        req = StockProgramTradingRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = StockProgramTradingRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def activate_disable_vi(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: str = ""):
+    async def activate_disable_vi(self, trnm: str = "", grp_no: str = "", refresh: str = "", data: Any = None):
         """
         [1h] VI발동/해제
         분류: 국내주식 - 실시간시세
         """
-        req = ActivateDisableViRequest(trnm=trnm, grp_no=grp_no, refresh=refresh, data=data)
+        req = ActivateDisableViRequest(**{"trnm": trnm, "grp_no": grp_no, "refresh": refresh, "data": data})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
     def industry_program(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> IndustryProgram:
@@ -8546,34 +13437,59 @@ class KiwoomGeneratedClient:
         [ka10010] 업종프로그램요청
         분류: 국내주식 - 업종
         """
-        req = IndustryProgramRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = IndustryProgramRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10010", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryProgram(**raw_response)
 
-    def investor_net_purchase_by_industry(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", amt_qty_tp: str = "", base_dt: str = "", stex_tp: str = "") -> InvestorNetPurchaseByIndustry:
+    def investor_net_purchase_by_industry(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        amt_qty_tp: str = "",
+        base_dt: str = "",
+        stex_tp: str = "",
+    ) -> InvestorNetPurchaseByIndustry:
         """
         [ka10051] 업종별투자자순매수요청
         분류: 국내주식 - 업종
         """
-        req = InvestorNetPurchaseByIndustryRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, amt_qty_tp=amt_qty_tp, base_dt=base_dt, stex_tp=stex_tp)
+        req = InvestorNetPurchaseByIndustryRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "amt_qty_tp": amt_qty_tp,
+                "base_dt": base_dt,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10051", **req.model_dump(by_alias=True, exclude_none=True))
         return InvestorNetPurchaseByIndustry(**raw_response)
 
-    def current_industry(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", inds_cd: str = "") -> CurrentIndustry:
+    def current_industry(
+        self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", inds_cd: str = ""
+    ) -> CurrentIndustry:
         """
         [ka20001] 업종현재가요청
         분류: 국내주식 - 업종
         """
-        req = CurrentIndustryRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, inds_cd=inds_cd)
+        req = CurrentIndustryRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "mrkt_tp": mrkt_tp, "inds_cd": inds_cd}
+        )  # type: ignore
         raw_response = self.core.call("ka20001", **req.model_dump(by_alias=True, exclude_none=True))
         return CurrentIndustry(**raw_response)
 
-    def stocks_by_industry(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", inds_cd: str = "", stex_tp: str = "") -> StocksByIndustry:
+    def stocks_by_industry(
+        self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", inds_cd: str = "", stex_tp: str = ""
+    ) -> StocksByIndustry:
         """
         [ka20002] 업종별주가요청
         분류: 국내주식 - 업종
         """
-        req = StocksByIndustryRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, inds_cd=inds_cd, stex_tp=stex_tp)
+        req = StocksByIndustryRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "mrkt_tp": mrkt_tp, "inds_cd": inds_cd, "stex_tp": stex_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka20002", **req.model_dump(by_alias=True, exclude_none=True))
         return StocksByIndustry(**raw_response)
 
@@ -8582,16 +13498,20 @@ class KiwoomGeneratedClient:
         [ka20003] 전업종지수요청
         분류: 국내주식 - 업종
         """
-        req = AllIndustryIndicesRequest(cont_yn=cont_yn, next_key=next_key, inds_cd=inds_cd)
+        req = AllIndustryIndicesRequest(**{"cont-yn": cont_yn, "next-key": next_key, "inds_cd": inds_cd})  # type: ignore
         raw_response = self.core.call("ka20003", **req.model_dump(by_alias=True, exclude_none=True))
         return AllIndustryIndices(**raw_response)
 
-    def industry_current_price_daily(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", inds_cd: str = "") -> IndustryCurrentPriceDaily:
+    def industry_current_price_daily(
+        self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", inds_cd: str = ""
+    ) -> IndustryCurrentPriceDaily:
         """
         [ka20009] 업종현재가일별요청
         분류: 국내주식 - 업종
         """
-        req = IndustryCurrentPriceDailyRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, inds_cd=inds_cd)
+        req = IndustryCurrentPriceDailyRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "mrkt_tp": mrkt_tp, "inds_cd": inds_cd}
+        )  # type: ignore
         raw_response = self.core.call("ka20009", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryCurrentPriceDaily(**raw_response)
 
@@ -8600,23 +13520,44 @@ class KiwoomGeneratedClient:
         [ka10171] 조건검색 목록조회
         분류: 국내주식 - 조건검색
         """
-        req = ConditionSearchListRequest(trnm=trnm)
+        req = ConditionSearchListRequest(**{"trnm": trnm})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def conditional_search_general(self, trnm: str = "", seq: str = "", search_type: str = "", stex_tp: str = "", cont_yn: str = "", next_key: str = ""):
+    async def conditional_search_general(
+        self,
+        trnm: str = "",
+        seq: str = "",
+        search_type: str = "",
+        stex_tp: str = "",
+        cont_yn: str = "",
+        next_key: str = "",
+    ):
         """
         [ka10172] 조건검색 요청 일반
         분류: 국내주식 - 조건검색
         """
-        req = ConditionalSearchGeneralRequest(trnm=trnm, seq=seq, search_type=search_type, stex_tp=stex_tp, cont_yn=cont_yn, next_key=next_key)
+        req = ConditionalSearchGeneralRequest(
+            **{
+                "trnm": trnm,
+                "seq": seq,
+                "search_type": search_type,
+                "stex_tp": stex_tp,
+                "cont_yn": cont_yn,
+                "next_key": next_key,
+            }
+        )  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
-    async def real_time_conditional_search(self, trnm: str = "", seq: str = "", search_type: str = "", stex_tp: str = ""):
+    async def real_time_conditional_search(
+        self, trnm: str = "", seq: str = "", search_type: str = "", stex_tp: str = ""
+    ):
         """
         [ka10173] 조건검색 요청 실시간
         분류: 국내주식 - 조건검색
         """
-        req = RealTimeConditionalSearchRequest(trnm=trnm, seq=seq, search_type=search_type, stex_tp=stex_tp)
+        req = RealTimeConditionalSearchRequest(
+            **{"trnm": trnm, "seq": seq, "search_type": search_type, "stex_tp": stex_tp}
+        )  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
     async def conditional_search_real_time_cancellation(self, trnm: str = "", seq: str = ""):
@@ -8624,7 +13565,7 @@ class KiwoomGeneratedClient:
         [ka10174] 조건검색 실시간 해제
         분류: 국내주식 - 조건검색
         """
-        req = ConditionalSearchRealTimeCancellationRequest(trnm=trnm, seq=seq)
+        req = ConditionalSearchRealTimeCancellationRequest(**{"trnm": trnm, "seq": seq})  # type: ignore
         await self.core.send_ws(req.model_dump(by_alias=True, exclude_none=True))
 
     def real_time_item_ranking(self, cont_yn: str = "", next_key: str = "", qry_tp: str = "") -> RealTimeItemRanking:
@@ -8632,7 +13573,7 @@ class KiwoomGeneratedClient:
         [ka00198] 실시간종목조회순위
         분류: 국내주식 - 종목정보
         """
-        req = RealTimeItemRankingRequest(cont_yn=cont_yn, next_key=next_key, qry_tp=qry_tp)
+        req = RealTimeItemRankingRequest(**{"cont-yn": cont_yn, "next-key": next_key, "qry_tp": qry_tp})  # type: ignore
         raw_response = self.core.call("ka00198", **req.model_dump(by_alias=True, exclude_none=True))
         return RealTimeItemRanking(**raw_response)
 
@@ -8641,7 +13582,7 @@ class KiwoomGeneratedClient:
         [ka10001] 주식기본정보요청
         분류: 국내주식 - 종목정보
         """
-        req = BasicStockInformationRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = BasicStockInformationRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10001", **req.model_dump(by_alias=True, exclude_none=True))
         return BasicStockInformation(**raw_response)
 
@@ -8650,7 +13591,7 @@ class KiwoomGeneratedClient:
         [ka10002] 주식거래원요청
         분류: 국내주식 - 종목정보
         """
-        req = StockExchangeRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = StockExchangeRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10002", **req.model_dump(by_alias=True, exclude_none=True))
         return StockExchange(**raw_response)
 
@@ -8659,79 +13600,229 @@ class KiwoomGeneratedClient:
         [ka10003] 체결정보요청
         분류: 국내주식 - 종목정보
         """
-        req = ConclusionInformationRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = ConclusionInformationRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10003", **req.model_dump(by_alias=True, exclude_none=True))
         return ConclusionInformation(**raw_response)
 
-    def credit_trading_trend(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", dt: str = "", qry_tp: str = "") -> CreditTradingTrend:
+    def credit_trading_trend(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", dt: str = "", qry_tp: str = ""
+    ) -> CreditTradingTrend:
         """
         [ka10013] 신용매매동향요청
         분류: 국내주식 - 종목정보
         """
-        req = CreditTradingTrendRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, dt=dt, qry_tp=qry_tp)
+        req = CreditTradingTrendRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "dt": dt, "qry_tp": qry_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka10013", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditTradingTrend(**raw_response)
 
-    def daily_transaction(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "") -> DailyTransaction:
+    def daily_transaction(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = ""
+    ) -> DailyTransaction:
         """
         [ka10015] 일별거래상세요청
         분류: 국내주식 - 종목정보
         """
-        req = DailyTransactionRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt)
+        req = DailyTransactionRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "strt_dt": strt_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka10015", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyTransaction(**raw_response)
 
-    def low_report(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", ntl_tp: str = "", high_low_close_tp: str = "", stk_cnd: str = "", trde_qty_tp: str = "", crd_cnd: str = "", updown_incls: str = "", dt: str = "", stex_tp: str = "") -> LowReport:
+    def low_report(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        ntl_tp: str = "",
+        high_low_close_tp: str = "",
+        stk_cnd: str = "",
+        trde_qty_tp: str = "",
+        crd_cnd: str = "",
+        updown_incls: str = "",
+        dt: str = "",
+        stex_tp: str = "",
+    ) -> LowReport:
         """
         [ka10016] 신고저가요청
         분류: 국내주식 - 종목정보
         """
-        req = LowReportRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, ntl_tp=ntl_tp, high_low_close_tp=high_low_close_tp, stk_cnd=stk_cnd, trde_qty_tp=trde_qty_tp, crd_cnd=crd_cnd, updown_incls=updown_incls, dt=dt, stex_tp=stex_tp)
+        req = LowReportRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "ntl_tp": ntl_tp,
+                "high_low_close_tp": high_low_close_tp,
+                "stk_cnd": stk_cnd,
+                "trde_qty_tp": trde_qty_tp,
+                "crd_cnd": crd_cnd,
+                "updown_incls": updown_incls,
+                "dt": dt,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10016", **req.model_dump(by_alias=True, exclude_none=True))
         return LowReport(**raw_response)
 
-    def upper_lower_limits(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", updown_tp: str = "", sort_tp: str = "", stk_cnd: str = "", trde_qty_tp: str = "", crd_cnd: str = "", trde_gold_tp: str = "", stex_tp: str = "") -> UpperLowerLimits:
+    def upper_lower_limits(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        updown_tp: str = "",
+        sort_tp: str = "",
+        stk_cnd: str = "",
+        trde_qty_tp: str = "",
+        crd_cnd: str = "",
+        trde_gold_tp: str = "",
+        stex_tp: str = "",
+    ) -> UpperLowerLimits:
         """
         [ka10017] 상하한가요청
         분류: 국내주식 - 종목정보
         """
-        req = UpperLowerLimitsRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, updown_tp=updown_tp, sort_tp=sort_tp, stk_cnd=stk_cnd, trde_qty_tp=trde_qty_tp, crd_cnd=crd_cnd, trde_gold_tp=trde_gold_tp, stex_tp=stex_tp)
+        req = UpperLowerLimitsRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "updown_tp": updown_tp,
+                "sort_tp": sort_tp,
+                "stk_cnd": stk_cnd,
+                "trde_qty_tp": trde_qty_tp,
+                "crd_cnd": crd_cnd,
+                "trde_gold_tp": trde_gold_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10017", **req.model_dump(by_alias=True, exclude_none=True))
         return UpperLowerLimits(**raw_response)
 
-    def high_low_price_proximity(self, cont_yn: str = "", next_key: str = "", high_low_tp: str = "", alacc_rt: str = "", mrkt_tp: str = "", trde_qty_tp: str = "", stk_cnd: str = "", crd_cnd: str = "", stex_tp: str = "") -> HighLowPriceProximity:
+    def high_low_price_proximity(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        high_low_tp: str = "",
+        alacc_rt: str = "",
+        mrkt_tp: str = "",
+        trde_qty_tp: str = "",
+        stk_cnd: str = "",
+        crd_cnd: str = "",
+        stex_tp: str = "",
+    ) -> HighLowPriceProximity:
         """
         [ka10018] 고저가근접요청
         분류: 국내주식 - 종목정보
         """
-        req = HighLowPriceProximityRequest(cont_yn=cont_yn, next_key=next_key, high_low_tp=high_low_tp, alacc_rt=alacc_rt, mrkt_tp=mrkt_tp, trde_qty_tp=trde_qty_tp, stk_cnd=stk_cnd, crd_cnd=crd_cnd, stex_tp=stex_tp)
+        req = HighLowPriceProximityRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "high_low_tp": high_low_tp,
+                "alacc_rt": alacc_rt,
+                "mrkt_tp": mrkt_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "stk_cnd": stk_cnd,
+                "crd_cnd": crd_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10018", **req.model_dump(by_alias=True, exclude_none=True))
         return HighLowPriceProximity(**raw_response)
 
-    def sudden_price_fluctuation(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", flu_tp: str = "", tm_tp: str = "", tm: str = "", trde_qty_tp: str = "", stk_cnd: str = "", crd_cnd: str = "", pric_cnd: str = "", updown_incls: str = "", stex_tp: str = "") -> SuddenPriceFluctuation:
+    def sudden_price_fluctuation(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        flu_tp: str = "",
+        tm_tp: str = "",
+        tm: str = "",
+        trde_qty_tp: str = "",
+        stk_cnd: str = "",
+        crd_cnd: str = "",
+        pric_cnd: str = "",
+        updown_incls: str = "",
+        stex_tp: str = "",
+    ) -> SuddenPriceFluctuation:
         """
         [ka10019] 가격급등락요청
         분류: 국내주식 - 종목정보
         """
-        req = SuddenPriceFluctuationRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, flu_tp=flu_tp, tm_tp=tm_tp, tm=tm, trde_qty_tp=trde_qty_tp, stk_cnd=stk_cnd, crd_cnd=crd_cnd, pric_cnd=pric_cnd, updown_incls=updown_incls, stex_tp=stex_tp)
+        req = SuddenPriceFluctuationRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "flu_tp": flu_tp,
+                "tm_tp": tm_tp,
+                "tm": tm,
+                "trde_qty_tp": trde_qty_tp,
+                "stk_cnd": stk_cnd,
+                "crd_cnd": crd_cnd,
+                "pric_cnd": pric_cnd,
+                "updown_incls": updown_incls,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10019", **req.model_dump(by_alias=True, exclude_none=True))
         return SuddenPriceFluctuation(**raw_response)
 
-    def transaction_volume_update(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", cycle_tp: str = "", trde_qty_tp: str = "", stex_tp: str = "") -> TransactionVolumeUpdate:
+    def transaction_volume_update(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        cycle_tp: str = "",
+        trde_qty_tp: str = "",
+        stex_tp: str = "",
+    ) -> TransactionVolumeUpdate:
         """
         [ka10024] 거래량갱신요청
         분류: 국내주식 - 종목정보
         """
-        req = TransactionVolumeUpdateRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, cycle_tp=cycle_tp, trde_qty_tp=trde_qty_tp, stex_tp=stex_tp)
+        req = TransactionVolumeUpdateRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "cycle_tp": cycle_tp,
+                "trde_qty_tp": trde_qty_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10024", **req.model_dump(by_alias=True, exclude_none=True))
         return TransactionVolumeUpdate(**raw_response)
 
-    def concentration_properties_sale(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", prps_cnctr_rt: str = "", cur_prc_entry: str = "", prpscnt: str = "", cycle_tp: str = "", stex_tp: str = "") -> ConcentrationPropertiesSale:
+    def concentration_properties_sale(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        prps_cnctr_rt: str = "",
+        cur_prc_entry: str = "",
+        prpscnt: str = "",
+        cycle_tp: str = "",
+        stex_tp: str = "",
+    ) -> ConcentrationPropertiesSale:
         """
         [ka10025] 매물대집중요청
         분류: 국내주식 - 종목정보
         """
-        req = ConcentrationPropertiesSaleRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, prps_cnctr_rt=prps_cnctr_rt, cur_prc_entry=cur_prc_entry, prpscnt=prpscnt, cycle_tp=cycle_tp, stex_tp=stex_tp)
+        req = ConcentrationPropertiesSaleRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "prps_cnctr_rt": prps_cnctr_rt,
+                "cur_prc_entry": cur_prc_entry,
+                "prpscnt": prpscnt,
+                "cycle_tp": cycle_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10025", **req.model_dump(by_alias=True, exclude_none=True))
         return ConcentrationPropertiesSale(**raw_response)
 
@@ -8740,97 +13831,291 @@ class KiwoomGeneratedClient:
         [ka10026] 고저PER요청
         분류: 국내주식 - 종목정보
         """
-        req = HighLowPerRequest(cont_yn=cont_yn, next_key=next_key, pertp=pertp, stex_tp=stex_tp)
+        req = HighLowPerRequest(**{"cont-yn": cont_yn, "next-key": next_key, "pertp": pertp, "stex_tp": stex_tp})  # type: ignore
         raw_response = self.core.call("ka10026", **req.model_dump(by_alias=True, exclude_none=True))
         return HighLowPer(**raw_response)
 
-    def fluctuation_rate_compared_market_price(self, cont_yn: str = "", next_key: str = "", sort_tp: str = "", trde_qty_cnd: str = "", mrkt_tp: str = "", updown_incls: str = "", stk_cnd: str = "", crd_cnd: str = "", trde_prica_cnd: str = "", flu_cnd: str = "", stex_tp: str = "") -> FluctuationRateComparedMarketPrice:
+    def fluctuation_rate_compared_market_price(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        sort_tp: str = "",
+        trde_qty_cnd: str = "",
+        mrkt_tp: str = "",
+        updown_incls: str = "",
+        stk_cnd: str = "",
+        crd_cnd: str = "",
+        trde_prica_cnd: str = "",
+        flu_cnd: str = "",
+        stex_tp: str = "",
+    ) -> FluctuationRateComparedMarketPrice:
         """
         [ka10028] 시가대비등락률요청
         분류: 국내주식 - 종목정보
         """
-        req = FluctuationRateComparedMarketPriceRequest(cont_yn=cont_yn, next_key=next_key, sort_tp=sort_tp, trde_qty_cnd=trde_qty_cnd, mrkt_tp=mrkt_tp, updown_incls=updown_incls, stk_cnd=stk_cnd, crd_cnd=crd_cnd, trde_prica_cnd=trde_prica_cnd, flu_cnd=flu_cnd, stex_tp=stex_tp)
+        req = FluctuationRateComparedMarketPriceRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "sort_tp": sort_tp,
+                "trde_qty_cnd": trde_qty_cnd,
+                "mrkt_tp": mrkt_tp,
+                "updown_incls": updown_incls,
+                "stk_cnd": stk_cnd,
+                "crd_cnd": crd_cnd,
+                "trde_prica_cnd": trde_prica_cnd,
+                "flu_cnd": flu_cnd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10028", **req.model_dump(by_alias=True, exclude_none=True))
         return FluctuationRateComparedMarketPrice(**raw_response)
 
-    def transaction_price_analysis(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = "", qry_dt_tp: str = "", pot_tp: str = "", dt: str = "", sort_base: str = "", mmcm_cd: str = "", stex_tp: str = "") -> TransactionPriceAnalysis:
+    def transaction_price_analysis(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        qry_dt_tp: str = "",
+        pot_tp: str = "",
+        dt: str = "",
+        sort_base: str = "",
+        mmcm_cd: str = "",
+        stex_tp: str = "",
+    ) -> TransactionPriceAnalysis:
         """
         [ka10043] 거래원매물대분석요청
         분류: 국내주식 - 종목정보
         """
-        req = TransactionPriceAnalysisRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt, end_dt=end_dt, qry_dt_tp=qry_dt_tp, pot_tp=pot_tp, dt=dt, sort_base=sort_base, mmcm_cd=mmcm_cd, stex_tp=stex_tp)
+        req = TransactionPriceAnalysisRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "qry_dt_tp": qry_dt_tp,
+                "pot_tp": pot_tp,
+                "dt": dt,
+                "sort_base": sort_base,
+                "mmcm_cd": mmcm_cd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10043", **req.model_dump(by_alias=True, exclude_none=True))
         return TransactionPriceAnalysis(**raw_response)
 
-    def trader_instantaneous_trading_volume(self, cont_yn: str = "", next_key: str = "", mmcm_cd: str = "", stk_cd: str = "", mrkt_tp: str = "", qty_tp: str = "", pric_tp: str = "", stex_tp: str = "") -> TraderInstantaneousTradingVolume:
+    def trader_instantaneous_trading_volume(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mmcm_cd: str = "",
+        stk_cd: str = "",
+        mrkt_tp: str = "",
+        qty_tp: str = "",
+        pric_tp: str = "",
+        stex_tp: str = "",
+    ) -> TraderInstantaneousTradingVolume:
         """
         [ka10052] 거래원순간거래량요청
         분류: 국내주식 - 종목정보
         """
-        req = TraderInstantaneousTradingVolumeRequest(cont_yn=cont_yn, next_key=next_key, mmcm_cd=mmcm_cd, stk_cd=stk_cd, mrkt_tp=mrkt_tp, qty_tp=qty_tp, pric_tp=pric_tp, stex_tp=stex_tp)
+        req = TraderInstantaneousTradingVolumeRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mmcm_cd": mmcm_cd,
+                "stk_cd": stk_cd,
+                "mrkt_tp": mrkt_tp,
+                "qty_tp": qty_tp,
+                "pric_tp": pric_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10052", **req.model_dump(by_alias=True, exclude_none=True))
         return TraderInstantaneousTradingVolume(**raw_response)
 
-    def items_activate_volatility_mitigation_device(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", bf_mkrt_tp: str = "", stk_cd: str = "", motn_tp: str = "", skip_stk: str = "", trde_qty_tp: str = "", min_trde_qty: str = "", max_trde_qty: str = "", trde_prica_tp: str = "", min_trde_prica: str = "", max_trde_prica: str = "", motn_drc: str = "", stex_tp: str = "") -> ItemsActivateVolatilityMitigationDevice:
+    def items_activate_volatility_mitigation_device(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        bf_mkrt_tp: str = "",
+        stk_cd: str = "",
+        motn_tp: str = "",
+        skip_stk: str = "",
+        trde_qty_tp: str = "",
+        min_trde_qty: str = "",
+        max_trde_qty: str = "",
+        trde_prica_tp: str = "",
+        min_trde_prica: str = "",
+        max_trde_prica: str = "",
+        motn_drc: str = "",
+        stex_tp: str = "",
+    ) -> ItemsActivateVolatilityMitigationDevice:
         """
         [ka10054] 변동성완화장치발동종목요청
         분류: 국내주식 - 종목정보
         """
-        req = ItemsActivateVolatilityMitigationDeviceRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, bf_mkrt_tp=bf_mkrt_tp, stk_cd=stk_cd, motn_tp=motn_tp, skip_stk=skip_stk, trde_qty_tp=trde_qty_tp, min_trde_qty=min_trde_qty, max_trde_qty=max_trde_qty, trde_prica_tp=trde_prica_tp, min_trde_prica=min_trde_prica, max_trde_prica=max_trde_prica, motn_drc=motn_drc, stex_tp=stex_tp)
+        req = ItemsActivateVolatilityMitigationDeviceRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "bf_mkrt_tp": bf_mkrt_tp,
+                "stk_cd": stk_cd,
+                "motn_tp": motn_tp,
+                "skip_stk": skip_stk,
+                "trde_qty_tp": trde_qty_tp,
+                "min_trde_qty": min_trde_qty,
+                "max_trde_qty": max_trde_qty,
+                "trde_prica_tp": trde_prica_tp,
+                "min_trde_prica": min_trde_prica,
+                "max_trde_prica": max_trde_prica,
+                "motn_drc": motn_drc,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10054", **req.model_dump(by_alias=True, exclude_none=True))
         return ItemsActivateVolatilityMitigationDevice(**raw_response)
 
-    def settlement_day_before_day(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tdy_pred: str = "") -> SettlementDayBeforeDay:
+    def settlement_day_before_day(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tdy_pred: str = ""
+    ) -> SettlementDayBeforeDay:
         """
         [ka10055] 당일전일체결량요청
         분류: 국내주식 - 종목정보
         """
-        req = SettlementDayBeforeDayRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tdy_pred=tdy_pred)
+        req = SettlementDayBeforeDayRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "tdy_pred": tdy_pred}
+        )  # type: ignore
         raw_response = self.core.call("ka10055", **req.model_dump(by_alias=True, exclude_none=True))
         return SettlementDayBeforeDay(**raw_response)
 
-    def daily_trading_items_by_investor(self, cont_yn: str = "", next_key: str = "", strt_dt: str = "", end_dt: str = "", trde_tp: str = "", mrkt_tp: str = "", invsr_tp: str = "", stex_tp: str = "") -> DailyTradingItemsByInvestor:
+    def daily_trading_items_by_investor(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        trde_tp: str = "",
+        mrkt_tp: str = "",
+        invsr_tp: str = "",
+        stex_tp: str = "",
+    ) -> DailyTradingItemsByInvestor:
         """
         [ka10058] 투자자별일별매매종목요청
         분류: 국내주식 - 종목정보
         """
-        req = DailyTradingItemsByInvestorRequest(cont_yn=cont_yn, next_key=next_key, strt_dt=strt_dt, end_dt=end_dt, trde_tp=trde_tp, mrkt_tp=mrkt_tp, invsr_tp=invsr_tp, stex_tp=stex_tp)
+        req = DailyTradingItemsByInvestorRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "trde_tp": trde_tp,
+                "mrkt_tp": mrkt_tp,
+                "invsr_tp": invsr_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10058", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyTradingItemsByInvestor(**raw_response)
 
-    def requests_by_item_investor_institution(self, cont_yn: str = "", next_key: str = "", dt: str = "", stk_cd: str = "", amt_qty_tp: str = "", trde_tp: str = "", unit_tp: str = "") -> RequestsByItemInvestorInstitution:
+    def requests_by_item_investor_institution(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dt: str = "",
+        stk_cd: str = "",
+        amt_qty_tp: str = "",
+        trde_tp: str = "",
+        unit_tp: str = "",
+    ) -> RequestsByItemInvestorInstitution:
         """
         [ka10059] 종목별투자자기관별요청
         분류: 국내주식 - 종목정보
         """
-        req = RequestsByItemInvestorInstitutionRequest(cont_yn=cont_yn, next_key=next_key, dt=dt, stk_cd=stk_cd, amt_qty_tp=amt_qty_tp, trde_tp=trde_tp, unit_tp=unit_tp)
+        req = RequestsByItemInvestorInstitutionRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dt": dt,
+                "stk_cd": stk_cd,
+                "amt_qty_tp": amt_qty_tp,
+                "trde_tp": trde_tp,
+                "unit_tp": unit_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10059", **req.model_dump(by_alias=True, exclude_none=True))
         return RequestsByItemInvestorInstitution(**raw_response)
 
-    def total_by_item_investor_institution(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", strt_dt: str = "", end_dt: str = "", amt_qty_tp: str = "", trde_tp: str = "", unit_tp: str = "") -> TotalByItemInvestorInstitution:
+    def total_by_item_investor_institution(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        strt_dt: str = "",
+        end_dt: str = "",
+        amt_qty_tp: str = "",
+        trde_tp: str = "",
+        unit_tp: str = "",
+    ) -> TotalByItemInvestorInstitution:
         """
         [ka10061] 종목별투자자기관별합계요청
         분류: 국내주식 - 종목정보
         """
-        req = TotalByItemInvestorInstitutionRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, strt_dt=strt_dt, end_dt=end_dt, amt_qty_tp=amt_qty_tp, trde_tp=trde_tp, unit_tp=unit_tp)
+        req = TotalByItemInvestorInstitutionRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "strt_dt": strt_dt,
+                "end_dt": end_dt,
+                "amt_qty_tp": amt_qty_tp,
+                "trde_tp": trde_tp,
+                "unit_tp": unit_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10061", **req.model_dump(by_alias=True, exclude_none=True))
         return TotalByItemInvestorInstitution(**raw_response)
 
-    def settlement_day_before_same_day(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tdy_pred: str = "", tic_min: str = "", tm: str = "") -> SettlementDayBeforeSameDay:
+    def settlement_day_before_same_day(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        tdy_pred: str = "",
+        tic_min: str = "",
+        tm: str = "",
+    ) -> SettlementDayBeforeSameDay:
         """
         [ka10084] 당일전일체결요청
         분류: 국내주식 - 종목정보
         """
-        req = SettlementDayBeforeSameDayRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tdy_pred=tdy_pred, tic_min=tic_min, tm=tm)
+        req = SettlementDayBeforeSameDayRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "tdy_pred": tdy_pred,
+                "tic_min": tic_min,
+                "tm": tm,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10084", **req.model_dump(by_alias=True, exclude_none=True))
         return SettlementDayBeforeSameDay(**raw_response)
 
-    def information_items_interest(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> InformationItemsInterest:
+    def information_items_interest(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> InformationItemsInterest:
         """
         [ka10095] 관심종목정보요청
         분류: 국내주식 - 종목정보
         """
-        req = InformationItemsInterestRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = InformationItemsInterestRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10095", **req.model_dump(by_alias=True, exclude_none=True))
         return InformationItemsInterest(**raw_response)
 
@@ -8839,7 +14124,7 @@ class KiwoomGeneratedClient:
         [ka10099] 종목정보 리스트
         분류: 국내주식 - 종목정보
         """
-        req = StockInformationListRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp)
+        req = StockInformationListRequest(**{"cont-yn": cont_yn, "next-key": next_key, "mrkt_tp": mrkt_tp})  # type: ignore
         raw_response = self.core.call("ka10099", **req.model_dump(by_alias=True, exclude_none=True))
         return StockInformationList(**raw_response)
 
@@ -8848,7 +14133,7 @@ class KiwoomGeneratedClient:
         [ka10100] 종목정보 조회
         분류: 국내주식 - 종목정보
         """
-        req = CheckStockInformationRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = CheckStockInformationRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10100", **req.model_dump(by_alias=True, exclude_none=True))
         return CheckStockInformation(**raw_response)
 
@@ -8857,7 +14142,7 @@ class KiwoomGeneratedClient:
         [ka10101] 업종코드 리스트
         분류: 국내주식 - 종목정보
         """
-        req = IndustryCodeListRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp)
+        req = IndustryCodeListRequest(**{"cont-yn": cont_yn, "next-key": next_key, "mrkt_tp": mrkt_tp})  # type: ignore
         raw_response = self.core.call("ka10101", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryCodeList(**raw_response)
 
@@ -8866,403 +14151,905 @@ class KiwoomGeneratedClient:
         [ka10102] 회원사 리스트
         분류: 국내주식 - 종목정보
         """
-        req = MemberCompanyListRequest(cont_yn=cont_yn, next_key=next_key)
+        req = MemberCompanyListRequest(**{"cont-yn": cont_yn, "next-key": next_key})  # type: ignore
         raw_response = self.core.call("ka10102", **req.model_dump(by_alias=True, exclude_none=True))
         return MemberCompanyList(**raw_response)
 
-    def top50_program_net_purchases(self, cont_yn: str = "", next_key: str = "", trde_upper_tp: str = "", amt_qty_tp: str = "", mrkt_tp: str = "", stex_tp: str = "") -> Top50ProgramNetPurchases:
+    def top50_program_net_purchases(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        trde_upper_tp: str = "",
+        amt_qty_tp: str = "",
+        mrkt_tp: str = "",
+        stex_tp: str = "",
+    ) -> Top50ProgramNetPurchases:
         """
         [ka90003] 프로그램순매수상위50요청
         분류: 국내주식 - 종목정보
         """
-        req = Top50ProgramNetPurchasesRequest(cont_yn=cont_yn, next_key=next_key, trde_upper_tp=trde_upper_tp, amt_qty_tp=amt_qty_tp, mrkt_tp=mrkt_tp, stex_tp=stex_tp)
+        req = Top50ProgramNetPurchasesRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "trde_upper_tp": trde_upper_tp,
+                "amt_qty_tp": amt_qty_tp,
+                "mrkt_tp": mrkt_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka90003", **req.model_dump(by_alias=True, exclude_none=True))
         return Top50ProgramNetPurchases(**raw_response)
 
-    def program_trading_by_item(self, cont_yn: str = "", next_key: str = "", dt: str = "", mrkt_tp: str = "", stex_tp: str = "") -> ProgramTradingByItem:
+    def program_trading_by_item(
+        self, cont_yn: str = "", next_key: str = "", dt: str = "", mrkt_tp: str = "", stex_tp: str = ""
+    ) -> ProgramTradingByItem:
         """
         [ka90004] 종목별프로그램매매현황요청
         분류: 국내주식 - 종목정보
         """
-        req = ProgramTradingByItemRequest(cont_yn=cont_yn, next_key=next_key, dt=dt, mrkt_tp=mrkt_tp, stex_tp=stex_tp)
+        req = ProgramTradingByItemRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "dt": dt, "mrkt_tp": mrkt_tp, "stex_tp": stex_tp}
+        )  # type: ignore
         raw_response = self.core.call("ka90004", **req.model_dump(by_alias=True, exclude_none=True))
         return ProgramTradingByItem(**raw_response)
 
-    def credit_loan_available_items(self, cont_yn: str = "", next_key: str = "", crd_stk_grde_tp: str = "", mrkt_deal_tp: str = "", stk_cd: str = "") -> CreditLoanAvailableItems:
+    def credit_loan_available_items(
+        self, cont_yn: str = "", next_key: str = "", crd_stk_grde_tp: str = "", mrkt_deal_tp: str = "", stk_cd: str = ""
+    ) -> CreditLoanAvailableItems:
         """
         [kt20016] 신용융자 가능종목요청
         분류: 국내주식 - 종목정보
         """
-        req = CreditLoanAvailableItemsRequest(cont_yn=cont_yn, next_key=next_key, crd_stk_grde_tp=crd_stk_grde_tp, mrkt_deal_tp=mrkt_deal_tp, stk_cd=stk_cd)
+        req = CreditLoanAvailableItemsRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "crd_stk_grde_tp": crd_stk_grde_tp,
+                "mrkt_deal_tp": mrkt_deal_tp,
+                "stk_cd": stk_cd,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt20016", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditLoanAvailableItems(**raw_response)
 
-    def credit_loan_availability(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> CreditLoanAvailability:
+    def credit_loan_availability(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> CreditLoanAvailability:
         """
         [kt20017] 신용융자 가능문의
         분류: 국내주식 - 종목정보
         """
-        req = CreditLoanAvailabilityRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = CreditLoanAvailabilityRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("kt20017", **req.model_dump(by_alias=True, exclude_none=True))
         return CreditLoanAvailability(**raw_response)
 
-    def stock_purchase_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", stk_cd: str = "", ord_qty: str = "", ord_uv: str = "", trde_tp: str = "", cond_uv: str = "") -> StockPurchaseOrder:
+    def stock_purchase_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        stk_cd: str = "",
+        ord_qty: str = "",
+        ord_uv: str = "",
+        trde_tp: str = "",
+        cond_uv: str = "",
+    ) -> StockPurchaseOrder:
         """
         [kt10000] 주식 매수주문
         분류: 국내주식 - 주문
         """
-        req = StockPurchaseOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, stk_cd=stk_cd, ord_qty=ord_qty, ord_uv=ord_uv, trde_tp=trde_tp, cond_uv=cond_uv)
+        req = StockPurchaseOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "stk_cd": stk_cd,
+                "ord_qty": ord_qty,
+                "ord_uv": ord_uv,
+                "trde_tp": trde_tp,
+                "cond_uv": cond_uv,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10000", **req.model_dump(by_alias=True, exclude_none=True))
         return StockPurchaseOrder(**raw_response)
 
-    def stock_sell_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", stk_cd: str = "", ord_qty: str = "", ord_uv: str = "", trde_tp: str = "", cond_uv: str = "") -> StockSellOrder:
+    def stock_sell_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        stk_cd: str = "",
+        ord_qty: str = "",
+        ord_uv: str = "",
+        trde_tp: str = "",
+        cond_uv: str = "",
+    ) -> StockSellOrder:
         """
         [kt10001] 주식 매도주문
         분류: 국내주식 - 주문
         """
-        req = StockSellOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, stk_cd=stk_cd, ord_qty=ord_qty, ord_uv=ord_uv, trde_tp=trde_tp, cond_uv=cond_uv)
+        req = StockSellOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "stk_cd": stk_cd,
+                "ord_qty": ord_qty,
+                "ord_uv": ord_uv,
+                "trde_tp": trde_tp,
+                "cond_uv": cond_uv,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10001", **req.model_dump(by_alias=True, exclude_none=True))
         return StockSellOrder(**raw_response)
 
-    def stock_correction_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", orig_ord_no: str = "", stk_cd: str = "", mdfy_qty: str = "", mdfy_uv: str = "", mdfy_cond_uv: str = "") -> StockCorrectionOrder:
+    def stock_correction_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        orig_ord_no: str = "",
+        stk_cd: str = "",
+        mdfy_qty: str = "",
+        mdfy_uv: str = "",
+        mdfy_cond_uv: str = "",
+    ) -> StockCorrectionOrder:
         """
         [kt10002] 주식 정정주문
         분류: 국내주식 - 주문
         """
-        req = StockCorrectionOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, orig_ord_no=orig_ord_no, stk_cd=stk_cd, mdfy_qty=mdfy_qty, mdfy_uv=mdfy_uv, mdfy_cond_uv=mdfy_cond_uv)
+        req = StockCorrectionOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "orig_ord_no": orig_ord_no,
+                "stk_cd": stk_cd,
+                "mdfy_qty": mdfy_qty,
+                "mdfy_uv": mdfy_uv,
+                "mdfy_cond_uv": mdfy_cond_uv,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10002", **req.model_dump(by_alias=True, exclude_none=True))
         return StockCorrectionOrder(**raw_response)
 
-    def stock_cancellation_order(self, cont_yn: str = "", next_key: str = "", dmst_stex_tp: str = "", orig_ord_no: str = "", stk_cd: str = "", cncl_qty: str = "") -> StockCancellationOrder:
+    def stock_cancellation_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dmst_stex_tp: str = "",
+        orig_ord_no: str = "",
+        stk_cd: str = "",
+        cncl_qty: str = "",
+    ) -> StockCancellationOrder:
         """
         [kt10003] 주식 취소주문
         분류: 국내주식 - 주문
         """
-        req = StockCancellationOrderRequest(cont_yn=cont_yn, next_key=next_key, dmst_stex_tp=dmst_stex_tp, orig_ord_no=orig_ord_no, stk_cd=stk_cd, cncl_qty=cncl_qty)
+        req = StockCancellationOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dmst_stex_tp": dmst_stex_tp,
+                "orig_ord_no": orig_ord_no,
+                "stk_cd": stk_cd,
+                "cncl_qty": cncl_qty,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt10003", **req.model_dump(by_alias=True, exclude_none=True))
         return StockCancellationOrder(**raw_response)
 
-    def gold_spot_purchase_order(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", ord_qty: str = "", ord_uv: str = "", trde_tp: str = "") -> GoldSpotPurchaseOrder:
+    def gold_spot_purchase_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        ord_qty: str = "",
+        ord_uv: str = "",
+        trde_tp: str = "",
+    ) -> GoldSpotPurchaseOrder:
         """
         [kt50000] 금현물 매수주문
         분류: 국내주식 - 주문
         """
-        req = GoldSpotPurchaseOrderRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, ord_qty=ord_qty, ord_uv=ord_uv, trde_tp=trde_tp)
+        req = GoldSpotPurchaseOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "ord_qty": ord_qty,
+                "ord_uv": ord_uv,
+                "trde_tp": trde_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50000", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotPurchaseOrder(**raw_response)
 
-    def gold_spot_sell_order(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", ord_qty: str = "", ord_uv: str = "", trde_tp: str = "") -> GoldSpotSellOrder:
+    def gold_spot_sell_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        ord_qty: str = "",
+        ord_uv: str = "",
+        trde_tp: str = "",
+    ) -> GoldSpotSellOrder:
         """
         [kt50001] 금현물 매도주문
         분류: 국내주식 - 주문
         """
-        req = GoldSpotSellOrderRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, ord_qty=ord_qty, ord_uv=ord_uv, trde_tp=trde_tp)
+        req = GoldSpotSellOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "ord_qty": ord_qty,
+                "ord_uv": ord_uv,
+                "trde_tp": trde_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50001", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotSellOrder(**raw_response)
 
-    def spot_gold_correction_order(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", orig_ord_no: str = "", mdfy_qty: str = "", mdfy_uv: str = "") -> SpotGoldCorrectionOrder:
+    def spot_gold_correction_order(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        orig_ord_no: str = "",
+        mdfy_qty: str = "",
+        mdfy_uv: str = "",
+    ) -> SpotGoldCorrectionOrder:
         """
         [kt50002] 금현물 정정주문
         분류: 국내주식 - 주문
         """
-        req = SpotGoldCorrectionOrderRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, orig_ord_no=orig_ord_no, mdfy_qty=mdfy_qty, mdfy_uv=mdfy_uv)
+        req = SpotGoldCorrectionOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "orig_ord_no": orig_ord_no,
+                "mdfy_qty": mdfy_qty,
+                "mdfy_uv": mdfy_uv,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50002", **req.model_dump(by_alias=True, exclude_none=True))
         return SpotGoldCorrectionOrder(**raw_response)
 
-    def gold_spot_cancellation_order(self, cont_yn: str = "", next_key: str = "", orig_ord_no: str = "", stk_cd: str = "", cncl_qty: str = "") -> GoldSpotCancellationOrder:
+    def gold_spot_cancellation_order(
+        self, cont_yn: str = "", next_key: str = "", orig_ord_no: str = "", stk_cd: str = "", cncl_qty: str = ""
+    ) -> GoldSpotCancellationOrder:
         """
         [kt50003] 금현물 취소주문
         분류: 국내주식 - 주문
         """
-        req = GoldSpotCancellationOrderRequest(cont_yn=cont_yn, next_key=next_key, orig_ord_no=orig_ord_no, stk_cd=stk_cd, cncl_qty=cncl_qty)
+        req = GoldSpotCancellationOrderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "orig_ord_no": orig_ord_no,
+                "stk_cd": stk_cd,
+                "cncl_qty": cncl_qty,
+            }
+        )  # type: ignore
         raw_response = self.core.call("kt50003", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotCancellationOrder(**raw_response)
 
-    def chart_by_item_investor_institution(self, cont_yn: str = "", next_key: str = "", dt: str = "", stk_cd: str = "", amt_qty_tp: str = "", trde_tp: str = "", unit_tp: str = "") -> ChartByItemInvestorInstitution:
+    def chart_by_item_investor_institution(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        dt: str = "",
+        stk_cd: str = "",
+        amt_qty_tp: str = "",
+        trde_tp: str = "",
+        unit_tp: str = "",
+    ) -> ChartByItemInvestorInstitution:
         """
         [ka10060] 종목별투자자기관별차트요청
         분류: 국내주식 - 차트
         """
-        req = ChartByItemInvestorInstitutionRequest(cont_yn=cont_yn, next_key=next_key, dt=dt, stk_cd=stk_cd, amt_qty_tp=amt_qty_tp, trde_tp=trde_tp, unit_tp=unit_tp)
+        req = ChartByItemInvestorInstitutionRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "dt": dt,
+                "stk_cd": stk_cd,
+                "amt_qty_tp": amt_qty_tp,
+                "trde_tp": trde_tp,
+                "unit_tp": unit_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10060", **req.model_dump(by_alias=True, exclude_none=True))
         return ChartByItemInvestorInstitution(**raw_response)
 
-    def intraday_investor_specific_trading_chart(self, cont_yn: str = "", next_key: str = "", mrkt_tp: str = "", amt_qty_tp: str = "", trde_tp: str = "", stk_cd: str = "") -> IntradayInvestorSpecificTradingChart:
+    def intraday_investor_specific_trading_chart(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        mrkt_tp: str = "",
+        amt_qty_tp: str = "",
+        trde_tp: str = "",
+        stk_cd: str = "",
+    ) -> IntradayInvestorSpecificTradingChart:
         """
         [ka10064] 장중투자자별매매차트요청
         분류: 국내주식 - 차트
         """
-        req = IntradayInvestorSpecificTradingChartRequest(cont_yn=cont_yn, next_key=next_key, mrkt_tp=mrkt_tp, amt_qty_tp=amt_qty_tp, trde_tp=trde_tp, stk_cd=stk_cd)
+        req = IntradayInvestorSpecificTradingChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "mrkt_tp": mrkt_tp,
+                "amt_qty_tp": amt_qty_tp,
+                "trde_tp": trde_tp,
+                "stk_cd": stk_cd,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10064", **req.model_dump(by_alias=True, exclude_none=True))
         return IntradayInvestorSpecificTradingChart(**raw_response)
 
-    def stock_tick_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "", upd_stkpc_tp: str = "") -> StockTickChart:
+    def stock_tick_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "", upd_stkpc_tp: str = ""
+    ) -> StockTickChart:
         """
         [ka10079] 주식틱차트조회요청
         분류: 국내주식 - 차트
         """
-        req = StockTickChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tic_scope=tic_scope, upd_stkpc_tp=upd_stkpc_tp)
+        req = StockTickChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "tic_scope": tic_scope,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10079", **req.model_dump(by_alias=True, exclude_none=True))
         return StockTickChart(**raw_response)
 
-    def stock_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "", upd_stkpc_tp: str = "", base_dt: str = "") -> StockChart:
+    def stock_chart(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        stk_cd: str = "",
+        tic_scope: str = "",
+        upd_stkpc_tp: str = "",
+        base_dt: str = "",
+    ) -> StockChart:
         """
         [ka10080] 주식분봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = StockChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tic_scope=tic_scope, upd_stkpc_tp=upd_stkpc_tp, base_dt=base_dt)
+        req = StockChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "tic_scope": tic_scope,
+                "upd_stkpc_tp": upd_stkpc_tp,
+                "base_dt": base_dt,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10080", **req.model_dump(by_alias=True, exclude_none=True))
         return StockChart(**raw_response)
 
-    def stock_daily_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = "") -> StockDailyChart:
+    def stock_daily_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = ""
+    ) -> StockDailyChart:
         """
         [ka10081] 주식일봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = StockDailyChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt, upd_stkpc_tp=upd_stkpc_tp)
+        req = StockDailyChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "base_dt": base_dt,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10081", **req.model_dump(by_alias=True, exclude_none=True))
         return StockDailyChart(**raw_response)
 
-    def stock_weekly_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = "") -> StockWeeklyChart:
+    def stock_weekly_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = ""
+    ) -> StockWeeklyChart:
         """
         [ka10082] 주식주봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = StockWeeklyChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt, upd_stkpc_tp=upd_stkpc_tp)
+        req = StockWeeklyChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "base_dt": base_dt,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10082", **req.model_dump(by_alias=True, exclude_none=True))
         return StockWeeklyChart(**raw_response)
 
-    def stock_monthly_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = "") -> StockMonthlyChart:
+    def stock_monthly_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = ""
+    ) -> StockMonthlyChart:
         """
         [ka10083] 주식월봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = StockMonthlyChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt, upd_stkpc_tp=upd_stkpc_tp)
+        req = StockMonthlyChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "base_dt": base_dt,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10083", **req.model_dump(by_alias=True, exclude_none=True))
         return StockMonthlyChart(**raw_response)
 
-    def stock_annual_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = "") -> StockAnnualChart:
+    def stock_annual_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = ""
+    ) -> StockAnnualChart:
         """
         [ka10094] 주식년봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = StockAnnualChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt, upd_stkpc_tp=upd_stkpc_tp)
+        req = StockAnnualChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "base_dt": base_dt,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka10094", **req.model_dump(by_alias=True, exclude_none=True))
         return StockAnnualChart(**raw_response)
 
-    def industry_tick_chart(self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", tic_scope: str = "") -> IndustryTickChart:
+    def industry_tick_chart(
+        self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", tic_scope: str = ""
+    ) -> IndustryTickChart:
         """
         [ka20004] 업종틱차트조회요청
         분류: 국내주식 - 차트
         """
-        req = IndustryTickChartRequest(cont_yn=cont_yn, next_key=next_key, inds_cd=inds_cd, tic_scope=tic_scope)
+        req = IndustryTickChartRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "inds_cd": inds_cd, "tic_scope": tic_scope}
+        )  # type: ignore
         raw_response = self.core.call("ka20004", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryTickChart(**raw_response)
 
-    def industry_division(self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", tic_scope: str = "", base_dt: str = "") -> IndustryDivision:
+    def industry_division(
+        self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", tic_scope: str = "", base_dt: str = ""
+    ) -> IndustryDivision:
         """
         [ka20005] 업종분봉조회요청
         분류: 국내주식 - 차트
         """
-        req = IndustryDivisionRequest(cont_yn=cont_yn, next_key=next_key, inds_cd=inds_cd, tic_scope=tic_scope, base_dt=base_dt)
+        req = IndustryDivisionRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "inds_cd": inds_cd, "tic_scope": tic_scope, "base_dt": base_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka20005", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryDivision(**raw_response)
 
-    def industry_daily_salary(self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = "") -> IndustryDailySalary:
+    def industry_daily_salary(
+        self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = ""
+    ) -> IndustryDailySalary:
         """
         [ka20006] 업종일봉조회요청
         분류: 국내주식 - 차트
         """
-        req = IndustryDailySalaryRequest(cont_yn=cont_yn, next_key=next_key, inds_cd=inds_cd, base_dt=base_dt)
+        req = IndustryDailySalaryRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "inds_cd": inds_cd, "base_dt": base_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka20006", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryDailySalary(**raw_response)
 
-    def industry_salary(self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = "") -> IndustrySalary:
+    def industry_salary(
+        self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = ""
+    ) -> IndustrySalary:
         """
         [ka20007] 업종주봉조회요청
         분류: 국내주식 - 차트
         """
-        req = IndustrySalaryRequest(cont_yn=cont_yn, next_key=next_key, inds_cd=inds_cd, base_dt=base_dt)
+        req = IndustrySalaryRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "inds_cd": inds_cd, "base_dt": base_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka20007", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustrySalary(**raw_response)
 
-    def industry_monthly_salary(self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = "") -> IndustryMonthlySalary:
+    def industry_monthly_salary(
+        self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = ""
+    ) -> IndustryMonthlySalary:
         """
         [ka20008] 업종월봉조회요청
         분류: 국내주식 - 차트
         """
-        req = IndustryMonthlySalaryRequest(cont_yn=cont_yn, next_key=next_key, inds_cd=inds_cd, base_dt=base_dt)
+        req = IndustryMonthlySalaryRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "inds_cd": inds_cd, "base_dt": base_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka20008", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryMonthlySalary(**raw_response)
 
-    def industry_year_salary(self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = "") -> IndustryYearSalary:
+    def industry_year_salary(
+        self, cont_yn: str = "", next_key: str = "", inds_cd: str = "", base_dt: str = ""
+    ) -> IndustryYearSalary:
         """
         [ka20019] 업종년봉조회요청
         분류: 국내주식 - 차트
         """
-        req = IndustryYearSalaryRequest(cont_yn=cont_yn, next_key=next_key, inds_cd=inds_cd, base_dt=base_dt)
+        req = IndustryYearSalaryRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "inds_cd": inds_cd, "base_dt": base_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka20019", **req.model_dump(by_alias=True, exclude_none=True))
         return IndustryYearSalary(**raw_response)
 
-    def gold_spot_tick_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "", upd_stkpc_tp: str = "") -> GoldSpotTickChart:
+    def gold_spot_tick_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "", upd_stkpc_tp: str = ""
+    ) -> GoldSpotTickChart:
         """
         [ka50079] 금현물틱차트조회요청
         분류: 국내주식 - 차트
         """
-        req = GoldSpotTickChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tic_scope=tic_scope, upd_stkpc_tp=upd_stkpc_tp)
+        req = GoldSpotTickChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "tic_scope": tic_scope,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka50079", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotTickChart(**raw_response)
 
-    def gold_spot_fractional_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "", upd_stkpc_tp: str = "") -> GoldSpotFractionalChart:
+    def gold_spot_fractional_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "", upd_stkpc_tp: str = ""
+    ) -> GoldSpotFractionalChart:
         """
         [ka50080] 금현물분봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = GoldSpotFractionalChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tic_scope=tic_scope, upd_stkpc_tp=upd_stkpc_tp)
+        req = GoldSpotFractionalChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "tic_scope": tic_scope,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka50080", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotFractionalChart(**raw_response)
 
-    def gold_spot_daily_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = "") -> GoldSpotDailyChart:
+    def gold_spot_daily_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = ""
+    ) -> GoldSpotDailyChart:
         """
         [ka50081] 금현물일봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = GoldSpotDailyChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt, upd_stkpc_tp=upd_stkpc_tp)
+        req = GoldSpotDailyChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "base_dt": base_dt,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka50081", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotDailyChart(**raw_response)
 
-    def gold_spot_weekly_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = "") -> GoldSpotWeeklyChart:
+    def gold_spot_weekly_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = ""
+    ) -> GoldSpotWeeklyChart:
         """
         [ka50082] 금현물주봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = GoldSpotWeeklyChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt, upd_stkpc_tp=upd_stkpc_tp)
+        req = GoldSpotWeeklyChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "base_dt": base_dt,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka50082", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotWeeklyChart(**raw_response)
 
-    def gold_spot_monthly_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = "") -> GoldSpotMonthlyChart:
+    def gold_spot_monthly_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", base_dt: str = "", upd_stkpc_tp: str = ""
+    ) -> GoldSpotMonthlyChart:
         """
         [ka50083] 금현물월봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = GoldSpotMonthlyChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, base_dt=base_dt, upd_stkpc_tp=upd_stkpc_tp)
+        req = GoldSpotMonthlyChartRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "stk_cd": stk_cd,
+                "base_dt": base_dt,
+                "upd_stkpc_tp": upd_stkpc_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka50083", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotMonthlyChart(**raw_response)
 
-    def gold_spot_daily_tick_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "") -> GoldSpotDailyTickChart:
+    def gold_spot_daily_tick_chart(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = ""
+    ) -> GoldSpotDailyTickChart:
         """
         [ka50091] 금현물당일틱차트조회요청
         분류: 국내주식 - 차트
         """
-        req = GoldSpotDailyTickChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tic_scope=tic_scope)
+        req = GoldSpotDailyTickChartRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "tic_scope": tic_scope}
+        )  # type: ignore
         raw_response = self.core.call("ka50091", **req.model_dump(by_alias=True, exclude_none=True))
         return GoldSpotDailyTickChart(**raw_response)
 
-    def gold_spot_daily_chart(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = "") -> GoldSpotDailyChart:
+    def gold_spot_daily_chart2(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", tic_scope: str = ""
+    ) -> GoldSpotDailyChart2:
         """
         [ka50092] 금현물당일분봉차트조회요청
         분류: 국내주식 - 차트
         """
-        req = GoldSpotDailyChartRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, tic_scope=tic_scope)
+        req = GoldSpotDailyChart2Request(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "tic_scope": tic_scope}
+        )  # type: ignore
         raw_response = self.core.call("ka50092", **req.model_dump(by_alias=True, exclude_none=True))
-        return GoldSpotDailyChart(**raw_response)
+        return GoldSpotDailyChart2(**raw_response)
 
-    def requests_by_theme_group(self, cont_yn: str = "", next_key: str = "", qry_tp: str = "", stk_cd: str = "", date_tp: str = "", thema_nm: str = "", flu_pl_amt_tp: str = "", stex_tp: str = "") -> RequestsByThemeGroup:
+    def requests_by_theme_group(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        qry_tp: str = "",
+        stk_cd: str = "",
+        date_tp: str = "",
+        thema_nm: str = "",
+        flu_pl_amt_tp: str = "",
+        stex_tp: str = "",
+    ) -> RequestsByThemeGroup:
         """
         [ka90001] 테마그룹별요청
         분류: 국내주식 - 테마
         """
-        req = RequestsByThemeGroupRequest(cont_yn=cont_yn, next_key=next_key, qry_tp=qry_tp, stk_cd=stk_cd, date_tp=date_tp, thema_nm=thema_nm, flu_pl_amt_tp=flu_pl_amt_tp, stex_tp=stex_tp)
+        req = RequestsByThemeGroupRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "qry_tp": qry_tp,
+                "stk_cd": stk_cd,
+                "date_tp": date_tp,
+                "thema_nm": thema_nm,
+                "flu_pl_amt_tp": flu_pl_amt_tp,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka90001", **req.model_dump(by_alias=True, exclude_none=True))
         return RequestsByThemeGroup(**raw_response)
 
-    def theme_items(self, cont_yn: str = "", next_key: str = "", date_tp: str = "", thema_grp_cd: str = "", stex_tp: str = "") -> ThemeItems:
+    def theme_items(
+        self, cont_yn: str = "", next_key: str = "", date_tp: str = "", thema_grp_cd: str = "", stex_tp: str = ""
+    ) -> ThemeItems:
         """
         [ka90002] 테마구성종목요청
         분류: 국내주식 - 테마
         """
-        req = ThemeItemsRequest(cont_yn=cont_yn, next_key=next_key, date_tp=date_tp, thema_grp_cd=thema_grp_cd, stex_tp=stex_tp)
+        req = ThemeItemsRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "date_tp": date_tp,
+                "thema_grp_cd": thema_grp_cd,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka90002", **req.model_dump(by_alias=True, exclude_none=True))
         return ThemeItems(**raw_response)
 
-    def elw_daily_sensitivity_indicator(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> ElwDailySensitivityIndicator:
+    def elw_daily_sensitivity_indicator(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> ElwDailySensitivityIndicator:
         """
         [ka10048] ELW일별민감도지표요청
         분류: 국내주식 - ELW
         """
-        req = ElwDailySensitivityIndicatorRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = ElwDailySensitivityIndicatorRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10048", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwDailySensitivityIndicator(**raw_response)
 
-    def elw_sensitivity_indicator(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> ElwSensitivityIndicator:
+    def elw_sensitivity_indicator(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> ElwSensitivityIndicator:
         """
         [ka10050] ELW민감도지표요청
         분류: 국내주식 - ELW
         """
-        req = ElwSensitivityIndicatorRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = ElwSensitivityIndicatorRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka10050", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwSensitivityIndicator(**raw_response)
 
-    def sudden_fluctuation_elw_price(self, cont_yn: str = "", next_key: str = "", flu_tp: str = "", tm_tp: str = "", tm: str = "", trde_qty_tp: str = "", isscomp_cd: str = "", bsis_aset_cd: str = "", rght_tp: str = "", lpcd: str = "", trde_end_elwskip: str = "") -> SuddenFluctuationElwPrice:
+    def sudden_fluctuation_elw_price(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        flu_tp: str = "",
+        tm_tp: str = "",
+        tm: str = "",
+        trde_qty_tp: str = "",
+        isscomp_cd: str = "",
+        bsis_aset_cd: str = "",
+        rght_tp: str = "",
+        lpcd: str = "",
+        trde_end_elwskip: str = "",
+    ) -> SuddenFluctuationElwPrice:
         """
         [ka30001] ELW가격급등락요청
         분류: 국내주식 - ELW
         """
-        req = SuddenFluctuationElwPriceRequest(cont_yn=cont_yn, next_key=next_key, flu_tp=flu_tp, tm_tp=tm_tp, tm=tm, trde_qty_tp=trde_qty_tp, isscomp_cd=isscomp_cd, bsis_aset_cd=bsis_aset_cd, rght_tp=rght_tp, lpcd=lpcd, trde_end_elwskip=trde_end_elwskip)
+        req = SuddenFluctuationElwPriceRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "flu_tp": flu_tp,
+                "tm_tp": tm_tp,
+                "tm": tm,
+                "trde_qty_tp": trde_qty_tp,
+                "isscomp_cd": isscomp_cd,
+                "bsis_aset_cd": bsis_aset_cd,
+                "rght_tp": rght_tp,
+                "lpcd": lpcd,
+                "trde_end_elwskip": trde_end_elwskip,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka30001", **req.model_dump(by_alias=True, exclude_none=True))
         return SuddenFluctuationElwPrice(**raw_response)
 
-    def elw_net_sales_top_by_trader(self, cont_yn: str = "", next_key: str = "", isscomp_cd: str = "", trde_qty_tp: str = "", trde_tp: str = "", dt: str = "", trde_end_elwskip: str = "") -> ElwNetSalesTopByTrader:
+    def elw_net_sales_top_by_trader(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        isscomp_cd: str = "",
+        trde_qty_tp: str = "",
+        trde_tp: str = "",
+        dt: str = "",
+        trde_end_elwskip: str = "",
+    ) -> ElwNetSalesTopByTrader:
         """
         [ka30002] 거래원별ELW순매매상위요청
         분류: 국내주식 - ELW
         """
-        req = ElwNetSalesTopByTraderRequest(cont_yn=cont_yn, next_key=next_key, isscomp_cd=isscomp_cd, trde_qty_tp=trde_qty_tp, trde_tp=trde_tp, dt=dt, trde_end_elwskip=trde_end_elwskip)
+        req = ElwNetSalesTopByTraderRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "isscomp_cd": isscomp_cd,
+                "trde_qty_tp": trde_qty_tp,
+                "trde_tp": trde_tp,
+                "dt": dt,
+                "trde_end_elwskip": trde_end_elwskip,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka30002", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwNetSalesTopByTrader(**raw_response)
 
-    def daily_trend_elwlp_holdings(self, cont_yn: str = "", next_key: str = "", bsis_aset_cd: str = "", base_dt: str = "") -> DailyTrendElwlpHoldings:
+    def daily_trend_elwlp_holdings(
+        self, cont_yn: str = "", next_key: str = "", bsis_aset_cd: str = "", base_dt: str = ""
+    ) -> DailyTrendElwlpHoldings:
         """
         [ka30003] ELWLP보유일별추이요청
         분류: 국내주식 - ELW
         """
-        req = DailyTrendElwlpHoldingsRequest(cont_yn=cont_yn, next_key=next_key, bsis_aset_cd=bsis_aset_cd, base_dt=base_dt)
+        req = DailyTrendElwlpHoldingsRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "bsis_aset_cd": bsis_aset_cd, "base_dt": base_dt}
+        )  # type: ignore
         raw_response = self.core.call("ka30003", **req.model_dump(by_alias=True, exclude_none=True))
         return DailyTrendElwlpHoldings(**raw_response)
 
-    def elw_disparity_rate(self, cont_yn: str = "", next_key: str = "", isscomp_cd: str = "", bsis_aset_cd: str = "", rght_tp: str = "", lpcd: str = "", trde_end_elwskip: str = "") -> ElwDisparityRate:
+    def elw_disparity_rate(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        isscomp_cd: str = "",
+        bsis_aset_cd: str = "",
+        rght_tp: str = "",
+        lpcd: str = "",
+        trde_end_elwskip: str = "",
+    ) -> ElwDisparityRate:
         """
         [ka30004] ELW괴리율요청
         분류: 국내주식 - ELW
         """
-        req = ElwDisparityRateRequest(cont_yn=cont_yn, next_key=next_key, isscomp_cd=isscomp_cd, bsis_aset_cd=bsis_aset_cd, rght_tp=rght_tp, lpcd=lpcd, trde_end_elwskip=trde_end_elwskip)
+        req = ElwDisparityRateRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "isscomp_cd": isscomp_cd,
+                "bsis_aset_cd": bsis_aset_cd,
+                "rght_tp": rght_tp,
+                "lpcd": lpcd,
+                "trde_end_elwskip": trde_end_elwskip,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka30004", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwDisparityRate(**raw_response)
 
-    def elw_condition_search(self, cont_yn: str = "", next_key: str = "", isscomp_cd: str = "", bsis_aset_cd: str = "", rght_tp: str = "", lpcd: str = "", sort_tp: str = "") -> ElwConditionSearch:
+    def elw_condition_search(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        isscomp_cd: str = "",
+        bsis_aset_cd: str = "",
+        rght_tp: str = "",
+        lpcd: str = "",
+        sort_tp: str = "",
+    ) -> ElwConditionSearch:
         """
         [ka30005] ELW조건검색요청
         분류: 국내주식 - ELW
         """
-        req = ElwConditionSearchRequest(cont_yn=cont_yn, next_key=next_key, isscomp_cd=isscomp_cd, bsis_aset_cd=bsis_aset_cd, rght_tp=rght_tp, lpcd=lpcd, sort_tp=sort_tp)
+        req = ElwConditionSearchRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "isscomp_cd": isscomp_cd,
+                "bsis_aset_cd": bsis_aset_cd,
+                "rght_tp": rght_tp,
+                "lpcd": lpcd,
+                "sort_tp": sort_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka30005", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwConditionSearch(**raw_response)
 
-    def elw_fluctuation_rate_ranking(self, cont_yn: str = "", next_key: str = "", sort_tp: str = "", rght_tp: str = "", trde_end_skip: str = "") -> ElwFluctuationRateRanking:
+    def elw_fluctuation_rate_ranking(
+        self, cont_yn: str = "", next_key: str = "", sort_tp: str = "", rght_tp: str = "", trde_end_skip: str = ""
+    ) -> ElwFluctuationRateRanking:
         """
         [ka30009] ELW등락율순위요청
         분류: 국내주식 - ELW
         """
-        req = ElwFluctuationRateRankingRequest(cont_yn=cont_yn, next_key=next_key, sort_tp=sort_tp, rght_tp=rght_tp, trde_end_skip=trde_end_skip)
+        req = ElwFluctuationRateRankingRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "sort_tp": sort_tp,
+                "rght_tp": rght_tp,
+                "trde_end_skip": trde_end_skip,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka30009", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwFluctuationRateRanking(**raw_response)
 
-    def elw_remaining_balance_ranking(self, cont_yn: str = "", next_key: str = "", sort_tp: str = "", rght_tp: str = "", trde_end_skip: str = "") -> ElwRemainingBalanceRanking:
+    def elw_remaining_balance_ranking(
+        self, cont_yn: str = "", next_key: str = "", sort_tp: str = "", rght_tp: str = "", trde_end_skip: str = ""
+    ) -> ElwRemainingBalanceRanking:
         """
         [ka30010] ELW잔량순위요청
         분류: 국내주식 - ELW
         """
-        req = ElwRemainingBalanceRankingRequest(cont_yn=cont_yn, next_key=next_key, sort_tp=sort_tp, rght_tp=rght_tp, trde_end_skip=trde_end_skip)
+        req = ElwRemainingBalanceRankingRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "sort_tp": sort_tp,
+                "rght_tp": rght_tp,
+                "trde_end_skip": trde_end_skip,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka30010", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwRemainingBalanceRanking(**raw_response)
 
@@ -9271,25 +15058,31 @@ class KiwoomGeneratedClient:
         [ka30011] ELW근접율요청
         분류: 국내주식 - ELW
         """
-        req = ElwProximityRateRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = ElwProximityRateRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka30011", **req.model_dump(by_alias=True, exclude_none=True))
         return ElwProximityRate(**raw_response)
 
-    def detailed_information_elw_items(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> DetailedInformationElwItems:
+    def detailed_information_elw_items(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> DetailedInformationElwItems:
         """
         [ka30012] ELW종목상세정보요청
         분류: 국내주식 - ELW
         """
-        req = DetailedInformationElwItemsRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = DetailedInformationElwItemsRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka30012", **req.model_dump(by_alias=True, exclude_none=True))
         return DetailedInformationElwItems(**raw_response)
 
-    def etf_return_rate(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", etfobjt_idex_cd: str = "", dt: str = "") -> EtfReturnRate:
+    def etf_return_rate(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = "", etfobjt_idex_cd: str = "", dt: str = ""
+    ) -> EtfReturnRate:
         """
         [ka40001] ETF수익율요청
         분류: 국내주식 - ETF
         """
-        req = EtfReturnRateRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd, etfobjt_idex_cd=etfobjt_idex_cd, dt=dt)
+        req = EtfReturnRateRequest(
+            **{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd, "etfobjt_idex_cd": etfobjt_idex_cd, "dt": dt}
+        )  # type: ignore
         raw_response = self.core.call("ka40001", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfReturnRate(**raw_response)
 
@@ -9298,7 +15091,7 @@ class KiwoomGeneratedClient:
         [ka40002] ETF종목정보요청
         분류: 국내주식 - ETF
         """
-        req = EtfItemInformationRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = EtfItemInformationRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka40002", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfItemInformation(**raw_response)
 
@@ -9307,16 +15100,37 @@ class KiwoomGeneratedClient:
         [ka40003] ETF일별추이요청
         분류: 국내주식 - ETF
         """
-        req = EtfDailyTrendRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = EtfDailyTrendRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka40003", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfDailyTrend(**raw_response)
 
-    def full_etf(self, cont_yn: str = "", next_key: str = "", txon_type: str = "", navpre: str = "", mngmcomp: str = "", txon_yn: str = "", trace_idex: str = "", stex_tp: str = "") -> FullEtf:
+    def full_etf(
+        self,
+        cont_yn: str = "",
+        next_key: str = "",
+        txon_type: str = "",
+        navpre: str = "",
+        mngmcomp: str = "",
+        txon_yn: str = "",
+        trace_idex: str = "",
+        stex_tp: str = "",
+    ) -> FullEtf:
         """
         [ka40004] ETF전체시세요청
         분류: 국내주식 - ETF
         """
-        req = FullEtfRequest(cont_yn=cont_yn, next_key=next_key, txon_type=txon_type, navpre=navpre, mngmcomp=mngmcomp, txon_yn=txon_yn, trace_idex=trace_idex, stex_tp=stex_tp)
+        req = FullEtfRequest(
+            **{
+                "cont-yn": cont_yn,
+                "next-key": next_key,
+                "txon_type": txon_type,
+                "navpre": navpre,
+                "mngmcomp": mngmcomp,
+                "txon_yn": txon_yn,
+                "trace_idex": trace_idex,
+                "stex_tp": stex_tp,
+            }
+        )  # type: ignore
         raw_response = self.core.call("ka40004", **req.model_dump(by_alias=True, exclude_none=True))
         return FullEtf(**raw_response)
 
@@ -9325,7 +15139,7 @@ class KiwoomGeneratedClient:
         [ka40006] ETF시간대별추이요청
         분류: 국내주식 - ETF
         """
-        req = EtfTimeZoneTrendRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = EtfTimeZoneTrendRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka40006", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfTimeZoneTrend(**raw_response)
 
@@ -9334,7 +15148,7 @@ class KiwoomGeneratedClient:
         [ka40007] ETF시간대별체결요청
         분류: 국내주식 - ETF
         """
-        req = EtfTradingByTimeSlotRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = EtfTradingByTimeSlotRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka40007", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfTradingByTimeSlot(**raw_response)
 
@@ -9343,27 +15157,32 @@ class KiwoomGeneratedClient:
         [ka40008] ETF일자별체결요청
         분류: 국내주식 - ETF
         """
-        req = EtfTransactionByDateRequest(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = EtfTransactionByDateRequest(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka40008", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfTransactionByDate(**raw_response)
 
-    def etf_trading_by_time_slot1(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> EtfTradingByTimeSlot1:
+    def etf_trading_by_time_slot1(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> EtfTradingByTimeSlot1:
         """
         [ka40009] ETF시간대별체결요청
         분류: 국내주식 - ETF
         """
-        req = EtfTradingByTimeSlot1Request(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = EtfTradingByTimeSlot1Request(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka40009", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfTradingByTimeSlot1(**raw_response)
 
-    def etf_time_zone_trend_request1(self, cont_yn: str = "", next_key: str = "", stk_cd: str = "") -> EtfTimeZoneTrendRequest1:
+    def etf_time_zone_trend_request1(
+        self, cont_yn: str = "", next_key: str = "", stk_cd: str = ""
+    ) -> EtfTimeZoneTrendRequest1:
         """
         [ka40010] ETF시간대별추이요청
         분류: 국내주식 - ETF
         """
-        req = EtfTimeZoneTrendRequest1Request(cont_yn=cont_yn, next_key=next_key, stk_cd=stk_cd)
+        req = EtfTimeZoneTrendRequest1Request(**{"cont-yn": cont_yn, "next-key": next_key, "stk_cd": stk_cd})  # type: ignore
         raw_response = self.core.call("ka40010", **req.model_dump(by_alias=True, exclude_none=True))
         return EtfTimeZoneTrendRequest1(**raw_response)
+
 
 # ====================================================================
 # 3. Registry (동적 호출을 위한 매핑)
@@ -9554,7 +15373,7 @@ API_ID_TO_METHOD: Dict[str, str] = {
     "ka50082": "gold_spot_weekly_chart",
     "ka50083": "gold_spot_monthly_chart",
     "ka50091": "gold_spot_daily_tick_chart",
-    "ka50092": "gold_spot_daily_chart",
+    "ka50092": "gold_spot_daily_chart2",
     "ka90001": "requests_by_theme_group",
     "ka90002": "theme_items",
     "ka10048": "elw_daily_sensitivity_indicator",
@@ -9764,7 +15583,7 @@ API_ID_TO_REQ_MODEL: Dict[str, Type[BaseModel]] = {
     "ka50082": GoldSpotWeeklyChartRequest,
     "ka50083": GoldSpotMonthlyChartRequest,
     "ka50091": GoldSpotDailyTickChartRequest,
-    "ka50092": GoldSpotDailyChartRequest,
+    "ka50092": GoldSpotDailyChart2Request,
     "ka90001": RequestsByThemeGroupRequest,
     "ka90002": ThemeItemsRequest,
     "ka10048": ElwDailySensitivityIndicatorRequest,
@@ -9974,7 +15793,7 @@ API_ID_TO_RES_MODEL: Dict[str, Type[BaseModel]] = {
     "ka50082": GoldSpotWeeklyChart,
     "ka50083": GoldSpotMonthlyChart,
     "ka50091": GoldSpotDailyTickChart,
-    "ka50092": GoldSpotDailyChart,
+    "ka50092": GoldSpotDailyChart2,
     "ka90001": RequestsByThemeGroup,
     "ka90002": ThemeItems,
     "ka10048": ElwDailySensitivityIndicator,

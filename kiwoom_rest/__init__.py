@@ -15,5 +15,5 @@ __all__ = [
     "API_ID_TO_RES_MODEL",
     "API_ID_TO_REQ_MODEL",
     "API_ID_TO_METHOD",
-    "__version__"
+    "__version__",
 ]

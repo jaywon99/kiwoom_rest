@@ -1,5 +1,6 @@
 import sys
 
+
 def run_playground():
     try:
         import uvicorn
@@ -10,6 +11,7 @@ def run_playground():
 
     print("🚀 Starting Kiwoom API Playground...")
     uvicorn.run("kiwoom_playground.server:app", host="0.0.0.0", port=8000, reload=False)
+
 
 if __name__ == "__main__":
     run_playground()
