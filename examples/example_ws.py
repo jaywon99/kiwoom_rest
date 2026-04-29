@@ -2,7 +2,7 @@ import os
 import asyncio
 import json
 from dotenv import load_dotenv
-from kiwoom_rest import KiwoomCore, KiwoomException
+from kiwoom_rest import KiwoomCore
 
 # ==============================================================================
 # 1. 환경 설정 로드
@@ -22,11 +22,7 @@ async def main():
     # 2. 클라이언트 초기화
     # ==============================================================================
     print("🚀 Raw KiwoomCore 초기화 중...")
-    client = KiwoomCore(
-        appkey=APP_KEY,
-        secretkey=SECRET_KEY,
-        base_url=BASE_URL
-    )
+    client = KiwoomCore(appkey=APP_KEY, secretkey=SECRET_KEY, base_url=BASE_URL)
 
     # ==============================================================================
     # 3. 실시간 데이터 수신 콜백 함수 정의
@@ -45,7 +41,7 @@ async def main():
     print("\n🔗 웹소켓 연결 중...")
     await client.connect_ws(on_message=on_message)
     print("✅ 웹소켓 연결 완료! (서버 로그인 처리 대기 중...)")
-    
+
     # [중요] 웹소켓 접속 직후 키움 서버 내부적으로 인증(LOGIN) 처리가 진행됩니다.
     # 대기 없이 바로 구독(REG)을 요청하면 무시될 수 있으므로 최소 1초 이상 대기해야 합니다.
     await asyncio.sleep(1.0)
@@ -55,29 +51,30 @@ async def main():
     # ==============================================================================
     # 딕셔너리 형태로 직접 페이로드를 작성하는 방식입니다.
     payload = {
-        "trnm": "REG",       # REG: 구독 등록, REMOVE: 구독 해지
-        "grp_no": "g123",    # 사용자가 임의로 지정하는 그룹 번호
-        "refresh": "1",      # 1: 기존 등록 유지하면서 추가 (Default), 0: 기존 등록 해지 후 덮어쓰기
+        "trnm": "REG",  # REG: 구독 등록, REMOVE: 구독 해지
+        "grp_no": "g123",  # 사용자가 임의로 지정하는 그룹 번호
+        "refresh": "1",  # 1: 기존 등록 유지하면서 추가 (Default), 0: 기존 등록 해지 후 덮어쓰기
         "data": [
             {
                 # [중요] item과 type은 단일 값이라도 반드시 배열(List) 형태로 전송해야 합니다.
                 "item": ["005930"],  # 종목코드 (예: 삼성전자)
-                "type": ["0B"]       # TR 식별자 (0B: 주식체결, 00: 주문체결 등)
+                "type": ["0B"],  # TR 식별자 (0B: 주식체결, 00: 주문체결 등)
             }
-        ]
+        ],
     }
-    
+
     print("\n📡 실시간 주식체결(0B) 구독 요청 전송 중...")
     await client.send_ws(payload)
     print("✅ 전송 완료! 실시간 수신 대기 중... (10초 후 자동 종료됩니다)")
-    
+
     # ==============================================================================
     # 6. 메인 루프 유지 및 종료 처리
     # ==============================================================================
     await asyncio.sleep(10)
-    
+
     print("👋 웹소켓 연결을 종료합니다.")
     await client.disconnect_ws()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
