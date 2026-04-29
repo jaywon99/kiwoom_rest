@@ -126,7 +126,7 @@ class KiwoomCore:
         self._wait_for_rate_limit()
         resp = requests.post(
             f"{self.base_url}/oauth2/token",
-            json={"grant_type": "client_credentials", "appkey": self.appkey, "appsecret": self.secretkey},
+            json={"grant_type": "client_credentials", "appkey": self.appkey, "secretkey": self.secretkey},
             headers={"Content-Type": "application/json", "Accept": "application/json"},
         )
 
